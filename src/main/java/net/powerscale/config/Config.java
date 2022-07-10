@@ -8,11 +8,21 @@ public class Config {
 
     public Map<String, Dimension> dimensions = new HashMap<>();
 
+    public Config(Map<String, Dimension> dimensions) {
+        this.dimensions = dimensions;
+    }
+
     public static class Dimension {
 
         // Key is regex for item id
         public Map<String, ItemModifier[]> items = new HashMap<>();
 
+        // entities
+        // experience
+
+        public Dimension(Map<String, ItemModifier[]> items) {
+            this.items = items;
+        }
     }
 
     public static class ItemModifier {

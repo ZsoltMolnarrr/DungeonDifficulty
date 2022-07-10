@@ -16,16 +16,12 @@ import net.minecraft.util.registry.Registry;
 import net.powerscale.config.Config;
 import org.slf4j.Logger;
 
+import java.util.List;
+
 public class ItemScaling {
     static final Logger LOGGER = LogUtils.getLogger();
-    private static Config.ItemModifier[] getModifiersForItem(Identifier item, Identifier dimension) {
-        // TODO
-        return new Config.ItemModifier[]{
-                new Config.ItemModifier("generic.attack_damage", 3F)
-        };
-    }
 
-    private static void applyModifiersForItemStack(EquipmentSlot slot, Identifier itemId, ItemStack itemStack, Config.ItemModifier[] modifiers) {
+    private static void applyModifiersForItemStack(EquipmentSlot slot, Identifier itemId, ItemStack itemStack, List<Config.ItemModifier> modifiers) {
         for (Config.ItemModifier modifier: modifiers) {
             try {
                 System.out.println("Applying A extra attack damage to " + itemId);
@@ -89,11 +85,13 @@ public class ItemScaling {
                     var dimensionId = lootContext.getWorld().getRegistryKey().getValue();
                     System.out.println("Checking apply for: " + itemId + " in dimension: " + dimensionId);
                     if (itemStack.getItem() instanceof ToolItem) {
-                        applyModifiersForItemStack(EquipmentSlot.MAINHAND, itemId, itemStack, getModifiersForItem(itemId, dimensionId));
+                        var modifiers = PatternMatching.getModifiersForItem(itemId, dimensionId);
+                        applyModifiersForItemStack(EquipmentSlot.MAINHAND, itemId, itemStack, modifiers);
                     }
                     if (itemStack.getItem() instanceof ArmorItem) {
                         var armor = (ArmorItem)itemStack.getItem();
-                        applyModifiersForItemStack(armor.getSlotType(), itemId, itemStack, getModifiersForItem(itemId, dimensionId));
+                        var modifiers = PatternMatching.getModifiersForItem(itemId, dimensionId);
+                        applyModifiersForItemStack(armor.getSlotType(), itemId, itemStack, modifiers);
                     }
                     return itemStack;
                 }
