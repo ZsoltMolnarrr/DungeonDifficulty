@@ -85,12 +85,12 @@ public class ItemScaling {
                     var dimensionId = lootContext.getWorld().getRegistryKey().getValue();
                     System.out.println("Checking apply for: " + itemId + " in dimension: " + dimensionId);
                     if (itemStack.getItem() instanceof ToolItem) {
-                        var modifiers = PatternMatching.getModifiersForItem(itemId, dimensionId);
+                        var modifiers = PatternMatching.getModifiersForWeapon(itemId, dimensionId);
                         applyModifiersForItemStack(EquipmentSlot.MAINHAND, itemId, itemStack, modifiers);
                     }
                     if (itemStack.getItem() instanceof ArmorItem) {
                         var armor = (ArmorItem)itemStack.getItem();
-                        var modifiers = PatternMatching.getModifiersForItem(itemId, dimensionId);
+                        var modifiers = PatternMatching.getModifiersForArmor(itemId, dimensionId);
                         applyModifiersForItemStack(armor.getSlotType(), itemId, itemStack, modifiers);
                     }
                     return itemStack;

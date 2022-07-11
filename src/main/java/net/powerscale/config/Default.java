@@ -7,29 +7,39 @@ public class Default {
 
     private static Config createDefaultConfig() {
         // Surface
-        var overworldItems = new HashMap<String, Config.ItemModifier[]>() {{
+        var overworld = new Config.Dimension();
+        overworld.weapons = new HashMap<String, Config.ItemModifier[]>() {{
             put(".*", new Config.ItemModifier[] {
-                createDamageMultiplier(2)
+                    createDamageMultiplier(2)
             });
         }};
-        var overworld = new Config.Dimension(overworldItems);
+
         // Nether
-        var netherItems = new HashMap<String, Config.ItemModifier[]>() {{
+        var nether = new Config.Dimension();
+        nether.weapons = new HashMap<String, Config.ItemModifier[]>() {{
             put(".*", new Config.ItemModifier[] {
-                createDamageMultiplier(3),
-                createArmorMultiplier(3)
+                    createDamageMultiplier(3)
             });
         }};
-        var nether = new Config.Dimension(netherItems);
+        nether.armor = new HashMap<String, Config.ItemModifier[]>() {{
+            put(".*", new Config.ItemModifier[] {
+                    createArmorMultiplier(2),
+                    createMaxHealthBonus(2)
+            });
+        }};
 
         // End
-        var endItems = new HashMap<String, Config.ItemModifier[]>() {{
+        var end = new Config.Dimension();
+        end.weapons = new HashMap<String, Config.ItemModifier[]>() {{
             put(".*", new Config.ItemModifier[] {
-                createDamageMultiplier(4),
-                createArmorMultiplier(4)
+                    createDamageMultiplier(4)
             });
         }};
-        var end = new Config.Dimension(endItems);
+        end.armor = new HashMap<String, Config.ItemModifier[]>() {{
+            put(".*", new Config.ItemModifier[] {
+                    createArmorMultiplier(4)
+            });
+        }};
 
         return new Config(new HashMap<String, Config.Dimension>() {{
             put("minecraft:overworld", overworld );
@@ -44,5 +54,11 @@ public class Default {
 
     private static Config.ItemModifier createArmorMultiplier(float value) {
         return new Config.ItemModifier("generic.armor", value);
+    }
+
+    private static Config.ItemModifier createMaxHealthBonus(float value) {
+        var modifier = new Config.ItemModifier("generic.max_health", value);
+        modifier.operation = Config.Operation.ADD;
+        return modifier;
     }
 }

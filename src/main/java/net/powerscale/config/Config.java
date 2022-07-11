@@ -13,16 +13,11 @@ public class Config {
     }
 
     public static class Dimension {
-
-        // Key is regex for item id
-        public Map<String, ItemModifier[]> items = new HashMap<>();
+        public Map<String, ItemModifier[]> weapons = new HashMap<>();
+        public Map<String, ItemModifier[]> armor = new HashMap<>();
 
         // entities
         // experience
-
-        public Dimension(Map<String, ItemModifier[]> items) {
-            this.items = items;
-        }
     }
 
     public static class ItemModifier {

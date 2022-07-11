@@ -10,11 +10,32 @@ import java.util.List;
 import java.util.Map;
 
 public class PatternMatching {
-    public static List<Config.ItemModifier> getModifiersForItem(Identifier item, Identifier dimension) {
+    public static List<Config.ItemModifier> getModifiersForArmor(Identifier item, Identifier dimension) {
+        return getModifiersForItem(ModifierSet.ARMOR, item, dimension);
+    }
+
+    public static List<Config.ItemModifier> getModifiersForWeapon(Identifier item, Identifier dimension) {
+        return getModifiersForItem(ModifierSet.WEAPONS, item, dimension);
+    }
+
+    enum ModifierSet {
+        ARMOR, WEAPONS
+    }
+
+    public static List<Config.ItemModifier> getModifiersForItem(ModifierSet modifierSet, Identifier item, Identifier dimension) {
         var attributeModifiers = new ArrayList<Config.ItemModifier>();
         var dimensions = getDimensionConfigsMatching(dimension);
         for (Config.Dimension dimensionConfig: dimensions) {
-            for(Map.Entry<String, Config.ItemModifier[]> entry: dimensionConfig.items.entrySet()) {
+            Map<String, Config.ItemModifier[]> modifiers = null; 
+            switch (modifierSet) {
+                case ARMOR -> {
+                    modifiers = dimensionConfig.armor;
+                }
+                case WEAPONS -> {
+                    modifiers = dimensionConfig.weapons;
+                }
+            }
+            for(Map.Entry<String, Config.ItemModifier[]> entry: modifiers.entrySet()) {
                 if (item.toString().matches(entry.getKey())) {
                     System.out.println("PM: " + item + " matches: " + entry.getKey());
                     attributeModifiers.addAll(Arrays.asList(entry.getValue()));

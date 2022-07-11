@@ -22,22 +22,21 @@ public class ConfigManager {
         Path configDir = FabricLoader.getInstance().getConfigDir();
 
         try {
+            var gson = new Gson();
             var filePath = configDir.resolve(configFileName);
             if (Files.exists(filePath)) {
                 // Read
-                var gson = new Gson();
                 Reader reader = Files.newBufferedReader(filePath);
                 config = gson.fromJson(reader, Config.class);
                 reader.close();
                 LOGGER.info("PowerScale config loaded: " + gson.toJson(config));
             } else {
                 // Write
-                var gson = new GsonBuilder().setPrettyPrinting().create();
+                var prettyGson = new GsonBuilder().setPrettyPrinting().create();
                 Writer writer = Files.newBufferedWriter(filePath);
-                var json = gson.toJson(config);
-                writer.write(json);
+                writer.write(prettyGson.toJson(config));
                 writer.close();
-                LOGGER.info("PowerScale default config written: " + json);
+                LOGGER.info("PowerScale default config written: " + gson.toJson(config));
             }
         } catch(Exception e) {
             LOGGER.error("Failed loading PowerScale config: " + e.getMessage());
