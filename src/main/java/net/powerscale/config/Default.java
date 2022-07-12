@@ -10,7 +10,8 @@ public class Default {
         var overworld = new Config.Dimension();
         overworld.weapons = new HashMap<String, Config.ItemModifier[]>() {{
             put(".*", new Config.ItemModifier[] {
-                    createDamageMultiplier(2)
+                    createDamageMultiplier(2),
+                    createProjectileMultiplier(2)
             });
         }};
 
@@ -18,7 +19,8 @@ public class Default {
         var nether = new Config.Dimension();
         nether.weapons = new HashMap<String, Config.ItemModifier[]>() {{
             put(".*", new Config.ItemModifier[] {
-                    createDamageMultiplier(3)
+                    createDamageMultiplier(3),
+                    createProjectileMultiplier(3)
             });
         }};
         nether.armor = new HashMap<String, Config.ItemModifier[]>() {{
@@ -32,7 +34,8 @@ public class Default {
         var end = new Config.Dimension();
         end.weapons = new HashMap<String, Config.ItemModifier[]>() {{
             put(".*", new Config.ItemModifier[] {
-                    createDamageMultiplier(4)
+                    createDamageMultiplier(4),
+                    createProjectileMultiplier(4)
             });
         }};
         end.armor = new HashMap<String, Config.ItemModifier[]>() {{
@@ -50,6 +53,10 @@ public class Default {
 
     private static Config.ItemModifier createDamageMultiplier(float value) {
         return new Config.ItemModifier("generic.attack_damage", value);
+    }
+
+    private static Config.ItemModifier createProjectileMultiplier(float value) {
+        return new Config.ItemModifier("generic.projectile_damage", value);
     }
 
     private static Config.ItemModifier createArmorMultiplier(float value) {
