@@ -29,6 +29,7 @@ public class ItemScaling {
         for (Config.AttributeModifier modifier: modifiers) {
             try {
                 if (modifier.attribute == null) {
+                    System.out.println("Null attribute to apply on " + itemId);
                     continue;
                 }
                 System.out.println("Applying A " + modifier.attribute + " to " + itemId);
@@ -104,11 +105,13 @@ public class ItemScaling {
                     System.out.println("Checking apply for: " + itemId + " in dimension: " + dimensionId);
                     if (itemStack.getItem() instanceof ToolItem || itemStack.getItem() instanceof RangedWeaponItem) { // TODO: Ranged weapons
                         var modifiers = PatternMatching.getModifiersForWeapon(itemId, dimensionId);
+                        System.out.println("Pattern matching found " + modifiers.size() + " attribute modifiers");
                         applyModifiersForItemStack(new EquipmentSlot[]{ EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND }, itemId, itemStack, modifiers);
                     }
                     if (itemStack.getItem() instanceof ArmorItem) {
                         var armor = (ArmorItem)itemStack.getItem();
                         var modifiers = PatternMatching.getModifiersForArmor(itemId, dimensionId);
+                        System.out.println("Pattern matching found " + modifiers.size() + " attribute modifiers");
                         applyModifiersForItemStack(new EquipmentSlot[]{ armor.getSlotType() }, itemId, itemStack, modifiers);
                     }
                     return itemStack;

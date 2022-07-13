@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class PatternMatching {
     public static List<Config.AttributeModifier> getModifiersForArmor(Identifier item, Identifier dimension) {
@@ -22,9 +24,9 @@ public class PatternMatching {
         ARMOR, WEAPONS
     }
 
-    public static List<Config.AttributeModifier> getModifiersForItem(ModifierSet modifierSet, Identifier item, Identifier dimension) {
+    public static List<Config.AttributeModifier> getModifiersForItem(ModifierSet modifierSet, Identifier itemId, Identifier dimensionId) {
         var attributeModifiers = new ArrayList<Config.AttributeModifier>();
-        var locations = getLocationConfigsMatching(dimension);
+        var locations = getLocationConfigsMatching(dimensionId);
         for (var location: locations) {
             if (location.rewards != null) {
                 Config.ItemModifier[] itemModifiers = null;
@@ -41,8 +43,8 @@ public class PatternMatching {
                 }
                 for(var entry: itemModifiers) {
                     if (entry.filters != null) {
-                        if (matches(item.toString(), entry.filters.item_id_regex)) {
-                            System.out.println("PM: " + item + " matches: " + entry.filters.item_id_regex);
+                        if (matches(itemId.toString(), entry.filters.item_id_regex)) {
+                            System.out.println("PM: " + itemId + " matches: " + entry.filters.item_id_regex);
                             attributeModifiers.addAll(Arrays.asList(entry.modifiers));
                         }
                     } else {
@@ -77,6 +79,12 @@ public class PatternMatching {
     }
 
     private static boolean matches(String subject, String nullableRegex) {
-        return nullableRegex == null || nullableRegex.isEmpty() || subject.matches(nullableRegex);
+//        return nullableRegex == null || nullableRegex.isEmpty() || subject.matches(nullableRegex);
+        if (nullableRegex == null || nullableRegex.isEmpty()) {
+            return true;
+        }
+        Pattern pattern = Pattern.compile(nullableRegex, Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(subject);
+        return matcher.find();
     }
 }

@@ -12,11 +12,15 @@ public class Default {
         overworld.filters.dimension_regex = "minecraft:overworld";
         overworld.rewards = new Config.Location.Rewards();
         overworld.rewards.weapons = new Config.ItemModifier[]{
-                createItemModifier("generic.attack_damage", 2),
-                createItemModifier("generic.projectile_damage", 2)
+                createItemModifier(new Config.AttributeModifier[]{
+                        createDamageMultiplier(2),
+                        createProjectileMultiplier(2)
+                }),
         };
         overworld.rewards.armor = new Config.ItemModifier[]{
-                createItemModifier("generic.armor", 2),
+                createItemModifier(new Config.AttributeModifier[]{
+                        createArmorMultiplier(2)
+                }),
         };
 
         // Nether
@@ -58,10 +62,10 @@ public class Default {
         return config;
     }
 
-    private static Config.ItemModifier createItemModifier(String attributeName, float value) {
+    private static Config.ItemModifier createItemModifier(Config.AttributeModifier[] attributeModifiers) {
         var itemModifier = new Config.ItemModifier();
         itemModifier.filters = new Config.ItemModifier.Filters();
-        itemModifier.modifiers = new Config.AttributeModifier[]{ new Config.AttributeModifier(attributeName, value)};
+        itemModifier.modifiers = attributeModifiers;
         return itemModifier;
     }
 
