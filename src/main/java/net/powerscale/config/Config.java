@@ -1,32 +1,43 @@
 package net.powerscale.config;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 
 public class Config {
+    public Location[] locations;
 
-    public Map<String, Dimension> dimensions = new HashMap<>();
+    public static class Location {
+        public static class Rewards {
+            public ItemModifier[] armor;
+            public ItemModifier[] weapons;
+        }
+        public Rewards rewards;
 
-    public Config(Map<String, Dimension> dimensions) {
-        this.dimensions = dimensions;
-    }
-
-    public static class Dimension {
-        public Map<String, ItemModifier[]> weapons = new HashMap<>();
-        public Map<String, ItemModifier[]> armor = new HashMap<>();
-
-        // entities
-        // experience
+        public static class Filters {
+            public String dimension_regex = ".*";
+        }
+        public Filters filters;
     }
 
     public static class ItemModifier {
+        public static class Filters {
+            public String item_id_regex = ".*";
+            public String loot_table_regex = ".*";
+            public String rarity_regex = ".*";
+        }
+        public Filters filters;
+
+        public AttributeModifier[] modifiers;
+    }
+
+    public static class AttributeModifier {
         public String attribute;
         public Operation operation = Operation.MULTIPLY;
         public float randomness = 0;
-        public float value;
+        public float value = 1;
 
-        public ItemModifier(String attribute, float value) {
+        public AttributeModifier() {}
+
+        public AttributeModifier(String attribute, float value) {
             this.attribute = attribute;
             this.value = value;
         }

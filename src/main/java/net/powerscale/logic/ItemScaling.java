@@ -25,10 +25,13 @@ import java.util.Map;
 public class ItemScaling {
     static final Logger LOGGER = LogUtils.getLogger();
 
-    private static void applyModifiersForItemStack(EquipmentSlot[] slots, Identifier itemId, ItemStack itemStack, List<Config.ItemModifier> modifiers) {
-        for (Config.ItemModifier modifier: modifiers) {
+    private static void applyModifiersForItemStack(EquipmentSlot[] slots, Identifier itemId, ItemStack itemStack, List<Config.AttributeModifier> modifiers) {
+        for (Config.AttributeModifier modifier: modifiers) {
             try {
-                System.out.println("Applying A extra attack damage to " + itemId);
+                if (modifier.attribute == null) {
+                    continue;
+                }
+                System.out.println("Applying A " + modifier.attribute + " to " + itemId);
                 // The attribute we want to modify
                 var attribute = Registry.ATTRIBUTE.get(new Identifier(modifier.attribute));
 
@@ -65,7 +68,7 @@ public class ItemScaling {
                                 if(attributeModifier.getOperation() != EntityAttributeModifier.Operation.ADDITION) {
                                     continue;
                                 }
-                                System.out.println("Applying extra B attack damage to " + itemId);
+                                System.out.println("Applying B " + modifier.attribute + " to " + itemId);
                                 itemStack.addAttributeModifier(
                                         attribute,
                                         new EntityAttributeModifier(
