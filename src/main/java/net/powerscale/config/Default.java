@@ -13,52 +13,36 @@ public class Default {
         overworld.rewards = new Config.Location.Rewards();
         overworld.rewards.weapons = new Config.ItemModifier[]{
                 createItemModifier(new Config.AttributeModifier[]{
+                        createDamageMultiplier(1.5F),
+                        createProjectileMultiplier(1.5F)
+                }),
+        };
+        overworld.rewards.armor = new Config.ItemModifier[]{
+                createItemModifier(new Config.AttributeModifier[]{
+                        createArmorMultiplier(1.5F)
+                }),
+        };
+
+        // Nether
+        var nether = new Config.Location();
+        nether.filters = new Config.Location.Filters();
+        nether.filters.dimension_regex = "minecraft:the_nether";
+        nether.rewards = new Config.Location.Rewards();
+        nether.rewards.weapons = new Config.ItemModifier[]{
+                createItemModifier(new Config.AttributeModifier[]{
                         createDamageMultiplier(2),
                         createProjectileMultiplier(2)
                 }),
         };
-        overworld.rewards.armor = new Config.ItemModifier[]{
+        nether.rewards.armor = new Config.ItemModifier[]{
                 createItemModifier(new Config.AttributeModifier[]{
                         createArmorMultiplier(2)
                 }),
         };
 
-        // Nether
-//        var nether = new Config.Dimension();
-//        nether.weapons = new HashMap<String, Config.AttributeModifier[]>() {{
-//            put(".*", new Config.AttributeModifier[] {
-//                    createDamageMultiplier(3),
-//                    createProjectileMultiplier(3)
-//            });
-//        }};
-//        nether.armor = new HashMap<String, Config.AttributeModifier[]>() {{
-//            put(".*", new Config.AttributeModifier[] {
-//                    createArmorMultiplier(2),
-//                    createMaxHealthBonus(2)
-//            });
-//        }};
-//
-//        // End
-//        var end = new Config.Dimension();
-//        end.weapons = new HashMap<String, Config.AttributeModifier[]>() {{
-//            put(".*", new Config.AttributeModifier[] {
-//                    createDamageMultiplier(4),
-//                    createProjectileMultiplier(4)
-//            });
-//        }};
-//        end.armor = new HashMap<String, Config.AttributeModifier[]>() {{
-//            put(".*", new Config.AttributeModifier[] {
-//                    createArmorMultiplier(4)
-//            });
-//        }};
-
         var config = new Config();
-        config.locations = new Config.Location[] { overworld };
-//        return new Config(new HashMap<String, Config.Dimension>() {{
-//            put("minecraft:overworld", overworld );
-//            put("minecraft:the_nether", nether );
-//            put("minecraft:the_end", end );
-//        }});
+        config.locations = new Config.Location[] { overworld, nether };
+
         return config;
     }
 

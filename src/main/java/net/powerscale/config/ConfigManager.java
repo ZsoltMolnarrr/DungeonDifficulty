@@ -29,7 +29,11 @@ public class ConfigManager {
                 Reader reader = Files.newBufferedReader(filePath);
                 config = gson.fromJson(reader, Config.class);
                 reader.close();
-                LOGGER.info("PowerScale config loaded: " + gson.toJson(config));
+                if (config.locations.length == 0) {
+                    LOGGER.error("PowerScale config loaded empty config! The JSON is most likely malformed.");
+                } else {
+                    LOGGER.info("PowerScale config loaded: " + gson.toJson(config));
+                }
             } else {
                 // Write
                 var prettyGson = new GsonBuilder().setPrettyPrinting().create();
