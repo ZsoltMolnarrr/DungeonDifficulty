@@ -102,15 +102,17 @@ public class ItemScaling {
                 public ItemStack apply(ItemStack itemStack, LootContext lootContext) {
                     var itemId = Registry.ITEM.getId(itemStack.getItem());
                     var dimensionId = lootContext.getWorld().getRegistryKey().getValue();
-                    System.out.println("Checking apply for: " + itemId + " in dimension: " + dimensionId);
-                    if (itemStack.getItem() instanceof ToolItem || itemStack.getItem() instanceof RangedWeaponItem) { // TODO: Ranged weapons
-                        var modifiers = PatternMatching.getModifiersForWeapon(itemId, dimensionId);
+                    var rarity = itemStack.getRarity().toString();
+                    var lootTableId = id;
+                    System.out.println("Item scaling start." + " dimension: " + dimensionId + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
+                    if (itemStack.getItem() instanceof ToolItem || itemStack.getItem() instanceof RangedWeaponItem) {
+                        var modifiers = PatternMatching.getModifiersForWeapon(dimensionId, lootTableId, itemId, rarity);
                         System.out.println("Pattern matching found " + modifiers.size() + " attribute modifiers");
                         applyModifiersForItemStack(new EquipmentSlot[]{ EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND }, itemId, itemStack, modifiers);
                     }
                     if (itemStack.getItem() instanceof ArmorItem) {
                         var armor = (ArmorItem)itemStack.getItem();
-                        var modifiers = PatternMatching.getModifiersForArmor(itemId, dimensionId);
+                        var modifiers = PatternMatching.getModifiersForArmor(dimensionId, lootTableId, itemId, rarity);
                         System.out.println("Pattern matching found " + modifiers.size() + " attribute modifiers");
                         applyModifiersForItemStack(new EquipmentSlot[]{ armor.getSlotType() }, itemId, itemStack, modifiers);
                     }

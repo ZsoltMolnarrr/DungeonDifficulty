@@ -7,30 +7,62 @@ import net.powerscale.config.ConfigManager;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PatternMatching {
-    public static List<Config.AttributeModifier> getModifiersForArmor(Identifier item, Identifier dimension) {
-        return getModifiersForItem(ModifierSet.ARMOR, item, dimension);
+    public record LocationData(String dimensionId) {
+        public boolean matches(Config.Location.Filters filters) {
+            if (filters == null) {
+                return true;
+            }
+            var result =  PatternMatching.matches(dimensionId, filters.dimension_regex);
+            System.out.println("PatternMatching - dimension:" + dimensionId + " matches: " + filters.dimension_regex + " - " + result);
+            return result;
+        }
     }
 
-    public static List<Config.AttributeModifier> getModifiersForWeapon(Identifier item, Identifier dimension) {
-        return getModifiersForItem(ModifierSet.WEAPONS, item, dimension);
+    public record ItemData(
+            ItemKind kind,
+            String lootTableId,
+            String itemId,
+            String rarity) {
+        public boolean matches(Config.ItemModifier.Filters filters) {
+            if (filters == null) {
+                return true;
+            }
+            var result = PatternMatching.matches(itemId, filters.item_id_regex)
+                    && PatternMatching.matches(lootTableId, filters.loot_table_regex)
+                    && PatternMatching.matches(rarity, filters.rarity_regex);
+            System.out.println("PatternMatching - item:" + itemId + " matches all" + " - " + result);
+            return result;
+        }
     }
 
-    enum ModifierSet {
+    public enum ItemKind {
         ARMOR, WEAPONS
     }
 
-    public static List<Config.AttributeModifier> getModifiersForItem(ModifierSet modifierSet, Identifier itemId, Identifier dimensionId) {
+    public static List<Config.AttributeModifier> getModifiersForArmor(Identifier dimensionId, Identifier lootTableId, Identifier itemId, String rarity) {
+        return getModifiersForItem(
+                new LocationData(dimensionId.toString()),
+                new ItemData(ItemKind.ARMOR, lootTableId.toString(), itemId.toString(), rarity));
+    }
+
+    public static List<Config.AttributeModifier> getModifiersForWeapon(Identifier dimensionId, Identifier lootTableId, Identifier itemId, String rarity) {
+        return getModifiersForItem(
+                new LocationData(dimensionId.toString()),
+                new ItemData(ItemKind.WEAPONS, lootTableId.toString(), itemId.toString(), rarity));
+    }
+
+
+    public static List<Config.AttributeModifier> getModifiersForItem(LocationData locationData, ItemData itemData) {
         var attributeModifiers = new ArrayList<Config.AttributeModifier>();
-        var locations = getLocationConfigsMatching(dimensionId);
+        var locations = getLocationsMatching(locationData);
         for (var location: locations) {
             if (location.rewards != null) {
                 Config.ItemModifier[] itemModifiers = null;
-                switch (modifierSet) {
+                switch (itemData.kind) {
                     case ARMOR -> {
                         itemModifiers = location.rewards.armor;
                     }
@@ -42,12 +74,7 @@ public class PatternMatching {
                     continue;
                 }
                 for(var entry: itemModifiers) {
-                    if (entry.filters != null) {
-                        if (matches(itemId.toString(), entry.filters.item_id_regex)) {
-                            System.out.println("PM: " + itemId + " matches: " + entry.filters.item_id_regex);
-                            attributeModifiers.addAll(Arrays.asList(entry.modifiers));
-                        }
-                    } else {
+                    if (itemData.matches(entry.filters)) {
                         attributeModifiers.addAll(Arrays.asList(entry.modifiers));
                     }
                 }
@@ -57,29 +84,17 @@ public class PatternMatching {
         return attributeModifiers;
     }
 
-    public static List<Config.Location> getLocationConfigsMatching(Identifier dimension) {
+    public static List<Config.Location> getLocationsMatching(LocationData locationData) {
         var dimensionConfigs = new ArrayList<Config.Location>();
         for (var entry : ConfigManager.currentConfig.locations) {
-            var dimensionRegex = getDimensionRegex(entry);
-            if (matches(dimension.toString(), dimensionRegex)) {
-                System.out.println("PM: " + dimension + " matches dimension_regex: " + dimensionRegex);
+            if (locationData.matches(entry.filters)) {
                 dimensionConfigs.add(entry);
-            } else {
-                System.out.println("PM: " + dimension + " does not match: dimension_regex: " + dimensionRegex);
             }
         }
         return dimensionConfigs;
     }
 
-    private static String getDimensionRegex(Config.Location location) {
-        if (location.filters != null) {
-            return location.filters.dimension_regex;
-        }
-        return null;
-    }
-
     private static boolean matches(String subject, String nullableRegex) {
-//        return nullableRegex == null || nullableRegex.isEmpty() || subject.matches(nullableRegex);
         if (nullableRegex == null || nullableRegex.isEmpty()) {
             return true;
         }
