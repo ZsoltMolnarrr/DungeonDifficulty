@@ -13,12 +13,17 @@ public class EntityScaling {
     public static void scale(Entity entity, World world) {
         if (entity instanceof LivingEntity) {
             var livingEntity = (LivingEntity)entity;
-            var entityId = Registry.ENTITY_TYPE.getId(entity.getType()).toString();
+            var dimensionId = world.getRegistryKey().getValue();
+            var entityId = Registry.ENTITY_TYPE.getId(entity.getType());
             var attributeModifiers = PatternMatching.getModifiersForEntity(
-                    new PatternMatching.LocationData(world.getRegistryKey().getValue().toString()),
-                    new PatternMatching.EntityData(entityId)
+                    new PatternMatching.LocationData(dimensionId.toString()),
+                    new PatternMatching.EntityData(entityId.toString())
             );
             apply(attributeModifiers, livingEntity);
+
+            for (var itemStack: livingEntity.getItemsEquipped()) {
+                ItemScaling.scale(itemStack, dimensionId, entityId);
+            }
         }
     }
 

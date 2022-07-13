@@ -23,7 +23,7 @@ public class Default {
                 }),
         };
         overworld.entities = new Config.EntityModifier[] {
-                createEntityModifier("zombie|creeper|skeleton", new Config.AttributeModifier[]{
+                createEntityModifier("zombi|creeper|skeleton", new Config.AttributeModifier[]{
                         createHealthMultiplier(2F),
                         createArmorBonus(2F),
                         createMaxHealthBonus(10F),
