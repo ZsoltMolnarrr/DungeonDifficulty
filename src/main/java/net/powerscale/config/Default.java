@@ -22,6 +22,15 @@ public class Default {
                         createArmorMultiplier(1.5F)
                 }),
         };
+        overworld.entities = new Config.EntityModifier[] {
+                createEntityModifier("zombie|creeper|skeleton", new Config.AttributeModifier[]{
+                        createHealthMultiplier(2F),
+                        createArmorBonus(2F),
+                        createMaxHealthBonus(10F),
+                        createArmorMultiplier(2F),
+                        createDamageMultiplier(2)
+                })
+        };
 
         // Nether
         var nether = new Config.Location();
@@ -65,9 +74,27 @@ public class Default {
         return new Config.AttributeModifier("generic.armor", value);
     }
 
+    private static Config.AttributeModifier createArmorBonus(float value) {
+        var modifier = new Config.AttributeModifier("generic.armor", value);
+        modifier.operation = Config.Operation.ADD;
+        return modifier;
+    }
+
+    private static Config.AttributeModifier createHealthMultiplier(float value) {
+        return new Config.AttributeModifier("generic.max_health", value);
+    }
+
     private static Config.AttributeModifier createMaxHealthBonus(float value) {
         var modifier = new Config.AttributeModifier("generic.max_health", value);
         modifier.operation = Config.Operation.ADD;
         return modifier;
+    }
+
+    private static Config.EntityModifier createEntityModifier(String idRegex, Config.AttributeModifier[] attributeModifiers) {
+        var entityModifier = new Config.EntityModifier();
+        entityModifier.filters = new Config.EntityModifier.Filters();
+        entityModifier.filters.entity_id_regex = idRegex;
+        entityModifier.modifiers = attributeModifiers;
+        return entityModifier;
     }
 }

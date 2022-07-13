@@ -17,7 +17,7 @@ public class PatternMatching {
                 return true;
             }
             var result =  PatternMatching.matches(dimensionId, filters.dimension_regex);
-            System.out.println("PatternMatching - dimension:" + dimensionId + " matches: " + filters.dimension_regex + " - " + result);
+            // System.out.println("PatternMatching - dimension:" + dimensionId + " matches: " + filters.dimension_regex + " - " + result);
             return result;
         }
     }
@@ -55,7 +55,6 @@ public class PatternMatching {
                 new ItemData(ItemKind.WEAPONS, lootTableId.toString(), itemId.toString(), rarity));
     }
 
-
     public static List<Config.AttributeModifier> getModifiersForItem(LocationData locationData, ItemData itemData) {
         var attributeModifiers = new ArrayList<Config.AttributeModifier>();
         var locations = getLocationsMatching(locationData);
@@ -80,6 +79,30 @@ public class PatternMatching {
                 }
             }
 
+        }
+        return attributeModifiers;
+    }
+
+    public record EntityData(String entityId) {
+        public boolean matches(Config.EntityModifier.Filters filters) {
+            if (filters == null) {
+                return true;
+            }
+            var result =  PatternMatching.matches(entityId, filters.entity_id_regex);
+            System.out.println("PatternMatching - dimension:" + entityId + " matches: " + filters.entity_id_regex + " - " + result);
+            return result;
+        }
+    }
+
+    public static List<Config.AttributeModifier> getModifiersForEntity(LocationData locationData, EntityData entityData) {
+        var attributeModifiers = new ArrayList<Config.AttributeModifier>();
+        var locations = getLocationsMatching(locationData);
+        for (var location : locations) {
+            for(var entityModifier: location.entities) {
+                if (entityData.matches(entityModifier.filters)) {
+                    attributeModifiers.addAll(Arrays.asList(entityModifier.modifiers));
+                }
+            }
         }
         return attributeModifiers;
     }

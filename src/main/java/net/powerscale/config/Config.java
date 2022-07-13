@@ -6,16 +6,26 @@ public class Config {
     public Location[] locations;
 
     public static class Location {
+        public static class Filters {
+            public String dimension_regex = ".*";
+        }
+        public Filters filters;
+
+        public EntityModifier[] entities;
+
         public static class Rewards {
             public ItemModifier[] armor;
             public ItemModifier[] weapons;
         }
         public Rewards rewards;
+    }
 
+    public static class EntityModifier {
         public static class Filters {
-            public String dimension_regex = ".*";
+            public String entity_id_regex = ".*";
         }
         public Filters filters;
+        public AttributeModifier[] modifiers;
     }
 
     public static class ItemModifier {
