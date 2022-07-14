@@ -36,9 +36,8 @@ public class ItemScaling {
 
                 @Override
                 public ItemStack apply(ItemStack itemStack, LootContext lootContext) {
-                    var dimensionId = lootContext.getWorld().getRegistryKey().getValue();
                     var lootTableId = id;
-                    scale(itemStack, dimensionId, lootTableId);
+                    scale(itemStack, lootContext.getWorld(), lootTableId.toString());
                     return itemStack;
                 }
             };
@@ -46,25 +45,30 @@ public class ItemScaling {
         });
     }
 
-    public static void scale(ItemStack itemStack, Identifier dimensionId, Identifier lootTableId) {
-        var itemId = Registry.ITEM.getId(itemStack.getItem());
+    public static void scale(ItemStack itemStack, World world, String lootTableId) {
+        var itemId = Registry.ITEM.getId(itemStack.getItem()).toString();
         var rarity = itemStack.getRarity().toString();
+        var dimensionId = world.getRegistryKey().getValue().toString(); // Just for logging
         if (itemStack.getItem() instanceof ToolItem || itemStack.getItem() instanceof RangedWeaponItem) {
+            var locationData = PatternMatching.LocationData.create(world);
+            var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.WEAPONS, lootTableId, itemId, rarity);
             System.out.println("Item scaling start." + " dimension: " + dimensionId + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
-            var modifiers = PatternMatching.getModifiersForWeapon(dimensionId, lootTableId, itemId, rarity);
+            var modifiers = PatternMatching.getModifiersForItem(locationData, itemData);
             System.out.println("Pattern matching found " + modifiers.size() + " attribute modifiers");
             applyModifiersForItemStack(new EquipmentSlot[]{ EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND }, itemId, itemStack, modifiers);
         }
         if (itemStack.getItem() instanceof ArmorItem) {
-            System.out.println("Item scaling start." + " dimension: " + dimensionId + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
             var armor = (ArmorItem)itemStack.getItem();
-            var modifiers = PatternMatching.getModifiersForArmor(dimensionId, lootTableId, itemId, rarity);
+            var locationData = PatternMatching.LocationData.create(world);
+            var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.ARMOR, lootTableId, itemId, rarity);
+            System.out.println("Item scaling start." + " dimension: " + dimensionId + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
+            var modifiers = PatternMatching.getModifiersForItem(locationData, itemData);
             System.out.println("Pattern matching found " + modifiers.size() + " attribute modifiers");
             applyModifiersForItemStack(new EquipmentSlot[]{ armor.getSlotType() }, itemId, itemStack, modifiers);
         }
     }
 
-    private static void applyModifiersForItemStack(EquipmentSlot[] slots, Identifier itemId, ItemStack itemStack, List<Config.AttributeModifier> modifiers) {
+    private static void applyModifiersForItemStack(EquipmentSlot[] slots, String itemId, ItemStack itemStack, List<Config.AttributeModifier> modifiers) {
         for (Config.AttributeModifier modifier: modifiers) {
             try {
                 if (modifier.attribute == null) {

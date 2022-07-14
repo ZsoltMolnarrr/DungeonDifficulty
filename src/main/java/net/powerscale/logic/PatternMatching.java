@@ -1,6 +1,9 @@
 package net.powerscale.logic;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.Monster;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
 import net.powerscale.config.Config;
 import net.powerscale.config.ConfigManager;
 
@@ -12,11 +15,15 @@ import java.util.regex.Pattern;
 
 public class PatternMatching {
     public record LocationData(String dimensionId) {
+        public static LocationData create(World world) {
+            var dimensionId = world.getRegistryKey().getValue().toString();
+            return new LocationData(dimensionId);
+        }
         public boolean matches(Config.Location.Filters filters) {
             if (filters == null) {
                 return true;
             }
-            var result =  PatternMatching.matches(dimensionId, filters.dimension_regex);
+            var result = PatternMatching.matches(dimensionId, filters.dimension_regex);
             // System.out.println("PatternMatching - dimension:" + dimensionId + " matches: " + filters.dimension_regex + " - " + result);
             return result;
         }
@@ -27,6 +34,7 @@ public class PatternMatching {
             String lootTableId,
             String itemId,
             String rarity) {
+
         public boolean matches(Config.ItemModifier.Filters filters) {
             if (filters == null) {
                 return true;
@@ -41,18 +49,6 @@ public class PatternMatching {
 
     public enum ItemKind {
         ARMOR, WEAPONS
-    }
-
-    public static List<Config.AttributeModifier> getModifiersForArmor(Identifier dimensionId, Identifier lootTableId, Identifier itemId, String rarity) {
-        return getModifiersForItem(
-                new LocationData(dimensionId.toString()),
-                new ItemData(ItemKind.ARMOR, lootTableId.toString(), itemId.toString(), rarity));
-    }
-
-    public static List<Config.AttributeModifier> getModifiersForWeapon(Identifier dimensionId, Identifier lootTableId, Identifier itemId, String rarity) {
-        return getModifiersForItem(
-                new LocationData(dimensionId.toString()),
-                new ItemData(ItemKind.WEAPONS, lootTableId.toString(), itemId.toString(), rarity));
     }
 
     public static List<Config.AttributeModifier> getModifiersForItem(LocationData locationData, ItemData itemData) {
@@ -84,6 +80,11 @@ public class PatternMatching {
     }
 
     public record EntityData(String entityId, boolean isHostile) {
+        public static EntityData create(LivingEntity entity) {
+            var entityId = Registry.ENTITY_TYPE.getId(entity.getType()).toString();
+            var isHostile = entity instanceof Monster;
+            return new EntityData(entityId, isHostile);
+        }
         public boolean matches(Config.EntityModifier.Filters filters) {
             if (filters == null) {
                 return true;
