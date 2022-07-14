@@ -70,7 +70,7 @@ public class PatternMatching {
                 }
                 for(var entry: itemModifiers) {
                     if (itemData.matches(entry.item_matches)) {
-                        attributeModifiers.addAll(Arrays.asList(entry.modifiers));
+                        attributeModifiers.addAll(Arrays.asList(entry.attributes));
                     }
                 }
             }
@@ -116,11 +116,24 @@ public class PatternMatching {
         for (var location : locations) {
             for(var entityModifier: location.entities) {
                 if (entityData.matches(entityModifier.entity_matches)) {
-                    attributeModifiers.addAll(Arrays.asList(entityModifier.modifiers));
+                    attributeModifiers.addAll(Arrays.asList(entityModifier.attributes));
                 }
             }
         }
         return attributeModifiers;
+    }
+
+    public static List<Config.SpawnerModifier> getModifiersForSpawner(LocationData locationData, EntityData entityData) {
+        var spawnerModifiers = new ArrayList<Config.SpawnerModifier>();
+        var locations = getLocationsMatching(locationData);
+        for (var location : locations) {
+            for(var entityModifier: location.entities) {
+                if (entityModifier.spawners != null && entityData.matches(entityModifier.entity_matches)) {
+                    spawnerModifiers.add(entityModifier.spawners);
+                }
+            }
+        }
+        return spawnerModifiers;
     }
 
     public static List<Config.Location> getLocationsMatching(LocationData locationData) {

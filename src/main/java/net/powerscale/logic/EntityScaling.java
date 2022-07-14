@@ -13,7 +13,6 @@ public class EntityScaling {
     public static void scale(Entity entity, World world) {
         if (entity instanceof LivingEntity) {
             var livingEntity = (LivingEntity)entity;
-            var dimensionId = world.getRegistryKey().getValue();
             var locationData = PatternMatching.LocationData.create(world);
             var entityData = PatternMatching.EntityData.create(livingEntity);
             var attributeModifiers = PatternMatching.getModifiersForEntity(locationData, entityData);

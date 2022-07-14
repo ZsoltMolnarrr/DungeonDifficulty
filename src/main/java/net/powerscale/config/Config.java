@@ -3,6 +3,9 @@ package net.powerscale.config;
 import java.util.Random;
 
 public class Config {
+
+    // STRUCTURE
+
     public Location[] locations;
 
     public static class Location {
@@ -20,6 +23,10 @@ public class Config {
         public Rewards rewards;
     }
 
+    // TYPES
+
+    public enum Operation { ADD, MULTIPLY }
+
     public static class EntityModifier {
         public static class Filters {
             public enum Attitude {
@@ -29,7 +36,8 @@ public class Config {
             public String entity_id_regex = ".*";
         }
         public Filters entity_matches;
-        public AttributeModifier[] modifiers;
+        public AttributeModifier[] attributes;
+        public SpawnerModifier spawners = null;
     }
 
     public static class ItemModifier {
@@ -40,7 +48,7 @@ public class Config {
         }
         public Filters item_matches;
 
-        public AttributeModifier[] modifiers;
+        public AttributeModifier[] attributes;
     }
 
     public static class AttributeModifier {
@@ -64,8 +72,12 @@ public class Config {
         }
     }
 
-    public enum Operation {
-        ADD,
-        MULTIPLY
+    public static class SpawnerModifier {
+        public float spawn_range_multiplier = 1;
+        public float spawn_count_multiplier = 1;
+        public float max_nearby_entities_multiplier = 1;
+        public float min_spawn_delay_multiplier = 1;
+        public float max_spawn_delay_multiplier = 1;
+        public float required_player_range_multiplier = 1;
     }
 }

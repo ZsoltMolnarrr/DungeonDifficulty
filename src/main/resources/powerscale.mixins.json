@@ -4,6 +4,7 @@
   "package": "net.powerscale.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "MobSpawnerLogicMixin",
     "ServerWorldMixin"
   ],
   "client": [

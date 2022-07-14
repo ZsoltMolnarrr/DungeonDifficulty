@@ -47,6 +47,15 @@ public class Default {
                 }),
         };
 
+        var blazeModifier = createEntityModifier("blaze", new Config.AttributeModifier[]{});
+        blazeModifier.spawners = new Config.SpawnerModifier();
+        blazeModifier.spawners.min_spawn_delay_multiplier = 0.5F;
+        blazeModifier.spawners.max_spawn_delay_multiplier = 0.5F;
+        blazeModifier.spawners.spawn_count_multiplier = 2F;
+        nether.entities =  new Config.EntityModifier[] {
+                blazeModifier
+        };
+
         var config = new Config();
         config.locations = new Config.Location[] { overworld, nether };
 
@@ -56,7 +65,7 @@ public class Default {
     private static Config.ItemModifier createItemModifier(Config.AttributeModifier[] attributeModifiers) {
         var itemModifier = new Config.ItemModifier();
         itemModifier.item_matches = new Config.ItemModifier.Filters();
-        itemModifier.modifiers = attributeModifiers;
+        itemModifier.attributes = attributeModifiers;
         return itemModifier;
     }
 
@@ -92,7 +101,7 @@ public class Default {
         var entityModifier = new Config.EntityModifier();
         entityModifier.entity_matches = new Config.EntityModifier.Filters();
         entityModifier.entity_matches.entity_id_regex = idRegex;
-        entityModifier.modifiers = attributeModifiers;
+        entityModifier.attributes = attributeModifiers;
         return entityModifier;
     }
 }

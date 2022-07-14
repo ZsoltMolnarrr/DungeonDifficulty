@@ -52,18 +52,18 @@ public class ItemScaling {
         if (itemStack.getItem() instanceof ToolItem || itemStack.getItem() instanceof RangedWeaponItem) {
             var locationData = PatternMatching.LocationData.create(world);
             var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.WEAPONS, lootTableId, itemId, rarity);
-            System.out.println("Item scaling start." + " dimension: " + dimensionId + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
+            // System.out.println("Item scaling start." + " dimension: " + dimensionId + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
             var modifiers = PatternMatching.getModifiersForItem(locationData, itemData);
-            System.out.println("Pattern matching found " + modifiers.size() + " attribute modifiers");
+            // System.out.println("Pattern matching found " + modifiers.size() + " attribute modifiers");
             applyModifiersForItemStack(new EquipmentSlot[]{ EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND }, itemId, itemStack, modifiers);
         }
         if (itemStack.getItem() instanceof ArmorItem) {
             var armor = (ArmorItem)itemStack.getItem();
             var locationData = PatternMatching.LocationData.create(world);
             var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.ARMOR, lootTableId, itemId, rarity);
-            System.out.println("Item scaling start." + " dimension: " + dimensionId + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
+            // System.out.println("Item scaling start." + " dimension: " + dimensionId + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
             var modifiers = PatternMatching.getModifiersForItem(locationData, itemData);
-            System.out.println("Pattern matching found " + modifiers.size() + " attribute modifiers");
+            // System.out.println("Pattern matching found " + modifiers.size() + " attribute modifiers");
             applyModifiersForItemStack(new EquipmentSlot[]{ armor.getSlotType() }, itemId, itemStack, modifiers);
         }
     }
@@ -75,7 +75,7 @@ public class ItemScaling {
                     System.out.println("Null attribute to apply on " + itemId);
                     continue;
                 }
-                System.out.println("Applying A " + modifier.attribute + " to " + itemId);
+                // System.out.println("Applying A " + modifier.attribute + " to " + itemId);
                 // The attribute we want to modify
                 var attribute = Registry.ATTRIBUTE.get(new Identifier(modifier.attribute));
 
@@ -112,7 +112,7 @@ public class ItemScaling {
                                 if(attributeModifier.getOperation() != EntityAttributeModifier.Operation.ADDITION) {
                                     continue;
                                 }
-                                System.out.println("Applying B " + modifier.attribute + " to " + itemId);
+                                // System.out.println("Applying B " + modifier.attribute + " to " + itemId);
                                 itemStack.addAttributeModifier(
                                         attribute,
                                         new EntityAttributeModifier(
