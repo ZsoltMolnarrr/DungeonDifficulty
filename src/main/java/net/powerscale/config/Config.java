@@ -9,7 +9,7 @@ public class Config {
         public static class Filters {
             public String dimension_regex = ".*";
         }
-        public Filters filters;
+        public Filters world_matches;
 
         public EntityModifier[] entities;
 
@@ -24,7 +24,7 @@ public class Config {
         public static class Filters {
             public String entity_id_regex = ".*";
         }
-        public Filters filters;
+        public Filters entity_matches;
         public AttributeModifier[] modifiers;
     }
 
@@ -34,7 +34,7 @@ public class Config {
             public String loot_table_regex = ".*";
             public String rarity_regex = ".*";
         }
-        public Filters filters;
+        public Filters item_matches;
 
         public AttributeModifier[] modifiers;
     }

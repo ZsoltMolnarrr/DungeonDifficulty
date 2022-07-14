@@ -49,13 +49,14 @@ public class ItemScaling {
     public static void scale(ItemStack itemStack, Identifier dimensionId, Identifier lootTableId) {
         var itemId = Registry.ITEM.getId(itemStack.getItem());
         var rarity = itemStack.getRarity().toString();
-        System.out.println("Item scaling start." + " dimension: " + dimensionId + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
         if (itemStack.getItem() instanceof ToolItem || itemStack.getItem() instanceof RangedWeaponItem) {
+            System.out.println("Item scaling start." + " dimension: " + dimensionId + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
             var modifiers = PatternMatching.getModifiersForWeapon(dimensionId, lootTableId, itemId, rarity);
             System.out.println("Pattern matching found " + modifiers.size() + " attribute modifiers");
             applyModifiersForItemStack(new EquipmentSlot[]{ EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND }, itemId, itemStack, modifiers);
         }
         if (itemStack.getItem() instanceof ArmorItem) {
+            System.out.println("Item scaling start." + " dimension: " + dimensionId + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
             var armor = (ArmorItem)itemStack.getItem();
             var modifiers = PatternMatching.getModifiersForArmor(dimensionId, lootTableId, itemId, rarity);
             System.out.println("Pattern matching found " + modifiers.size() + " attribute modifiers");

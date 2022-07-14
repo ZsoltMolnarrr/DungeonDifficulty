@@ -34,7 +34,7 @@ public class PatternMatching {
             var result = PatternMatching.matches(itemId, filters.item_id_regex)
                     && PatternMatching.matches(lootTableId, filters.loot_table_regex)
                     && PatternMatching.matches(rarity, filters.rarity_regex);
-            System.out.println("PatternMatching - item:" + itemId + " matches all" + " - " + result);
+            // System.out.println("PatternMatching - item:" + itemId + " matches all" + " - " + result);
             return result;
         }
     }
@@ -73,7 +73,7 @@ public class PatternMatching {
                     continue;
                 }
                 for(var entry: itemModifiers) {
-                    if (itemData.matches(entry.filters)) {
+                    if (itemData.matches(entry.item_matches)) {
                         attributeModifiers.addAll(Arrays.asList(entry.modifiers));
                     }
                 }
@@ -89,7 +89,7 @@ public class PatternMatching {
                 return true;
             }
             var result =  PatternMatching.matches(entityId, filters.entity_id_regex);
-            System.out.println("PatternMatching - dimension:" + entityId + " matches: " + filters.entity_id_regex + " - " + result);
+            // System.out.println("PatternMatching - dimension:" + entityId + " matches: " + filters.entity_id_regex + " - " + result);
             return result;
         }
     }
@@ -99,7 +99,7 @@ public class PatternMatching {
         var locations = getLocationsMatching(locationData);
         for (var location : locations) {
             for(var entityModifier: location.entities) {
-                if (entityData.matches(entityModifier.filters)) {
+                if (entityData.matches(entityModifier.entity_matches)) {
                     attributeModifiers.addAll(Arrays.asList(entityModifier.modifiers));
                 }
             }
@@ -110,7 +110,7 @@ public class PatternMatching {
     public static List<Config.Location> getLocationsMatching(LocationData locationData) {
         var dimensionConfigs = new ArrayList<Config.Location>();
         for (var entry : ConfigManager.currentConfig.locations) {
-            if (locationData.matches(entry.filters)) {
+            if (locationData.matches(entry.world_matches)) {
                 dimensionConfigs.add(entry);
             }
         }

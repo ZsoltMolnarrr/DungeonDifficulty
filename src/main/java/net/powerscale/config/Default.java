@@ -1,15 +1,13 @@
 package net.powerscale.config;
 
-import java.util.HashMap;
-
 public class Default {
     public static Config config = createDefaultConfig();
 
     private static Config createDefaultConfig() {
         // Surface
         var overworld = new Config.Location();
-        overworld.filters = new Config.Location.Filters();
-        overworld.filters.dimension_regex = "minecraft:overworld";
+        overworld.world_matches = new Config.Location.Filters();
+        overworld.world_matches.dimension_regex = "minecraft:overworld";
         overworld.rewards = new Config.Location.Rewards();
         overworld.rewards.weapons = new Config.ItemModifier[]{
                 createItemModifier(new Config.AttributeModifier[]{
@@ -34,8 +32,8 @@ public class Default {
 
         // Nether
         var nether = new Config.Location();
-        nether.filters = new Config.Location.Filters();
-        nether.filters.dimension_regex = "minecraft:the_nether";
+        nether.world_matches = new Config.Location.Filters();
+        nether.world_matches.dimension_regex = "minecraft:the_nether";
         nether.rewards = new Config.Location.Rewards();
         nether.rewards.weapons = new Config.ItemModifier[]{
                 createItemModifier(new Config.AttributeModifier[]{
@@ -57,7 +55,7 @@ public class Default {
 
     private static Config.ItemModifier createItemModifier(Config.AttributeModifier[] attributeModifiers) {
         var itemModifier = new Config.ItemModifier();
-        itemModifier.filters = new Config.ItemModifier.Filters();
+        itemModifier.item_matches = new Config.ItemModifier.Filters();
         itemModifier.modifiers = attributeModifiers;
         return itemModifier;
     }
@@ -92,8 +90,8 @@ public class Default {
 
     private static Config.EntityModifier createEntityModifier(String idRegex, Config.AttributeModifier[] attributeModifiers) {
         var entityModifier = new Config.EntityModifier();
-        entityModifier.filters = new Config.EntityModifier.Filters();
-        entityModifier.filters.entity_id_regex = idRegex;
+        entityModifier.entity_matches = new Config.EntityModifier.Filters();
+        entityModifier.entity_matches.entity_id_regex = idRegex;
         entityModifier.modifiers = attributeModifiers;
         return entityModifier;
     }
