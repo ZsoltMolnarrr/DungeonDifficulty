@@ -2,11 +2,14 @@ package net.powerscale.logic;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.Monster;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.BiomeKeys;
 import net.powerscale.config.Config;
 import net.powerscale.config.ConfigManager;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -14,12 +17,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PatternMatching {
-    public record LocationData(String dimensionId) {
-        public static LocationData create(World world) {
+    public record LocationData(String dimensionId, @Nullable BlockPos position, @Nullable String biome) {
+        public static LocationData create(World world, BlockPos position) {
             var dimensionId = world.getRegistryKey().getValue().toString();
-            return new LocationData(dimensionId);
+            String biome = null;
+            if (position != null) {
+                biome = world.getBiome(position).getKey().orElse(BiomeKeys.PLAINS).getValue().toString();
+            }
+            // world.getBiome()
+            return new LocationData(dimensionId, position, biome);
         }
-        public boolean matches(Config.Location.Filters filters) {
+        public boolean matches(Config.Dimension.Filters filters) {
             if (filters == null) {
                 return true;
             }
@@ -136,9 +144,9 @@ public class PatternMatching {
         return spawnerModifiers;
     }
 
-    public static List<Config.Location> getLocationsMatching(LocationData locationData) {
-        var dimensionConfigs = new ArrayList<Config.Location>();
-        for (var entry : ConfigManager.currentConfig.locations) {
+    public static List<Config.Dimension> getLocationsMatching(LocationData locationData) {
+        var dimensionConfigs = new ArrayList<Config.Dimension>();
+        for (var entry : ConfigManager.currentConfig.dimensions) {
             if (locationData.matches(entry.world_matches)) {
                 dimensionConfigs.add(entry);
             }

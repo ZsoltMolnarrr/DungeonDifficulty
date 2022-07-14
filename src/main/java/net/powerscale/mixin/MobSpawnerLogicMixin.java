@@ -20,7 +20,6 @@ import java.util.List;
 
 @Mixin(MobSpawnerLogic.class)
 public class MobSpawnerLogicMixin {
-
     @Shadow private int spawnRange;
     @Shadow private int spawnCount;
     @Shadow private int maxNearbyEntities;
@@ -48,7 +47,7 @@ public class MobSpawnerLogicMixin {
                 var testEntity = entityType.create(world);
                 var isMonster = testEntity instanceof Monster;
                 var entityData = new PatternMatching.EntityData(entityId, isMonster);
-                var locationData = PatternMatching.LocationData.create(world);
+                var locationData = PatternMatching.LocationData.create(world, pos);
                 var modifiers = PatternMatching.getModifiersForSpawner(locationData, entityData);
 //                if (modifiers.size() > 0) {
 //                    System.out.println("Scaling spawner of: " + entityId + " at: " + pos);

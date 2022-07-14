@@ -3,27 +3,28 @@ package net.powerscale.config;
 import java.util.Random;
 
 public class Config {
+    public Dimension[] dimensions;
 
-    // STRUCTURE
-
-    public Location[] locations;
-
-    public static class Location {
+    public static class Dimension {
         public static class Filters {
             public String dimension_regex = ".*";
         }
         public Filters world_matches;
 
         public EntityModifier[] entities;
-
-        public static class Rewards {
-            public ItemModifier[] armor;
-            public ItemModifier[] weapons;
-        }
         public Rewards rewards;
+        public Zone[] zones;
     }
 
-    // TYPES
+    public static class Zone {
+        public static class Filters {
+            public String biome_regex = ".*";
+        }
+        public Filters zone_matches;
+
+        public EntityModifier[] entities;
+        public Rewards rewards;
+    }
 
     public enum Operation { ADD, MULTIPLY }
 
@@ -38,6 +39,11 @@ public class Config {
         public Filters entity_matches;
         public AttributeModifier[] attributes;
         public SpawnerModifier spawners = null;
+    }
+
+    public static class Rewards {
+        public ItemModifier[] armor;
+        public ItemModifier[] weapons;
     }
 
     public static class ItemModifier {

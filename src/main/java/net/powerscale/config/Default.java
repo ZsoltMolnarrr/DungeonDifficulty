@@ -5,10 +5,10 @@ public class Default {
 
     private static Config createDefaultConfig() {
         // Surface
-        var overworld = new Config.Location();
-        overworld.world_matches = new Config.Location.Filters();
+        var overworld = new Config.Dimension();
+        overworld.world_matches = new Config.Dimension.Filters();
         overworld.world_matches.dimension_regex = "minecraft:overworld";
-        overworld.rewards = new Config.Location.Rewards();
+        overworld.rewards = new Config.Rewards();
         overworld.rewards.weapons = new Config.ItemModifier[]{
                 createItemModifier(new Config.AttributeModifier[]{
                         createDamageMultiplier(1.5F),
@@ -31,10 +31,10 @@ public class Default {
         };
 
         // Nether
-        var nether = new Config.Location();
-        nether.world_matches = new Config.Location.Filters();
+        var nether = new Config.Dimension();
+        nether.world_matches = new Config.Dimension.Filters();
         nether.world_matches.dimension_regex = "minecraft:the_nether";
-        nether.rewards = new Config.Location.Rewards();
+        nether.rewards = new Config.Rewards();
         nether.rewards.weapons = new Config.ItemModifier[]{
                 createItemModifier(new Config.AttributeModifier[]{
                         createDamageMultiplier(2),
@@ -57,7 +57,7 @@ public class Default {
         };
 
         var config = new Config();
-        config.locations = new Config.Location[] { overworld, nether };
+        config.dimensions = new Config.Dimension[] { overworld, nether };
 
         return config;
     }

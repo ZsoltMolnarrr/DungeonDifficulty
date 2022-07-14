@@ -13,14 +13,14 @@ public class EntityScaling {
     public static void scale(Entity entity, World world) {
         if (entity instanceof LivingEntity) {
             var livingEntity = (LivingEntity)entity;
-            var locationData = PatternMatching.LocationData.create(world);
+            var locationData = PatternMatching.LocationData.create(world, livingEntity.getBlockPos());
             var entityData = PatternMatching.EntityData.create(livingEntity);
             var attributeModifiers = PatternMatching.getModifiersForEntity(locationData, entityData);
 
             EntityScaling.apply(attributeModifiers, livingEntity);
 
             for (var itemStack: livingEntity.getItemsEquipped()) {
-                ItemScaling.scale(itemStack, world, entityData.entityId());
+                ItemScaling.scale(itemStack, world, livingEntity.getBlockPos(), entityData.entityId());
             }
         }
     }
