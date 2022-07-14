@@ -22,6 +22,10 @@ public class Config {
 
     public static class EntityModifier {
         public static class Filters {
+            public enum Attitude {
+                FRIENDLY, HOSTILE, ANY
+            }
+            public Attitude attitude = Attitude.ANY;
             public String entity_id_regex = ".*";
         }
         public Filters entity_matches;

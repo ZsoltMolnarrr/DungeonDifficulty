@@ -2,6 +2,7 @@ package net.powerscale.logic;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.Monster;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
@@ -15,9 +16,10 @@ public class EntityScaling {
             var livingEntity = (LivingEntity)entity;
             var dimensionId = world.getRegistryKey().getValue();
             var entityId = Registry.ENTITY_TYPE.getId(entity.getType());
+            var isHostile = entity instanceof Monster;
             var attributeModifiers = PatternMatching.getModifiersForEntity(
                     new PatternMatching.LocationData(dimensionId.toString()),
-                    new PatternMatching.EntityData(entityId.toString())
+                    new PatternMatching.EntityData(entityId.toString(), isHostile)
             );
             apply(attributeModifiers, livingEntity);
 

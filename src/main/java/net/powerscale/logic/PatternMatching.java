@@ -83,12 +83,27 @@ public class PatternMatching {
         return attributeModifiers;
     }
 
-    public record EntityData(String entityId) {
+    public record EntityData(String entityId, boolean isHostile) {
         public boolean matches(Config.EntityModifier.Filters filters) {
             if (filters == null) {
                 return true;
             }
-            var result =  PatternMatching.matches(entityId, filters.entity_id_regex);
+            var matchesAttitude = true;
+            if (filters.attitude != null) {
+                switch (filters.attitude) {
+                    case FRIENDLY -> {
+                        matchesAttitude = !isHostile;
+                    }
+                    case HOSTILE -> {
+                        matchesAttitude = isHostile;
+                    }
+                    case ANY -> {
+                        matchesAttitude = true;
+                    }
+                }
+            }
+            var result = matchesAttitude && PatternMatching.matches(entityId, filters.entity_id_regex);
+
             // System.out.println("PatternMatching - dimension:" + entityId + " matches: " + filters.entity_id_regex + " - " + result);
             return result;
         }
