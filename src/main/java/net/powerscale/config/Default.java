@@ -75,21 +75,43 @@ public class Default {
                         createHealthMultiplier(1.4F, 0.1F)
                     },
                     null),
-            createEntityModifier("blaze", new Config.AttributeModifier[]{}, blazeSpawners)
+            createEntityModifier("blaze",
+                    new Config.AttributeModifier[]{
+                        createHealthMultiplier(1.5F, 0),
+                        createArmorBonus(2)
+                    },
+                    blazeSpawners)
         };
-//
-//        var blazeModifier = createEntityModifier("blaze", new Config.AttributeModifier[]{});
-//        blazeModifier.spawners = new Config.SpawnerModifier();
-//        blazeModifier.spawners.min_spawn_delay_multiplier = 0.5F;
-//        blazeModifier.spawners.max_spawn_delay_multiplier = 0.5F;
-//        blazeModifier.spawners.spawn_count_multiplier = 2F;
-//        nether.entities =  new Config.EntityModifier[] {
-//                blazeModifier
-//        };
-//
 
         var end = new Config.Dimension();
         end.world_matches.dimension_regex = "minecraft:the_end";
+        end.rewards.weapons = new Config.ItemModifier[]{
+                createItemModifier(new Config.AttributeModifier[]{
+                        createDamageMultiplier(1.75F, 0.25F),
+                        createProjectileMultiplier(1.75F, 0.25F)
+                }),
+        };
+        end.rewards.armor = new Config.ItemModifier[]{
+                createItemModifier(new Config.AttributeModifier[]{
+                        createArmorMultiplier(1.5F),
+                        createHealthBonus(4)
+                }),
+        };
+        end.entities = new Config.EntityModifier[] {
+                createEntityModifier("^((?!dragon).)*$",
+                        new Config.AttributeModifier[]{
+                                createDamageMultiplier(2F, 0),
+                                createArmorBonus(4),
+                                createHealthMultiplier(1.8F, 0.2F)
+                        },
+                        null),
+                createEntityModifier("dragon",
+                        new Config.AttributeModifier[]{
+                                createHealthMultiplier(2F, 0),
+                                createArmorBonus(10)
+                        },
+                        null)
+        };
 
         var config = new Config();
         config.dimensions = new Config.Dimension[] { overworld, nether, end };
