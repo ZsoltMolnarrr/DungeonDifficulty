@@ -34,14 +34,15 @@ public class ConfigManager {
                 } else {
                     LOGGER.info("PowerScale config loaded: " + gson.toJson(config));
                 }
-            } else {
-                // Write
-                var prettyGson = new GsonBuilder().setPrettyPrinting().create();
-                Writer writer = Files.newBufferedWriter(filePath);
-                writer.write(prettyGson.toJson(config));
-                writer.close();
-                LOGGER.info("PowerScale default config written: " + gson.toJson(config));
             }
+
+            // Write (unconditional write -> auto sanitize)
+            var prettyGson = new GsonBuilder().setPrettyPrinting().create();
+            Writer writer = Files.newBufferedWriter(filePath);
+            writer.write(prettyGson.toJson(config));
+            writer.close();
+            LOGGER.info("PowerScale config written: " + gson.toJson(config));
+
         } catch(Exception e) {
             LOGGER.error("Failed loading PowerScale config: " + e.getMessage());
         }
