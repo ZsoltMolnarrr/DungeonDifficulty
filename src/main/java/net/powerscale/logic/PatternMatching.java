@@ -17,6 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PatternMatching {
+
     public record LocationData(String dimensionId, @Nullable BlockPos position, @Nullable String biome) {
         public static LocationData create(World world, BlockPos position) {
             var dimensionId = world.getRegistryKey().getValue().toString();
@@ -33,6 +34,15 @@ public class PatternMatching {
             }
             var result = PatternMatching.matches(dimensionId, filters.dimension_regex);
             // System.out.println("PatternMatching - dimension:" + dimensionId + " matches: " + filters.dimension_regex + " - " + result);
+            return result;
+        }
+
+        public boolean matches(Config.Zone.Filters filters) {
+            if (filters == null) {
+                return true;
+            }
+            var result = PatternMatching.matches(biome, filters.biome_regex);
+            // System.out.println("PatternMatching - biome:" + biome + " matches: " + filters.biome_regex + " - " + result);
             return result;
         }
     }
@@ -144,14 +154,24 @@ public class PatternMatching {
         return spawnerModifiers;
     }
 
-    public static List<Config.Dimension> getLocationsMatching(LocationData locationData) {
-        var dimensionConfigs = new ArrayList<Config.Dimension>();
+    public record Location(Config.EntityModifier[] entities,
+                           Config.Rewards rewards) { }
+
+    public static List<Location> getLocationsMatching(LocationData locationData) {
+        var locations = new ArrayList<Location>();
         for (var entry : ConfigManager.currentConfig.dimensions) {
             if (locationData.matches(entry.world_matches)) {
-                dimensionConfigs.add(entry);
+                locations.add(new Location(entry.entities, entry.rewards));
+                if (entry.zones != null) {
+                    for(var zone: entry.zones) {
+                        if(locationData.matches(zone.zone_matches)) {
+                            locations.add(new Location(zone.entities, zone.rewards));
+                        }
+                    }
+                }
             }
         }
-        return dimensionConfigs;
+        return locations;
     }
 
     private static boolean matches(String subject, String nullableRegex) {

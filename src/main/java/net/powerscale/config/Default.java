@@ -24,11 +24,31 @@ public class Default {
                 createEntityModifier("zombi|creeper|skeleton", new Config.AttributeModifier[]{
                         createHealthMultiplier(2F),
                         createArmorBonus(2F),
-                        createMaxHealthBonus(10F),
-                        createArmorMultiplier(2F),
                         createDamageMultiplier(2)
                 })
         };
+        var desert = new Config.Zone();
+        desert.zone_matches = new Config.Zone.Filters();
+        desert.zone_matches.biome_regex = "desert";
+        desert.rewards = new Config.Rewards();
+        desert.rewards.weapons = new Config.ItemModifier[]{
+                createItemModifier(new Config.AttributeModifier[]{
+                        createDamageMultiplier(1.5F),
+                        createProjectileMultiplier(1.5F)
+                }),
+        };
+        desert.rewards.armor = new Config.ItemModifier[]{
+                createItemModifier(new Config.AttributeModifier[]{
+                        createMaxHealthBonus(2)
+                }),
+        };
+        desert.entities = new Config.EntityModifier[] {
+                createEntityModifier("zombi|creeper|skeleton", new Config.AttributeModifier[]{
+                        createArmorMultiplier(2F),
+                        createMaxHealthBonus(10F)
+                })
+        };
+        overworld.zones = new Config.Zone[] { desert };
 
         // Nether
         var nether = new Config.Dimension();
