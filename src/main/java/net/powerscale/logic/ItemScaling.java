@@ -80,6 +80,7 @@ public class ItemScaling {
                 if (modifier.attribute == null) {
                     continue;
                 }
+                var modifierValue = modifier.randomizedValue();
                 // System.out.println("Applying A " + modifier.attribute + " to " + itemId);
 
                 // The attribute we want to modify
@@ -100,37 +101,39 @@ public class ItemScaling {
                 for(var entry: slotSpecificAttributeCollections.entrySet()) {
                     var slot = entry.getKey();
                     var attributeSpecificCollection = entry.getValue();
-                    if (attributeSpecificCollection.size() == 0) {
-                        // No attribute of this kind, for this slot -> No changes
-                        continue;
-                    }
-                    var currentValue = 0;
-                    for (EntityAttributeModifier attributeModifier : attributeSpecificCollection) {
+                    var valueSummary = 0;
+                    var mergedModifiers = new ArrayList<EntityAttributeModifier>();
+                    for (var attributeModifier : attributeSpecificCollection) {
                         if (attributeModifier.getOperation() != EntityAttributeModifier.Operation.ADDITION) {
                             continue;
                         }
 
-                        currentValue += attributeModifier.getValue();
+                        valueSummary += attributeModifier.getValue();
+                        mergedModifiers.add(attributeModifier);
                         // System.out.println("Found attribute value: " + attributeModifier.getValue() + " sum: " + currentValue);
-                        removeAttributesFromItemStack(attributeModifier, itemStack);
                     }
                     switch (modifier.operation) {
                         case ADD -> {
-                            currentValue += modifier.randomizedValue();
+                            valueSummary += modifierValue;
                         }
                         case MULTIPLY -> {
-                            currentValue *= modifier.randomizedValue();
+                            valueSummary *= modifierValue;
                         }
                     }
-                    itemStack.addAttributeModifier(
-                            attribute,
-                            new EntityAttributeModifier(
-                                    "Scaled attribute modifier",
-                                    currentValue,
-                                    EntityAttributeModifier.Operation.ADDITION
-                            ),
-                            slot
-                    );
+                    if (valueSummary != 0) {
+                        for(var attributeModifier : mergedModifiers) {
+                            removeAttributesFromItemStack(attributeModifier, itemStack);
+                        }
+                        itemStack.addAttributeModifier(
+                                attribute,
+                                new EntityAttributeModifier(
+                                        "Scaled attribute modifier",
+                                        valueSummary,
+                                        EntityAttributeModifier.Operation.ADDITION
+                                ),
+                                slot
+                        );
+                    }
                     // System.out.println("Applying " + modifier.attribute + " to " + itemId + " value: " + currentValue);
                 }
             } catch (Exception e) {

@@ -32,18 +32,23 @@ public class EntityScaling {
                 continue;
             }
             var attribute = Registry.ATTRIBUTE.get(new Identifier(modifier.attribute));
+            if (!entity.getAttributes().hasAttribute(attribute)) {
+                continue;
+            }
+
+            var modifierValue = modifier.randomizedValue();
 
             switch (modifier.operation) {
                 case ADD -> {
                     var entityAttribute = entity.getAttributeInstance(attribute);
                     if (entityAttribute != null) {
-                        entityAttribute.setBaseValue(entityAttribute.getBaseValue() + modifier.value);
+                        entityAttribute.setBaseValue(entityAttribute.getBaseValue() + modifierValue);
                     }
                 }
                 case MULTIPLY -> {
                     var defaultValue = entity.getAttributeValue(attribute);
                     if (defaultValue > 0) {
-                        entity.getAttributeInstance(attribute).setBaseValue(defaultValue * modifier.value);
+                        entity.getAttributeInstance(attribute).setBaseValue(defaultValue * modifierValue);
                     }
                 }
             }

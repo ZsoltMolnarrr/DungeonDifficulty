@@ -9,21 +9,21 @@ public class Config {
         public static class Filters {
             public String dimension_regex = ".*";
         }
-        public Filters world_matches;
+        public Filters world_matches = new Filters();
 
-        public EntityModifier[] entities;
-        public Rewards rewards;
-        public Zone[] zones;
+        public EntityModifier[] entities = new EntityModifier[]{};
+        public Rewards rewards = new Rewards();
+        public Zone[] zones = new Zone[]{};
     }
 
     public static class Zone {
         public static class Filters {
             public String biome_regex = ".*";
         }
-        public Filters zone_matches;
+        public Filters zone_matches = new Filters();
 
-        public EntityModifier[] entities;
-        public Rewards rewards;
+        public EntityModifier[] entities = new EntityModifier[]{};
+        public Rewards rewards = new Rewards();
     }
 
     public enum Operation { ADD, MULTIPLY }
@@ -36,14 +36,14 @@ public class Config {
             public Attitude attitude = Attitude.ANY;
             public String entity_id_regex = ".*";
         }
-        public Filters entity_matches;
-        public AttributeModifier[] attributes;
+        public Filters entity_matches = new Filters();
+        public AttributeModifier[] attributes = new AttributeModifier[]{};
         public SpawnerModifier spawners = null;
     }
 
     public static class Rewards {
-        public ItemModifier[] armor;
-        public ItemModifier[] weapons;
+        public ItemModifier[] armor = new ItemModifier[]{};
+        public ItemModifier[] weapons = new ItemModifier[]{};
     }
 
     public static class ItemModifier {
@@ -52,9 +52,9 @@ public class Config {
             public String loot_table_regex = ".*";
             public String rarity_regex = ".*";
         }
-        public Filters item_matches;
+        public Filters item_matches = new Filters();
 
-        public AttributeModifier[] attributes;
+        public AttributeModifier[] attributes = new AttributeModifier[]{};
     }
 
     public static class AttributeModifier {

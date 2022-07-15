@@ -17,6 +17,10 @@ public class ConfigManager {
     public static Config currentConfig = Default.config;
 
     public static void initialize() {
+        reload();
+    }
+
+    public static void reload() {
         var config = Default.config;
         var configFileName = PowerScale.MODID + ".json";
         Path configDir = FabricLoader.getInstance().getConfigDir();
