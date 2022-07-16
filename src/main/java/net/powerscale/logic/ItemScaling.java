@@ -1,8 +1,10 @@
 package net.powerscale.logic;
 
+import com.google.common.collect.Multimap;
 import com.mojang.logging.LogUtils;
 import net.fabricmc.fabric.api.loot.v2.LootTableEvents;
 import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ItemStack;
@@ -75,6 +77,7 @@ public class ItemScaling {
     }
 
     private static void applyModifiersForItemStack(EquipmentSlot[] slots, String itemId, ItemStack itemStack, List<Config.AttributeModifier> modifiers) {
+        copyItemAttributesToNBT(itemStack); // We need to do this, to avoid unscaled attributes vanishing
         for (Config.AttributeModifier modifier: modifiers) {
             try {
                 if (modifier.attribute == null) {
@@ -139,6 +142,34 @@ public class ItemScaling {
             } catch (Exception e) {
                 LOGGER.error("Failed to apply modifier to: " + itemId + " modifier:" + modifier);
                 LOGGER.error("Reason: " + e.getMessage());
+            }
+        }
+    }
+
+    public record SlotSpecificItemAttributes(
+            EquipmentSlot slot,
+            Multimap<EntityAttribute, EntityAttributeModifier> attributes) { }
+
+    private static void copyItemAttributesToNBT(ItemStack itemStack) {
+        if (!itemStack.hasNbt() || !itemStack.getNbt().contains("AttributeModifiers", 9)) {
+            // If no metadata yet
+            List<SlotSpecificItemAttributes> slotSpecificItemAttributes = new ArrayList<>();
+            for(var slot: EquipmentSlot.values()) {
+                slotSpecificItemAttributes.add(new SlotSpecificItemAttributes(slot, itemStack.getAttributeModifiers(slot)));
+            }
+            for(var element: slotSpecificItemAttributes) {
+                for(var entry: element.attributes.entries()) {
+                    // System.out.println("copyItemAttributesToNBT slot:" +  element.slot + " - adding: " + entry.getKey() + " - modifier: " + entry.getValue());
+                    itemStack.addAttributeModifier(
+                            entry.getKey(),
+                            new EntityAttributeModifier(
+                                    entry.getValue().getName(),
+                                    entry.getValue().getValue(),
+                                    entry.getValue().getOperation()
+                            ),
+                            element.slot
+                    );
+                }
             }
         }
     }
