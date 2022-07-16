@@ -17,8 +17,8 @@
 
 - Dimension and biome specific ruleset
 - Each ruleset can adjust entities and looted items
-- Entities can be adjusted by attributes and spawner settings
-- Looted items can be adjusted by attributes
+- Entities attributes and spawner settings can be adjusted (for example: more health, armor, etc...)
+- Looted item attributes can be adjusted (for example: more damage on weapons)
 - Fully data-driven (using the configuration file)
 
 # 🔧 Configuration
