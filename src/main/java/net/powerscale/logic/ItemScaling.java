@@ -6,10 +6,8 @@ import net.fabricmc.fabric.api.loot.v2.LootTableEvents;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.item.ArmorItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.RangedWeaponItem;
-import net.minecraft.item.ToolItem;
+import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.item.*;
 import net.minecraft.loot.context.LootContext;
 import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.loot.function.LootFunction;
@@ -129,7 +127,7 @@ public class ItemScaling {
                         }
                         itemStack.addAttributeModifier(
                                 attribute,
-                                new EntityAttributeModifier(
+                                createEntityAttributeModifier(attribute,
                                         "Scaled attribute modifier",
                                         valueSummary,
                                         EntityAttributeModifier.Operation.ADDITION
@@ -160,9 +158,11 @@ public class ItemScaling {
             for(var element: slotSpecificItemAttributes) {
                 for(var entry: element.attributes.entries()) {
                     // System.out.println("copyItemAttributesToNBT slot:" +  element.slot + " - adding: " + entry.getKey() + " - modifier: " + entry.getValue());
+                    var attribute = entry.getKey();
                     itemStack.addAttributeModifier(
-                            entry.getKey(),
-                            new EntityAttributeModifier(
+                            attribute,
+                            createEntityAttributeModifier(
+                                    attribute,
                                     entry.getValue().getName(),
                                     entry.getValue().getValue(),
                                     entry.getValue().getOperation()
@@ -174,13 +174,42 @@ public class ItemScaling {
         }
     }
 
+    private static EntityAttributeModifier createEntityAttributeModifier(EntityAttribute attribute, String name, double value, EntityAttributeModifier.Operation operation) {
+        var hardCodedUUID= hardCodedUUID(attribute);
+        if (hardCodedUUID != null) {
+            System.out.println("Using hardcoded modifier UUID: " + hardCodedUUID + " for:" + name + " value:" + value);
+            return new EntityAttributeModifier(hardCodedUUID, name, value, operation);
+        } else {
+            return new EntityAttributeModifier(name, value, operation);
+        }
+    }
+
     private static void removeAttributesFromItemStack(EntityAttributeModifier attributeModifier, ItemStack itemStack) {
-        NbtList nbtList = itemStack.getNbt().getList("AttributeModifiers", 10);;
+        NbtList nbtList = itemStack.getNbt().getList("AttributeModifiers", 10);
         nbtList.removeIf(element -> {
             if (element instanceof NbtCompound compound) {
                 return compound.getUuid("UUID").equals(attributeModifier.getId());
             }
             return false;
         });
+    }
+
+    private static UUID hardCodedUUID(EntityAttribute entityAttribute) {
+        if (entityAttribute.equals(EntityAttributes.GENERIC_ATTACK_DAMAGE)) {
+            return ItemAccessor.hardCodedAttackDamageModifier();
+        }
+        if (entityAttribute.equals(EntityAttributes.GENERIC_ATTACK_SPEED)) {
+            return ItemAccessor.hardCodedAttackSpeedModifier();
+        }
+        return null;
+    }
+
+    public abstract static class ItemAccessor extends Item {
+        public ItemAccessor(Settings settings) {
+            super(settings);
+        }
+
+        public static final UUID hardCodedAttackDamageModifier() { return ATTACK_DAMAGE_MODIFIER_ID; };
+        public static final UUID hardCodedAttackSpeedModifier() { return ATTACK_SPEED_MODIFIER_ID; };
     }
 }
