@@ -177,7 +177,6 @@ public class ItemScaling {
     private static EntityAttributeModifier createEntityAttributeModifier(EntityAttribute attribute, String name, double value, EntityAttributeModifier.Operation operation) {
         var hardCodedUUID= hardCodedUUID(attribute);
         if (hardCodedUUID != null) {
-            System.out.println("Using hardcoded modifier UUID: " + hardCodedUUID + " for:" + name + " value:" + value);
             return new EntityAttributeModifier(hardCodedUUID, name, value, operation);
         } else {
             return new EntityAttributeModifier(name, value, operation);
@@ -209,7 +208,7 @@ public class ItemScaling {
             super(settings);
         }
 
-        public static final UUID hardCodedAttackDamageModifier() { return ATTACK_DAMAGE_MODIFIER_ID; };
-        public static final UUID hardCodedAttackSpeedModifier() { return ATTACK_SPEED_MODIFIER_ID; };
+        public static UUID hardCodedAttackDamageModifier() { return ATTACK_DAMAGE_MODIFIER_ID; };
+        public static UUID hardCodedAttackSpeedModifier() { return ATTACK_SPEED_MODIFIER_ID; };
     }
 }

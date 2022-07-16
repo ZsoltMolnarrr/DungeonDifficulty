@@ -16,10 +16,10 @@ public class ItemStackMixin {
     // UUIDs those were deserialized from NBT
     @Redirect(method = "getTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/attribute/EntityAttributeModifier;getId()Ljava/util/UUID;"))
     public UUID fixId(EntityAttributeModifier instance) {
-        if (instance.getId().toString().matches(ItemScaling.ItemAccessor.hardCodedAttackDamageModifier().toString())) {
+        if (instance.getId().equals(ItemScaling.ItemAccessor.hardCodedAttackDamageModifier())) {
             return ItemScaling.ItemAccessor.hardCodedAttackDamageModifier();
         }
-        if (instance.getId().toString().matches(ItemScaling.ItemAccessor.hardCodedAttackSpeedModifier().toString())) {
+        if (instance.getId().equals(ItemScaling.ItemAccessor.hardCodedAttackSpeedModifier())) {
             return ItemScaling.ItemAccessor.hardCodedAttackSpeedModifier();
         }
         return instance.getId();

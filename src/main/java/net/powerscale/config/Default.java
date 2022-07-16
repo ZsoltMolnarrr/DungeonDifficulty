@@ -7,44 +7,56 @@ public class Default {
         // Surface
         var overworld = new Config.Dimension();
         overworld.world_matches.dimension_regex = "minecraft:overworld";
-//        overworld.rewards.weapons = new Config.ItemModifier[]{
-//                createItemModifier(new Config.AttributeModifier[]{
-//                        createDamageMultiplier(1.5F),
-//                        createProjectileMultiplier(1.5F)
-//                }),
-//        };
-//        overworld.rewards.armor = new Config.ItemModifier[]{
-//                createItemModifier(new Config.AttributeModifier[]{
-//                        createArmorMultiplier(1.5F)
-//                }),
-//        };
-//        overworld.entities = new Config.EntityModifier[] {
-//                createEntityModifier("zombi|creeper|skeleton", new Config.AttributeModifier[]{
-//                        createHealthMultiplier(2F),
-//                        createArmorBonus(2F),
-//                        createDamageMultiplier(2)
-//                })
-//        };
-//        var desert = new Config.Zone();
-//        desert.zone_matches.biome_regex = "desert";
-//        desert.rewards.weapons = new Config.ItemModifier[]{
-//                createItemModifier(new Config.AttributeModifier[]{
-//                        createDamageMultiplier(1.5F),
-//                        createProjectileMultiplier(1.5F)
-//                }),
-//        };
-//        desert.rewards.armor = new Config.ItemModifier[]{
-//                createItemModifier(new Config.AttributeModifier[]{
-//                        createMaxHealthBonus(2)
-//                }),
-//        };
-//        desert.entities = new Config.EntityModifier[] {
-//                createEntityModifier("zombi|creeper|skeleton", new Config.AttributeModifier[]{
-//                        createArmorMultiplier(2F),
-//                        createMaxHealthBonus(10F)
-//                })
-//        };
-//        overworld.zones = new Config.Zone[] { desert };
+
+        var cold_biomes = new Config.Zone();
+        cold_biomes.zone_matches.biome_regex = "frozen|snowy|ice";
+        cold_biomes.rewards.weapons = new Config.ItemModifier[] {
+                createItemModifier(
+                        "minecraft:bow",
+                        null,
+                        new Config.AttributeModifier[]{
+                                createProjectileMultiplier(1.3F, 0)
+                        }
+                ),
+        };
+        cold_biomes.entities = new Config.EntityModifier[] {
+                createEntityModifier(
+                        "stray|skeleton",
+                        new Config.AttributeModifier[]{
+                                createHealthMultiplier(1.25F, 0.25F),
+                                createArmorBonus(4)
+                        },
+                        null)
+        };
+
+        var desert = new Config.Zone();
+        desert.zone_matches.biome_regex = "desert";
+        desert.rewards.weapons = new Config.ItemModifier[]{
+                createItemModifier(
+                        null,
+                        "chests/desert_pyramid",
+                        new Config.AttributeModifier[]{
+                                createDamageMultiplier(1.3F, 0),
+                        }
+                ),
+        };
+        desert.entities = new Config.EntityModifier[] {
+                createEntityModifier(
+                        "skeleton",
+                        new Config.AttributeModifier[]{
+                                createHealthMultiplier(1.75F, 0.25F),
+                                createArmorBonus(4)
+                        },
+                        null),
+                createEntityModifier(
+                        "husk",
+                        new Config.AttributeModifier[]{
+                                createDamageMultiplier(1.5F,0),
+                                createHealthMultiplier(2F, 0.5F)
+                        },
+                        null)
+        };
+        overworld.zones = new Config.Zone[] { cold_biomes, desert };
 
         // Nether
         var nether = new Config.Dimension();
@@ -113,14 +125,41 @@ public class Default {
                         null)
         };
 
+        var anyDimension = new Config.Dimension();
+        var epics = createItemModifier(
+                new Config.AttributeModifier[]{
+                        createDamageMultiplier(1.2F,0),
+                        createProjectileMultiplier(1.2F, 0)
+                }
+        );
+        epics.item_matches.rarity_regex = "epic";
+        var rares = createItemModifier(
+                new Config.AttributeModifier[]{
+                        createDamageMultiplier(1.1F,0),
+                        createProjectileMultiplier(1.1F, 0)
+                }
+        );
+        rares.item_matches.rarity_regex = "rare";
+        anyDimension.rewards.weapons = new Config.ItemModifier[] { rares, epics };
+
         var config = new Config();
-        config.dimensions = new Config.Dimension[] { overworld, nether, end };
+        config.dimensions = new Config.Dimension[] { overworld, nether, end, anyDimension };
         return config;
     }
 
     private static Config.ItemModifier createItemModifier(Config.AttributeModifier[] attributeModifiers) {
+        return createItemModifier(null, null, attributeModifiers);
+    }
+
+    private static Config.ItemModifier createItemModifier(String itemIdRegex, String lootTableRegex, Config.AttributeModifier[] attributeModifiers) {
         var itemModifier = new Config.ItemModifier();
         itemModifier.item_matches = new Config.ItemModifier.Filters();
+        if (itemIdRegex != null) {
+            itemModifier.item_matches.item_id_regex = itemIdRegex;
+        }
+        if (lootTableRegex != null) {
+            itemModifier.item_matches.loot_table_regex = lootTableRegex;
+        }
         itemModifier.attributes = attributeModifiers;
         return itemModifier;
     }
