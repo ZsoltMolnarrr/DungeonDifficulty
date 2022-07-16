@@ -10,7 +10,7 @@
     "homepage": "https://github.com/ZsoltMolnarrr/PowerScale"
   },
   "license": "MIT",
-  "icon": "assets/example/icon.png",
+  "icon": "assets/powerscale/icon.png",
   "environment": "*",
   "entrypoints": {
     "client": [
