@@ -29,6 +29,8 @@ Server side configuration can be found at `config/powerscale.json`.
 
 Use the following command to refresh the config while in game: `/powerscale_config_reload`
 
+Config file is parsed into `Config` object. You can find it [here](./src/main/java/net/powerscale/config/Config.java).
+
 Config file is **sanitized** upon reloading, meaning every non parsable data is removed.
 
 Regex fields in the configuration are interpreted as fully featured regex. Suggested regex testing tool: [regex101.com](https://regex101.com) 
