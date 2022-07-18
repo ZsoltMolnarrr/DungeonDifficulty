@@ -23,12 +23,14 @@ public class ConfigManager {
     public static void reload() {
         var config = Default.config;
         var configFileName = PowerScale.MODID + ".json";
+        var sanitizeConfig = true;
         Path configDir = FabricLoader.getInstance().getConfigDir();
 
         try {
             var gson = new Gson();
             var filePath = configDir.resolve(configFileName);
-            if (Files.exists(filePath)) {
+            var configFileExists = Files.exists(filePath);
+            if (configFileExists) {
                 // Read
                 Reader reader = Files.newBufferedReader(filePath);
                 config = gson.fromJson(reader, Config.class);
@@ -40,13 +42,13 @@ public class ConfigManager {
                 }
             }
 
-            // Write (unconditional write -> auto sanitize)
-            var prettyGson = new GsonBuilder().setPrettyPrinting().create();
-            Writer writer = Files.newBufferedWriter(filePath);
-            writer.write(prettyGson.toJson(config));
-            writer.close();
-            LOGGER.info("PowerScale config written: " + gson.toJson(config));
-
+            if (sanitizeConfig || !configFileExists) {
+                var prettyGson = new GsonBuilder().setPrettyPrinting().create();
+                Writer writer = Files.newBufferedWriter(filePath);
+                writer.write(prettyGson.toJson(config));
+                writer.close();
+                LOGGER.info("PowerScale config written: " + gson.toJson(config));
+            }
         } catch(Exception e) {
             LOGGER.error("Failed loading PowerScale config: " + e.getMessage());
         }
