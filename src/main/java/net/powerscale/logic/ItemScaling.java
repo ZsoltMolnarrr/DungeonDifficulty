@@ -127,7 +127,9 @@ public class ItemScaling {
                         }
                         itemStack.addAttributeModifier(
                                 attribute,
-                                createEntityAttributeModifier(attribute,
+                                createEntityAttributeModifier(
+                                        slot,
+                                        attribute,
                                         "Scaled attribute modifier",
                                         valueSummary,
                                         EntityAttributeModifier.Operation.ADDITION
@@ -162,6 +164,7 @@ public class ItemScaling {
                     itemStack.addAttributeModifier(
                             attribute,
                             createEntityAttributeModifier(
+                                    element.slot,
                                     attribute,
                                     entry.getValue().getName(),
                                     entry.getValue().getValue(),
@@ -174,8 +177,11 @@ public class ItemScaling {
         }
     }
 
-    private static EntityAttributeModifier createEntityAttributeModifier(EntityAttribute attribute, String name, double value, EntityAttributeModifier.Operation operation) {
-        var hardCodedUUID= hardCodedUUID(attribute);
+    private static EntityAttributeModifier createEntityAttributeModifier(EquipmentSlot slot, EntityAttribute attribute, String name, double value, EntityAttributeModifier.Operation operation) {
+        UUID hardCodedUUID = null; // = hardCodedUUID(attribute);
+        if (slot == EquipmentSlot.MAINHAND || slot == EquipmentSlot.OFFHAND) {
+            hardCodedUUID = hardCodedUUID(attribute);
+        }
         if (hardCodedUUID != null) {
             return new EntityAttributeModifier(hardCodedUUID, name, value, operation);
         } else {
