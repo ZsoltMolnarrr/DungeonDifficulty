@@ -11,6 +11,8 @@ public class ExperienceScaling {
         for (var modifier: PatternMatching.getModifiersForEntity(locationData, entityData)) {
             multiplier *= modifier.experience_multiplier;
         }
-        return Math.round((float)experience * multiplier);
+        var xp = Math.round((float)experience * multiplier);
+        // System.out.println("Scaled XP from: " + experience + " to: " + xp);
+        return xp;
     }
 }

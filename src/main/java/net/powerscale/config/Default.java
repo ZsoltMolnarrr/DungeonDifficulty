@@ -26,7 +26,8 @@ public class Default {
                                 createHealthMultiplier(1.25F, 0.25F),
                                 createArmorBonus(4)
                         },
-                        null)
+                        null,
+                        1.5F)
         };
 
         var desert = new Config.Zone();
@@ -47,14 +48,16 @@ public class Default {
                                 createHealthMultiplier(1.75F, 0.25F),
                                 createArmorBonus(4)
                         },
-                        null),
+                        null,
+                        1.5F),
                 createEntityModifier(
                         "husk",
                         new Config.AttributeModifier[]{
                                 createDamageMultiplier(1.5F,0),
                                 createHealthMultiplier(2F, 0.5F)
                         },
-                        null)
+                        null,
+                        1.5F)
         };
         overworld.zones = new Config.Zone[] { cold_biomes, desert };
 
@@ -86,13 +89,15 @@ public class Default {
                         createArmorBonus(2),
                         createHealthMultiplier(1.4F, 0.1F)
                     },
-                    null),
+                    null,
+                    2F),
             createEntityModifier("blaze",
                     new Config.AttributeModifier[]{
                         createHealthMultiplier(1.5F, 0),
                         createArmorBonus(2)
                     },
-                    blazeSpawners)
+                    blazeSpawners,
+                    1)
         };
 
         var end = new Config.Dimension();
@@ -116,13 +121,15 @@ public class Default {
                                 createArmorBonus(4),
                                 createHealthMultiplier(1.8F, 0.2F)
                         },
-                        null),
+                        null,
+                        3F),
                 createEntityModifier("dragon",
                         new Config.AttributeModifier[]{
                                 createHealthMultiplier(2F, 0),
                                 createArmorBonus(10)
                         },
-                        null)
+                        null,
+                        2F)
         };
 
         var anyDimension = new Config.Dimension();
@@ -198,12 +205,13 @@ public class Default {
         return modifier;
     }
 
-    private static Config.EntityModifier createEntityModifier(String idRegex, Config.AttributeModifier[] attributeModifiers, Config.SpawnerModifier spawnerModifier) {
+    private static Config.EntityModifier createEntityModifier(String idRegex, Config.AttributeModifier[] attributeModifiers, Config.SpawnerModifier spawnerModifier, float xpMultiplier) {
         var entityModifier = new Config.EntityModifier();
         entityModifier.entity_matches = new Config.EntityModifier.Filters();
         entityModifier.entity_matches.entity_id_regex = idRegex;
         entityModifier.attributes = attributeModifiers;
         entityModifier.spawners = spawnerModifier;
+        entityModifier.experience_multiplier = xpMultiplier;
         return entityModifier;
     }
 }
