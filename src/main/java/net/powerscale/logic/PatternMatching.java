@@ -128,30 +128,35 @@ public class PatternMatching {
         }
     }
 
-    public static List<Config.AttributeModifier> getModifiersForEntity(LocationData locationData, EntityData entityData) {
+    public static List<Config.AttributeModifier> getAttributeModifiersForEntity(LocationData locationData, EntityData entityData) {
         var attributeModifiers = new ArrayList<Config.AttributeModifier>();
-        var locations = getLocationsMatching(locationData);
-        for (var location : locations) {
-            for(var entityModifier: location.entities) {
-                if (entityData.matches(entityModifier.entity_matches)) {
-                    attributeModifiers.addAll(Arrays.asList(entityModifier.attributes));
-                }
-            }
+        for (var modifier: getModifiersForEntity(locationData, entityData)) {
+            attributeModifiers.addAll(Arrays.asList(modifier.attributes));
         }
         return attributeModifiers;
     }
 
     public static List<Config.SpawnerModifier> getModifiersForSpawner(LocationData locationData, EntityData entityData) {
         var spawnerModifiers = new ArrayList<Config.SpawnerModifier>();
-        var locations = getLocationsMatching(locationData);
-        for (var location : locations) {
-            for(var entityModifier: location.entities) {
-                if (entityModifier.spawners != null && entityData.matches(entityModifier.entity_matches)) {
-                    spawnerModifiers.add(entityModifier.spawners);
-                }
+        for (var modifier: getModifiersForEntity(locationData, entityData)) {
+            if(modifier.spawners != null) {
+                spawnerModifiers.add(modifier.spawners);
             }
         }
         return spawnerModifiers;
+    }
+
+    public static List<Config.EntityModifier> getModifiersForEntity(LocationData locationData, EntityData entityData) {
+        var entityModifiers = new ArrayList<Config.EntityModifier>();
+        var locations = getLocationsMatching(locationData);
+        for (var location : locations) {
+            for(var entityModifier: location.entities) {
+                if (entityData.matches(entityModifier.entity_matches)) {
+                    entityModifiers.add(entityModifier);
+                }
+            }
+        }
+        return entityModifiers;
     }
 
     public record Location(Config.EntityModifier[] entities,

@@ -3,6 +3,14 @@ package net.powerscale.config;
 import java.util.Random;
 
 public class Config {
+
+    public Meta meta = new Meta();
+    public class Meta {
+        public String comment = "IMPORTANT! Make sure to set `override_with_default` to `false` to allow customization of the config";
+        public boolean override_with_default = true;
+        public boolean sanitize_config = true;
+    }
+
     public Dimension[] dimensions;
 
     public static class Dimension {
@@ -39,6 +47,7 @@ public class Config {
         public Filters entity_matches = new Filters();
         public AttributeModifier[] attributes = new AttributeModifier[]{};
         public SpawnerModifier spawners = null;
+        public float experience_multiplier = 1;
     }
 
     public static class Rewards {

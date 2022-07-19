@@ -23,7 +23,8 @@ public class ConfigManager {
     public static void reload() {
         var config = Default.config;
         var configFileName = PowerScale.MODID + ".json";
-        var sanitizeConfig = true;
+        var sanitizeConfig = false;
+        var overrideWithDefault = false;
         Path configDir = FabricLoader.getInstance().getConfigDir();
 
         try {
@@ -42,7 +43,15 @@ public class ConfigManager {
                 }
             }
 
-            if (sanitizeConfig || !configFileExists) {
+            if (config.meta != null) {
+                sanitizeConfig = config.meta.sanitize_config;
+                overrideWithDefault = config.meta.override_with_default;
+                if (overrideWithDefault) {
+                    config = Default.config;
+                }
+            }
+
+            if (sanitizeConfig || overrideWithDefault || !configFileExists) {
                 var prettyGson = new GsonBuilder().setPrettyPrinting().create();
                 Writer writer = Files.newBufferedWriter(filePath);
                 writer.write(prettyGson.toJson(config));
