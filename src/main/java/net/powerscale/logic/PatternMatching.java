@@ -25,7 +25,6 @@ public class PatternMatching {
             if (position != null) {
                 biome = world.getBiome(position).getKey().orElse(BiomeKeys.PLAINS).getValue().toString();
             }
-            // world.getBiome()
             return new LocationData(dimensionId, position, biome);
         }
         public boolean matches(Config.Dimension.Filters filters) {
@@ -180,6 +179,9 @@ public class PatternMatching {
     }
 
     private static boolean matches(String subject, String nullableRegex) {
+        if (subject == null) {
+            subject = "";
+        }
         if (nullableRegex == null || nullableRegex.isEmpty()) {
             return true;
         }
