@@ -1,7 +1,5 @@
 package net.powerscale;
 
-//import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
-//import net.minecraft.server.command.CommandManager;
 import com.google.gson.Gson;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.CommandManager;
