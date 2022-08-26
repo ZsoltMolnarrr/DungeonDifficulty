@@ -9,6 +9,7 @@ public class Config {
         public String comment = "IMPORTANT! Make sure to set `override_with_default` to `false` to allow customization of the config";
         public boolean override_with_default = true;
         public boolean sanitize_config = true;
+        public Double rounding_unit = 0.5;
     }
 
     public Dimension[] dimensions;

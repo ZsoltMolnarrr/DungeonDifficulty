@@ -66,8 +66,8 @@ public class Default {
         nether.world_matches.dimension_regex = "minecraft:the_nether";
         nether.rewards.weapons = new Config.ItemModifier[]{
                 createItemModifier(new Config.AttributeModifier[]{
-                        createDamageMultiplier(1.25F, 0.25F),
-                        createProjectileMultiplier(1.25F, 0.25F)
+                        createDamageMultiplier(1.3F, 0.2F),
+                        createProjectileMultiplier(1.3F, 0.2F)
                 }),
         };
         nether.rewards.armor = new Config.ItemModifier[]{
@@ -104,8 +104,8 @@ public class Default {
         end.world_matches.dimension_regex = "minecraft:the_end";
         end.rewards.weapons = new Config.ItemModifier[]{
                 createItemModifier(new Config.AttributeModifier[]{
-                        createDamageMultiplier(1.75F, 0.25F),
-                        createProjectileMultiplier(1.75F, 0.25F)
+                        createDamageMultiplier(1.8F, 0.2F),
+                        createProjectileMultiplier(1.8F, 0.2F)
                 }),
         };
         end.rewards.armor = new Config.ItemModifier[]{

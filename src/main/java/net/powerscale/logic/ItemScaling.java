@@ -19,6 +19,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
+import net.powerscale.PowerScale;
 import net.powerscale.config.Config;
 import org.slf4j.Logger;
 
@@ -26,6 +27,13 @@ import java.util.*;
 
 public class ItemScaling {
     static final Logger LOGGER = LogUtils.getLogger();
+    
+    private static final boolean debugLogging = false;
+    private static void debug(String message) {
+        if (debugLogging) {
+            System.out.println(message);
+        }
+    }
 
     public static void initialize() {
         LootTableEvents.MODIFY.register((resourceManager, lootManager, id, tableBuilder, source) -> {
@@ -58,31 +66,40 @@ public class ItemScaling {
         if (itemStack.getItem() instanceof ToolItem || itemStack.getItem() instanceof RangedWeaponItem) {
             var locationData = PatternMatching.LocationData.create(world, position);
             var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.WEAPONS, lootTableId, itemId, rarity);
-            // System.out.println("Item scaling start." + " dimension: " + dimensionId + " position: " + position + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
+            debug("Item scaling start." + " dimension: " + dimensionId + " position: " + position + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
             var modifiers = PatternMatching.getModifiersForItem(locationData, itemData);
-            // System.out.println("Pattern matching found " + modifiers.size() + " attribute modifiers");
+            debug("Pattern matching found " + modifiers.size() + " attribute modifiers");
             applyModifiersForItemStack(new EquipmentSlot[]{ EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND }, itemId, itemStack, modifiers);
         }
         if (itemStack.getItem() instanceof ArmorItem) {
             var armor = (ArmorItem)itemStack.getItem();
             var locationData = PatternMatching.LocationData.create(world, position);
             var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.ARMOR, lootTableId, itemId, rarity);
-            // System.out.println("Item scaling start." + " dimension: " + dimensionId + " position: " + position + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
+            debug("Item scaling start." + " dimension: " + dimensionId + " position: " + position + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
             var modifiers = PatternMatching.getModifiersForItem(locationData, itemData);
-            // System.out.println("Pattern matching found " + modifiers.size() + " attribute modifiers");
+            debug("Pattern matching found " + modifiers.size() + " attribute modifiers");
             applyModifiersForItemStack(new EquipmentSlot[]{ armor.getSlotType() }, itemId, itemStack, modifiers);
         }
     }
 
     private static void applyModifiersForItemStack(EquipmentSlot[] slots, String itemId, ItemStack itemStack, List<Config.AttributeModifier> modifiers) {
         copyItemAttributesToNBT(itemStack); // We need to do this, to avoid unscaled attributes vanishing
-        for (Config.AttributeModifier modifier: modifiers) {
+        for (int i = 0; i < modifiers.size(); ++i) {
+            var modifier = modifiers.get(i);
             try {
+                var shouldRound = true;
+                for (int j = i + 1; j < modifiers.size(); ++j) {
+                    // Looking for an modifier for the same attribute after this
+                    if (modifiers.get(j).attribute.equals(modifier.attribute)) {
+                        shouldRound = false;
+                        break;
+                    }
+                }
                 if (modifier.attribute == null) {
                     continue;
                 }
                 var modifierValue = modifier.randomizedValue();
-                // System.out.println("Applying A " + modifier.attribute + " to " + itemId);
+                debug("Starting to applying " + modifier.attribute + " to " + itemId);
 
                 // The attribute we want to modify
                 var attribute = Registry.ATTRIBUTE.get(new Identifier(modifier.attribute));
@@ -102,7 +119,7 @@ public class ItemScaling {
                 for(var entry: slotSpecificAttributeCollections.entrySet()) {
                     var slot = entry.getKey();
                     var attributeSpecificCollection = entry.getValue();
-                    var valueSummary = 0;
+                    var valueSummary = 0F;
                     var mergedModifiers = new ArrayList<EntityAttributeModifier>();
                     for (var attributeModifier : attributeSpecificCollection) {
                         if (attributeModifier.getOperation() != EntityAttributeModifier.Operation.ADDITION) {
@@ -111,20 +128,29 @@ public class ItemScaling {
 
                         valueSummary += attributeModifier.getValue();
                         mergedModifiers.add(attributeModifier);
-                        // System.out.println("Found attribute value: " + attributeModifier.getValue() + " sum: " + currentValue);
+                        debug("Found attribute value: " + attributeModifier.getValue()
+                                + " current: " + valueSummary + " to be modified to:" + modifier.operation + " " + modifierValue);
                     }
                     switch (modifier.operation) {
                         case ADD -> {
                             valueSummary += modifierValue;
                         }
                         case MULTIPLY -> {
+                            debug("Multiplying: " + valueSummary + " * " + modifierValue);
                             valueSummary *= modifierValue;
                         }
                     }
+                    debug("Value summary updated to: " + valueSummary);
                     if (valueSummary != 0) {
                         for(var attributeModifier : mergedModifiers) {
                             removeAttributesFromItemStack(attributeModifier, itemStack);
                         }
+                        var roundingUnit = getRoundingUnit();
+                        if (shouldRound && roundingUnit != null) {
+                            valueSummary = (float)MathHelper.round(valueSummary, roundingUnit);
+                            debug("Rounded summary by " + roundingUnit + " to: " + valueSummary);
+                        }
+                        debug("Applying " + modifier.attribute + " to " + itemId + " value: " + valueSummary);
                         itemStack.addAttributeModifier(
                                 attribute,
                                 createEntityAttributeModifier(
@@ -137,7 +163,6 @@ public class ItemScaling {
                                 slot
                         );
                     }
-                    // System.out.println("Applying " + modifier.attribute + " to " + itemId + " value: " + currentValue);
                 }
             } catch (Exception e) {
                 LOGGER.error("Failed to apply modifier to: " + itemId + " modifier:" + modifier);
@@ -159,7 +184,7 @@ public class ItemScaling {
             }
             for(var element: slotSpecificItemAttributes) {
                 for(var entry: element.attributes.entries()) {
-                    // System.out.println("copyItemAttributesToNBT slot:" +  element.slot + " - adding: " + entry.getKey() + " - modifier: " + entry.getValue());
+                    // debug("copyItemAttributesToNBT slot:" +  element.slot + " - adding: " + entry.getKey() + " - modifier: " + entry.getValue());
                     var attribute = entry.getKey();
                     itemStack.addAttributeModifier(
                             attribute,
@@ -216,5 +241,13 @@ public class ItemScaling {
 
         public static UUID hardCodedAttackDamageModifier() { return ATTACK_DAMAGE_MODIFIER_ID; };
         public static UUID hardCodedAttackSpeedModifier() { return ATTACK_SPEED_MODIFIER_ID; };
+    }
+
+    private static Double getRoundingUnit() {
+        var config = PowerScale.configManager.currentConfig;
+        if (config.meta != null && config.meta.rounding_unit != null) {
+            return config.meta.rounding_unit;
+        }
+        return null;
     }
 }
