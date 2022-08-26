@@ -6,10 +6,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeKeys;
+import net.powerscale.PowerScale;
 import net.powerscale.config.Config;
-import net.powerscale.config.ConfigManager;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -18,7 +17,7 @@ import java.util.regex.Pattern;
 
 public class PatternMatching {
 
-    public record LocationData(String dimensionId, @Nullable BlockPos position, @Nullable String biome) {
+    public record LocationData(String dimensionId, BlockPos position, String biome) {
         public static LocationData create(World world, BlockPos position) {
             var dimensionId = world.getRegistryKey().getValue().toString();
             String biome = null;
@@ -163,7 +162,7 @@ public class PatternMatching {
 
     public static List<Location> getLocationsMatching(LocationData locationData) {
         var locations = new ArrayList<Location>();
-        for (var entry : ConfigManager.currentConfig.dimensions) {
+        for (var entry : PowerScale.configManager.currentConfig.dimensions) {
             if (locationData.matches(entry.world_matches)) {
                 locations.add(new Location(entry.entities, entry.rewards));
                 if (entry.zones != null) {
