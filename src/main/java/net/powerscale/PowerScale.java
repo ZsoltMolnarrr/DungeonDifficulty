@@ -3,6 +3,8 @@ package net.powerscale;
 //import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 //import net.minecraft.server.command.CommandManager;
 import com.google.gson.Gson;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.minecraft.server.command.CommandManager;
 import net.powerscale.config.Config;
 import net.powerscale.config.Default;
 import net.powerscale.logic.ItemScaling;
@@ -23,12 +25,12 @@ public class PowerScale implements ModInitializer {
         reloadConfig();
         ItemScaling.initialize();
 
-//        CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> {
-//            dispatcher.register(CommandManager.literal(MODID + "_config_reload").executes(context -> {
-//                ConfigManager.reload();
-//                return 1;
-//            }));
-//        });
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+            dispatcher.register(CommandManager.literal(MODID + "_config_reload").executes(context -> {
+                PowerScale.reloadConfig();
+                return 1;
+            }));
+        });
     }
 
     public static void reloadConfig() {
