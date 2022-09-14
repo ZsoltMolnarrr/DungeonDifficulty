@@ -34,8 +34,8 @@ dependencies {
     // Fabric API. This is technically optional, but you probably want it anyway.
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-    modImplementation "maven.modrinth:projectile-damage-attribute:${project.projectile_version}"
-    modApi include("com.github.ZsoltMolnarrr:TinyConfig:${project.tiny_config_version}")
+    modImplementation "maven.modrinth:projectile-damage-attribute:${project.projectile_version}-fabric"
+    implementation include("com.github.ZsoltMolnarrr:TinyConfig:${project.tiny_config_version}")
 }
 
 processResources {
