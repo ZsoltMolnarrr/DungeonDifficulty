@@ -15,9 +15,9 @@ public class EntityScaling {
             var livingEntity = (LivingEntity)entity;
             var locationData = PatternMatching.LocationData.create(world, livingEntity.getBlockPos());
             var entityData = PatternMatching.EntityData.create(livingEntity);
-            var attributeModifiers = PatternMatching.getAttributeModifiersForEntity(locationData, entityData);
 
-            EntityScaling.apply(attributeModifiers, livingEntity);
+            EntityScaling.apply(PerPlayerDifficulty.getAttributeModifiers(entityData, world), livingEntity);
+            EntityScaling.apply(PatternMatching.getAttributeModifiersForEntity(locationData, entityData), livingEntity);
 
             for (var itemStack: livingEntity.getItemsEquipped()) {
                 ItemScaling.scale(itemStack, world, livingEntity.getBlockPos(), entityData.entityId());

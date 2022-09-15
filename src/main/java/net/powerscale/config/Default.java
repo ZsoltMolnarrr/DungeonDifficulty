@@ -4,6 +4,18 @@ public class Default {
     public static Config config = createDefaultConfig();
 
     private static Config createDefaultConfig() {
+        // Per Player Difficulty
+        var perPlayerDifficulty = new Config.PerPlayerDifficulty();
+        var perPlayerEntityModifier = new Config.EntityBaseModifier();
+        perPlayerEntityModifier.entity_matches.entity_id_regex = Regex.ANY;
+        perPlayerEntityModifier.attributes = new Config.AttributeBaseMultiplier[] {
+                new Config.AttributeBaseMultiplier("generic.attack_damage", 0.2F),
+                new Config.AttributeBaseMultiplier("generic.max_health", 0.5F)
+        };
+        perPlayerDifficulty.entities = new Config.EntityBaseModifier[] {
+                perPlayerEntityModifier
+        };
+
         // Surface
         var overworld = new Config.Dimension();
         overworld.world_matches.dimension_regex = "minecraft:overworld";
@@ -151,6 +163,7 @@ public class Default {
 
         var config = new Config();
         config.dimensions = new Config.Dimension[] { overworld, nether, end, anyDimension };
+        config.perPlayerDifficulty = perPlayerDifficulty;
         return config;
     }
 

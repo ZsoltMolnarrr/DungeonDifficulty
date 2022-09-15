@@ -12,6 +12,11 @@ public class Config {
         public Double rounding_unit = 0.5;
     }
 
+    public PerPlayerDifficulty perPlayerDifficulty;
+    public static class PerPlayerDifficulty {
+        public EntityBaseModifier[] entities = new EntityBaseModifier[]{};
+    }
+
     public Dimension[] dimensions;
 
     public static class Dimension {
@@ -52,6 +57,11 @@ public class Config {
         public float experience_multiplier = 1;
     }
 
+    public static class EntityBaseModifier {
+        public EntityModifier.Filters entity_matches = new EntityModifier.Filters();
+        public AttributeBaseMultiplier[] attributes = new AttributeBaseMultiplier[]{};
+    }
+
     public static class Rewards {
         public ItemModifier[] armor = new ItemModifier[]{};
         public ItemModifier[] weapons = new ItemModifier[]{};
@@ -86,6 +96,17 @@ public class Config {
             return (randomness > 0)
                     ?  rng.nextFloat(value - randomness, value + randomness)
                     : value;
+        }
+    }
+
+    public static class AttributeBaseMultiplier {
+        public String attribute = null;
+        public float value = 0;
+
+        public AttributeBaseMultiplier() { }
+        public AttributeBaseMultiplier(String attribute, float value) {
+            this.attribute = attribute;
+            this.value = value;
         }
     }
 
