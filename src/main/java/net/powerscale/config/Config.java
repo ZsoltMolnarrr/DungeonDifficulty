@@ -16,7 +16,7 @@ public class Config {
 
     public static class Dimension {
         public static class Filters {
-            public String dimension_regex = ".*";
+            public String dimension_regex = Regex.ANY;
         }
         public Filters world_matches = new Filters();
 
@@ -27,7 +27,8 @@ public class Config {
 
     public static class Zone {
         public static class Filters {
-            public String biome_regex = ".*";
+            public String biome_regex = Regex.ANY;
+            public String biome_tag_regex = Regex.ANY;
         }
         public Filters zone_matches = new Filters();
 
@@ -43,7 +44,7 @@ public class Config {
                 FRIENDLY, HOSTILE, ANY
             }
             public Attitude attitude = Attitude.ANY;
-            public String entity_id_regex = ".*";
+            public String entity_id_regex = Regex.ANY;
         }
         public Filters entity_matches = new Filters();
         public AttributeModifier[] attributes = new AttributeModifier[]{};
@@ -58,9 +59,9 @@ public class Config {
 
     public static class ItemModifier {
         public static class Filters {
-            public String item_id_regex = ".*";
-            public String loot_table_regex = ".*";
-            public String rarity_regex = ".*";
+            public String item_id_regex = Regex.ANY;
+            public String loot_table_regex = Regex.ANY;
+            public String rarity_regex = Regex.ANY;
         }
         public Filters item_matches = new Filters();
 

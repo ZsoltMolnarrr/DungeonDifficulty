@@ -8,6 +8,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeKeys;
 import net.powerscale.PowerScale;
 import net.powerscale.config.Config;
+import net.powerscale.config.Regex;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,15 +18,24 @@ import java.util.regex.Pattern;
 
 public class PatternMatching {
 
-    public record LocationData(String dimensionId, BlockPos position, String biome) {
+    public record BiomeData(String key, List<String> tags) { }
+
+    public record LocationData(String dimensionId, BlockPos position, BiomeData biome) {
         public static LocationData create(World world, BlockPos position) {
             var dimensionId = world.getRegistryKey().getValue().toString();
-            String biome = null;
+            BiomeData biome = null;
             if (position != null) {
-                biome = world.getBiome(position).getKey().orElse(BiomeKeys.PLAINS).getValue().toString();
+                var biomeKey = world.getBiome(position).getKey().orElse(BiomeKeys.PLAINS);
+                var entry = world.getRegistryManager().get(Registry.BIOME_KEY).entryOf(biomeKey);
+                var tags = entry.streamTags().map(biomeTagKey -> {
+                    return biomeTagKey.id().toString();
+                }).toList();
+                biome = new BiomeData(biomeKey.getValue().toString(), tags);
+                // System.out.println("Biome info! Key: " + biome + " tags: " + tags);
             }
             return new LocationData(dimensionId, position, biome);
         }
+
         public boolean matches(Config.Dimension.Filters filters) {
             if (filters == null) {
                 return true;
@@ -36,10 +46,22 @@ public class PatternMatching {
         }
 
         public boolean matches(Config.Zone.Filters filters) {
-            if (filters == null) {
+            if (filters == null || biome == null) {
                 return true;
             }
-            var result = PatternMatching.matches(biome, filters.biome_regex);
+            var result = PatternMatching.matches(biome.key, filters.biome_regex);
+            if (filters.biome_tag_regex != null
+                    && !filters.biome_tag_regex.isEmpty()
+                    && !filters.biome_tag_regex.equals(Regex.ANY)) {
+                var foundMatchingTag = false;
+                for(var tag: biome.tags) {
+                    if (PatternMatching.matches(tag, filters.biome_tag_regex)) {
+                        foundMatchingTag = true;
+                        break;
+                    }
+                }
+                result = result && foundMatchingTag;
+            }
             // System.out.println("PatternMatching - biome:" + biome + " matches: " + filters.biome_regex + " - " + result);
             return result;
         }

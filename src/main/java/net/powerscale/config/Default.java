@@ -83,7 +83,7 @@ public class Default {
         blazeSpawners.spawn_count_multiplier = 2F;
         blazeSpawners.max_nearby_entities_multiplier = 3F;
         nether.entities = new Config.EntityModifier[] {
-            createEntityModifier(".*",
+            createEntityModifier(Regex.ANY,
                     new Config.AttributeModifier[]{
                         createDamageMultiplier(1.5F, 0),
                         createArmorBonus(2),
