@@ -9,7 +9,7 @@
     "issues": "https://github.com/ZsoltMolnarrr/PowerScale/issues",
     "homepage": "https://github.com/ZsoltMolnarrr/PowerScale"
   },
-  "license": "MIT",
+  "license": "GPL-3.0",
   "icon": "assets/powerscale/icon.png",
   "environment": "*",
   "entrypoints": {
