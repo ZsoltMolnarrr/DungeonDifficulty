@@ -1,4 +1,4 @@
-package net.powerscale.logic;
+package net.dungeon_difficulty.logic;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.world.World;

@@ -1,11 +1,11 @@
-package net.powerscale.logic;
+package net.dungeon_difficulty.logic;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
-import net.powerscale.config.Config;
+import net.dungeon_difficulty.config.Config;
 
 import java.util.List;
 

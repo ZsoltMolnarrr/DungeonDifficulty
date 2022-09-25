@@ -1,8 +1,8 @@
-package net.powerscale.mixin;
+package net.dungeon_difficulty.mixin;
 
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.item.ItemStack;
-import net.powerscale.logic.ItemScaling;
+import net.dungeon_difficulty.logic.ItemScaling;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;

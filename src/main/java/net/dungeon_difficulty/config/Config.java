@@ -1,4 +1,4 @@
-package net.powerscale.config;
+package net.dungeon_difficulty.config;
 
 import java.util.Random;
 

@@ -1,4 +1,4 @@
-package net.powerscale.logic;
+package net.dungeon_difficulty.logic;
 
 import com.google.common.collect.Multimap;
 import com.mojang.logging.LogUtils;
@@ -19,8 +19,8 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
-import net.powerscale.PowerScale;
-import net.powerscale.config.Config;
+import net.dungeon_difficulty.DungeonDifficulty;
+import net.dungeon_difficulty.config.Config;
 import org.slf4j.Logger;
 
 import java.util.*;
@@ -244,7 +244,7 @@ public class ItemScaling {
     }
 
     private static Double getRoundingUnit() {
-        var config = PowerScale.configManager.currentConfig;
+        var config = DungeonDifficulty.configManager.currentConfig;
         if (config.meta != null && config.meta.rounding_unit != null) {
             return config.meta.rounding_unit;
         }

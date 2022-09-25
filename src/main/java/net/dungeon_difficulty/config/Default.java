@@ -1,4 +1,4 @@
-package net.powerscale.config;
+package net.dungeon_difficulty.config;
 
 public class Default {
     public static Config config = createDefaultConfig();

@@ -1,4 +1,4 @@
-package net.powerscale.mixin;
+package net.dungeon_difficulty.mixin;
 
 import net.minecraft.entity.mob.Monster;
 import net.minecraft.server.world.ServerWorld;
@@ -7,9 +7,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.MobSpawnerEntry;
 import net.minecraft.world.MobSpawnerLogic;
-import net.powerscale.PowerScale;
-import net.powerscale.config.Config;
-import net.powerscale.logic.PatternMatching;
+import net.dungeon_difficulty.DungeonDifficulty;
+import net.dungeon_difficulty.config.Config;
+import net.dungeon_difficulty.logic.PatternMatching;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -30,7 +30,7 @@ public class MobSpawnerLogicMixin {
     @Shadow private MobSpawnerEntry spawnEntry;
     private boolean initialized = false;
 
-    private static String modifiedKey = "modified_by_" + PowerScale.MODID;
+    private static String modifiedKey = "modified_by_" + DungeonDifficulty.MODID;
 
     @Inject(method = "serverTick", at = @At("HEAD"))
     private void pre_serverTick(ServerWorld world, BlockPos pos, CallbackInfo ci) {

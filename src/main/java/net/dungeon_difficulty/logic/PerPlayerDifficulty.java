@@ -1,8 +1,8 @@
-package net.powerscale.logic;
+package net.dungeon_difficulty.logic;
 
 import net.minecraft.world.World;
-import net.powerscale.PowerScale;
-import net.powerscale.config.Config;
+import net.dungeon_difficulty.DungeonDifficulty;
+import net.dungeon_difficulty.config.Config;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +13,7 @@ public class PerPlayerDifficulty {
         if (playerCount < 2) {
             return List.of();
         }
-        var perPlayer = PowerScale.configManager.currentConfig.perPlayerDifficulty;
+        var perPlayer = DungeonDifficulty.configManager.currentConfig.perPlayerDifficulty;
         if (perPlayer == null || perPlayer.entities == null || perPlayer.entities.length == 0) {
             return List.of();
         }

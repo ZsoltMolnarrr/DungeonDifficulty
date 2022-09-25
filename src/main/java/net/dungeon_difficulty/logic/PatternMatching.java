@@ -1,14 +1,14 @@
-package net.powerscale.logic;
+package net.dungeon_difficulty.logic;
 
+import net.dungeon_difficulty.DungeonDifficulty;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.Monster;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeKeys;
-import net.powerscale.PowerScale;
-import net.powerscale.config.Config;
-import net.powerscale.config.Regex;
+import net.dungeon_difficulty.config.Config;
+import net.dungeon_difficulty.config.Regex;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -184,7 +184,7 @@ public class PatternMatching {
 
     public static List<Location> getLocationsMatching(LocationData locationData) {
         var locations = new ArrayList<Location>();
-        for (var entry : PowerScale.configManager.currentConfig.dimensions) {
+        for (var entry : DungeonDifficulty.configManager.currentConfig.dimensions) {
             if (locationData.matches(entry.world_matches)) {
                 locations.add(new Location(entry.entities, entry.rewards));
                 if (entry.zones != null) {

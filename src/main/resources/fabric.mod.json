@@ -1,26 +1,26 @@
 {
   "schemaVersion": 1,
-  "id": "powerscale",
+  "id": "dungeon_difficulty",
   "version": "${version}",
-  "name": "Power Scale",
-  "description": "Increase the power of enemies and rewards",
+  "name": "Dungeon Difficulty",
+  "description": "Increase the difficulty and get matching rewards.",
   "authors": ["Daedelus"],
   "contact": {
-    "issues": "https://github.com/ZsoltMolnarrr/PowerScale/issues",
-    "homepage": "https://github.com/ZsoltMolnarrr/PowerScale"
+    "issues": "https://github.com/ZsoltMolnarrr/DungeonDifficulty/issues",
+    "homepage": "https://github.com/ZsoltMolnarrr/DungeonDifficulty"
   },
   "license": "GPL-3.0",
-  "icon": "assets/powerscale/icon.png",
+  "icon": "assets/dungeon_difficulty/icon.png",
   "environment": "*",
   "entrypoints": {
     "client": [
     ],
     "main": [
-      "net.powerscale.PowerScale"
+      "net.dungeon_difficulty.DungeonDifficulty"
     ]
   },
   "mixins": [
-    "powerscale.mixins.json"
+    "dungeon_difficulty.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.14.0",
