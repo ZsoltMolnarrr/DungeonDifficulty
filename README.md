@@ -15,6 +15,7 @@
 
 # 📦 Features
 
+- Per player difficulty
 - Dimension and biome specific ruleset
 - Each ruleset can adjust entities and looted items
 - Entities attributes and spawner settings can be adjusted (for example: more health, armor, etc...)
