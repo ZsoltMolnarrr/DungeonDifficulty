@@ -3,8 +3,9 @@ package net.dungeon_difficulty.logic;
 import net.dungeon_difficulty.DungeonDifficulty;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.Monster;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeKeys;
 import net.dungeon_difficulty.config.Config;
@@ -26,7 +27,7 @@ public class PatternMatching {
             BiomeData biome = null;
             if (position != null) {
                 var biomeKey = world.getBiome(position).getKey().orElse(BiomeKeys.PLAINS);
-                var entry = world.getRegistryManager().get(Registry.BIOME_KEY).entryOf(biomeKey);
+                var entry = world.getRegistryManager().get(RegistryKeys.BIOME).entryOf(biomeKey);
                 var tags = entry.streamTags().map(biomeTagKey -> {
                     return biomeTagKey.id().toString();
                 }).toList();
@@ -119,7 +120,7 @@ public class PatternMatching {
 
     public record EntityData(String entityId, boolean isHostile) {
         public static EntityData create(LivingEntity entity) {
-            var entityId = Registry.ENTITY_TYPE.getId(entity.getType()).toString();
+            var entityId = Registries.ENTITY_TYPE.getId(entity.getType()).toString();
             var isHostile = entity instanceof Monster;
             return new EntityData(entityId, isHostile);
         }

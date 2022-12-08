@@ -15,9 +15,9 @@ import net.minecraft.loot.function.LootFunctionType;
 import net.minecraft.loot.function.LootFunctionTypes;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.dungeon_difficulty.DungeonDifficulty;
 import net.dungeon_difficulty.config.Config;
@@ -60,7 +60,7 @@ public class ItemScaling {
     }
 
     public static void scale(ItemStack itemStack, World world, BlockPos position, String lootTableId) {
-        var itemId = Registry.ITEM.getId(itemStack.getItem()).toString();
+        var itemId = Registries.ITEM.getId(itemStack.getItem()).toString();
         var rarity = itemStack.getRarity().toString();
         var dimensionId = world.getRegistryKey().getValue().toString(); // Just for logging
         if (itemStack.getItem() instanceof ToolItem || itemStack.getItem() instanceof RangedWeaponItem) {
@@ -102,7 +102,7 @@ public class ItemScaling {
                 debug("Starting to applying " + modifier.attribute + " to " + itemId);
 
                 // The attribute we want to modify
-                var attribute = Registry.ATTRIBUTE.get(new Identifier(modifier.attribute));
+                var attribute = Registries.ATTRIBUTE.get(new Identifier(modifier.attribute));
 
                 Map<EquipmentSlot, Collection<EntityAttributeModifier>> slotSpecificAttributeCollections = new HashMap();
 
