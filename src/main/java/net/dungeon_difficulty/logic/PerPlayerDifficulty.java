@@ -13,7 +13,7 @@ public class PerPlayerDifficulty {
         if (playerCount < 2) {
             return List.of();
         }
-        var perPlayer = DungeonDifficulty.configManager.currentConfig.perPlayerDifficulty;
+        var perPlayer = DungeonDifficulty.configManager.value.perPlayerDifficulty;
         if (perPlayer == null || perPlayer.entities == null || perPlayer.entities.length == 0) {
             return List.of();
         }

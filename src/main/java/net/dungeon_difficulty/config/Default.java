@@ -191,7 +191,7 @@ public class Default {
     }
 
     private static Config.AttributeModifier createProjectileMultiplier(float value, float randomness) {
-        var modifier = new Config.AttributeModifier("generic.projectile_damage", value);
+        var modifier = new Config.AttributeModifier("projectile_damage:generic", value);
         modifier.randomness = randomness;
         return modifier;
     }

@@ -33,14 +33,14 @@ public class DungeonDifficulty implements ModInitializer {
 
     public static void reloadConfig() {
         configManager.load();
-        var config = configManager.currentConfig;
+        var config = configManager.value;
         if (config.meta != null) {
             configManager.sanitize = config.meta.sanitize_config;
             if (config.meta.override_with_default) {
-                configManager.currentConfig = Default.config;
+                configManager.value = Default.config;
             }
         }
         configManager.save();
-        System.out.println("PowerScale config refreshed: " + (new Gson()).toJson(configManager.currentConfig));
+        // System.out.println("PowerScale config refreshed: " + (new Gson()).toJson(configManager.value));
     }
 }

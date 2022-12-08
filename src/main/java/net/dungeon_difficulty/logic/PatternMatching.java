@@ -184,7 +184,7 @@ public class PatternMatching {
 
     public static List<Location> getLocationsMatching(LocationData locationData) {
         var locations = new ArrayList<Location>();
-        for (var entry : DungeonDifficulty.configManager.currentConfig.dimensions) {
+        for (var entry : DungeonDifficulty.configManager.value.dimensions) {
             if (locationData.matches(entry.world_matches)) {
                 locations.add(new Location(entry.entities, entry.rewards));
                 if (entry.zones != null) {

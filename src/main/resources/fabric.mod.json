@@ -23,10 +23,10 @@
     "dungeon_difficulty.mixins.json"
   ],
   "depends": {
+    "minecraft": "1.19.X",
     "fabricloader": ">=0.14.0",
     "fabric": "*",
-    "minecraft": "1.19.X",
-    "projectiledamage": ">=1.0.8"
+    "projectile_damage": ">=3.0.0"
   },
   "custom": {
     "modmenu": {
