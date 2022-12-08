@@ -23,9 +23,9 @@
     "dungeon_difficulty.mixins.json"
   ],
   "depends": {
-    "minecraft": ">=1.19.3",
+    "minecraft": "1.19.X",
     "fabricloader": ">=0.14.0",
-    "fabric-api": "*",
+    "fabric": "*",
     "projectile_damage": ">=3.0.0"
   },
   "custom": {

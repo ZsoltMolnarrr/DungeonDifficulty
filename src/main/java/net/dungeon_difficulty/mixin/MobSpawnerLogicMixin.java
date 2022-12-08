@@ -1,10 +1,10 @@
 package net.dungeon_difficulty.mixin;
 
 import net.minecraft.entity.mob.Monster;
-import net.minecraft.registry.Registries;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.MobSpawnerEntry;
 import net.minecraft.world.MobSpawnerLogic;
 import net.dungeon_difficulty.DungeonDifficulty;
@@ -43,7 +43,7 @@ public class MobSpawnerLogicMixin {
 
             try {
                 var entityId = this.spawnEntry.getNbt().getString("id");
-                var entityType = Registries.ENTITY_TYPE.get(new Identifier(entityId));
+                var entityType = Registry.ENTITY_TYPE.get(new Identifier(entityId));
                 var testEntity = entityType.create(world);
                 var isMonster = testEntity instanceof Monster;
                 var entityData = new PatternMatching.EntityData(entityId, isMonster);

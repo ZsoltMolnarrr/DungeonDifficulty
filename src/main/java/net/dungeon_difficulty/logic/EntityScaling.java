@@ -2,8 +2,8 @@ package net.dungeon_difficulty.logic;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.dungeon_difficulty.config.Config;
 
@@ -31,7 +31,7 @@ public class EntityScaling {
             if (modifier.attribute == null) {
                 continue;
             }
-            var attribute = Registries.ATTRIBUTE.get(new Identifier(modifier.attribute));
+            var attribute = Registry.ATTRIBUTE.get(new Identifier(modifier.attribute));
             if (!entity.getAttributes().hasAttribute(attribute)) {
                 continue;
             }
