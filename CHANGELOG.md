@@ -1,3 +1,6 @@
+# 1.2.1
+- Fix some item attributes duplication
+
 # 1.2.0
 - Update dependencies
 
