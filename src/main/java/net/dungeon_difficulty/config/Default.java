@@ -46,6 +46,13 @@ public class Default {
         var overworld = new Config.Dimension();
         overworld.world_matches.dimension_regex = "minecraft:overworld";
         overworld.difficulty = new Config.DifficultyReference(normalDifficulty.name, 1);
+        var nether = new Config.Dimension();
+        nether.world_matches.dimension_regex = "minecraft:the_nether";
+        nether.difficulty = new Config.DifficultyReference(normalDifficulty.name, 2);
+        var end = new Config.Dimension();
+        end.world_matches.dimension_regex = "minecraft:the_end";
+        end.difficulty = new Config.DifficultyReference(normalDifficulty.name, 3);
+
 
 //        var cold_biomes = new Config.Zone();
 //        cold_biomes.zone_matches.biome_regex = "frozen|snowy|ice";
@@ -190,8 +197,7 @@ public class Default {
 
         var config = new Config();
         config.difficulty_types = new Config.DifficultyType[] { normalDifficulty };
-        //config.dimensions = new Config.Dimension[] { overworld, nether, end, anyDimension };
-        config.dimensions = new Config.Dimension[] { overworld };
+        config.dimensions = new Config.Dimension[] { overworld, nether, end };
         config.perPlayerDifficulty = perPlayerDifficulty;
         return config;
     }
@@ -231,7 +237,7 @@ public class Default {
 
     private static Config.AttributeModifier createArmorBonus(float value) {
         var modifier = new Config.AttributeModifier("generic.armor", value);
-        modifier.operation = Config.Operation.ADD;
+        modifier.operation = Config.Operation.ADDITION;
         return modifier;
     }
 
@@ -243,7 +249,7 @@ public class Default {
 
     private static Config.AttributeModifier createHealthBonus(float value) {
         var modifier = new Config.AttributeModifier("generic.max_health", value);
-        modifier.operation = Config.Operation.ADD;
+        modifier.operation = Config.Operation.ADDITION;
         return modifier;
     }
 

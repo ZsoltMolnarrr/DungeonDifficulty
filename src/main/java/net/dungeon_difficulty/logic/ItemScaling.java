@@ -60,11 +60,16 @@ public class ItemScaling {
     }
 
     public static void scale(ItemStack itemStack, World world, BlockPos position, String lootTableId) {
+        var locationData = PatternMatching.LocationData.create(world, position);
+        scale(itemStack, world, lootTableId, locationData);
+    }
+
+    public static void scale(ItemStack itemStack, World world, String lootTableId, PatternMatching.LocationData locationData) {
         var itemId = Registry.ITEM.getId(itemStack.getItem()).toString();
         var rarity = itemStack.getRarity().toString();
         var dimensionId = world.getRegistryKey().getValue().toString(); // Just for logging
+        var position = locationData.position();
         if (itemStack.getItem() instanceof ToolItem || itemStack.getItem() instanceof RangedWeaponItem) {
-            var locationData = PatternMatching.LocationData.create(world, position);
             var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.WEAPONS, lootTableId, itemId, rarity);
             debug("Item scaling start." + " dimension: " + dimensionId + " position: " + position + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
             var result = PatternMatching.getModifiersForItem(locationData, itemData);
@@ -73,7 +78,6 @@ public class ItemScaling {
         }
         if (itemStack.getItem() instanceof ArmorItem) {
             var armor = (ArmorItem)itemStack.getItem();
-            var locationData = PatternMatching.LocationData.create(world, position);
             var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.ARMOR, lootTableId, itemId, rarity);
             debug("Item scaling start." + " dimension: " + dimensionId + " position: " + position + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
             var result = PatternMatching.getModifiersForItem(locationData, itemData);
@@ -98,7 +102,7 @@ public class ItemScaling {
                 if (modifier.attribute == null) {
                     continue;
                 }
-                var modifierValue = modifier.randomizedValue() * level;
+                var modifierValue = modifier.randomizedValue(level);
                 debug("Starting to applying " + modifier.attribute + " to " + itemId);
 
                 // The attribute we want to modify
@@ -132,10 +136,10 @@ public class ItemScaling {
                                 + " current: " + valueSummary + " to be modified to:" + modifier.operation + " " + modifierValue);
                     }
                     switch (modifier.operation) {
-                        case ADD -> {
+                        case ADDITION -> {
                             valueSummary += modifierValue;
                         }
-                        case MULTIPLY -> {
+                        case MULTIPLY_BASE -> {
                             debug("Multiplying: " + valueSummary + " * " + modifierValue);
                             valueSummary *= 1F + modifierValue;
                         }
@@ -156,7 +160,7 @@ public class ItemScaling {
                                 createEntityAttributeModifier(
                                         slot,
                                         attribute,
-                                        "Scaled attribute modifier",
+                                        "DD Scaled",
                                         valueSummary,
                                         EntityAttributeModifier.Operation.ADDITION
                                 ),

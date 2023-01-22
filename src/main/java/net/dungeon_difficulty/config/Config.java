@@ -60,7 +60,7 @@ public class Config {
         public DifficultyReference difficulty;
     }
 
-    public enum Operation { ADD, MULTIPLY }
+    public enum Operation { ADDITION, MULTIPLY_BASE }
 
     public static class EntityModifier {
         public static class Filters {
@@ -99,7 +99,7 @@ public class Config {
 
     public static class AttributeModifier {
         public String attribute;
-        public Operation operation = Operation.MULTIPLY;
+        public Operation operation = Operation.MULTIPLY_BASE;
         public float randomness = 0;
         public float value = 1;
 
@@ -111,7 +111,8 @@ public class Config {
         }
 
         private static Random rng = new Random();
-        public float randomizedValue() {
+        public float randomizedValue(int level) {
+            var value = this.value * level;
             return (randomness > 0)
                     ?  rng.nextFloat(value - randomness, value + randomness)
                     : value;

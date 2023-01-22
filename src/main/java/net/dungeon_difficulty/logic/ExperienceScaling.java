@@ -8,9 +8,9 @@ public class ExperienceScaling {
         var locationData = PatternMatching.LocationData.create(world, entity.getBlockPos());
         var entityData = PatternMatching.EntityData.create(entity);
         float multiplier = 1.0F;
-        for (var modifier: PatternMatching.getModifiersForEntity(locationData, entityData)) {
-            multiplier *= modifier.experience_multiplier;
-        }
+//        for (var modifier: PatternMatching.getModifiersForEntity(locationData, entityData)) {
+//            multiplier *= modifier.experience_multiplier;
+//        }
         var xp = Math.round((float)experience * multiplier);
         // System.out.println("Scaled XP from: " + experience + " to: " + xp);
         return xp;

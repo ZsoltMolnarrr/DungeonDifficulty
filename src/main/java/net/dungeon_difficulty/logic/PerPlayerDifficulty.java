@@ -26,7 +26,7 @@ public class PerPlayerDifficulty {
                     var attributeModifier = new Config.AttributeModifier();
                     attributeModifier.attribute = baseAttributeModifier.attribute;
                     attributeModifier.value = 1.0F + (multiplier * baseAttributeModifier.value);
-                    attributeModifier.operation = Config.Operation.MULTIPLY;
+                    attributeModifier.operation = Config.Operation.MULTIPLY_BASE;
                     attributeModifiers.add(attributeModifier);
                 }
             }

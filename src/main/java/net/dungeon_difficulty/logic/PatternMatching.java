@@ -90,8 +90,8 @@ public class PatternMatching {
         ARMOR, WEAPONS
     }
 
-    public record ItemModifiers(List<Config.AttributeModifier> modifiers, int level) { }
-    public static ItemModifiers getModifiersForItem(LocationData locationData, ItemData itemData) {
+    public record ItemScaleResult(List<Config.AttributeModifier> modifiers, int level) { }
+    public static ItemScaleResult getModifiersForItem(LocationData locationData, ItemData itemData) {
         var attributeModifiers = new ArrayList<Config.AttributeModifier>();
         var difficulty = getDifficulty(locationData);
         var level = 0;
@@ -117,7 +117,7 @@ public class PatternMatching {
                 }
             }
         }
-        return new ItemModifiers(attributeModifiers, level);
+        return new ItemScaleResult(attributeModifiers, level);
     }
 
 
@@ -152,40 +152,45 @@ public class PatternMatching {
         }
     }
 
-    public static List<Config.AttributeModifier> getAttributeModifiersForEntity(LocationData locationData, EntityData entityData) {
+    public record EntityScaleResult(List<Config.AttributeModifier> modifiers, int level) { }
+
+    public static EntityScaleResult getAttributeModifiersForEntity(LocationData locationData, EntityData entityData) {
         var attributeModifiers = new ArrayList<Config.AttributeModifier>();
-        for (var modifier: getModifiersForEntity(locationData, entityData)) {
-            attributeModifiers.addAll(Arrays.asList(modifier.attributes));
+        var difficulty = getDifficulty(locationData);
+        var level = 0;
+        if (difficulty != null) {
+            level = difficulty.level();
+            for (var modifier: getModifiersForEntity(difficulty.type().entities, entityData)) {
+                attributeModifiers.addAll(Arrays.asList(modifier.attributes));
+            }
         }
-        return attributeModifiers;
+        return new EntityScaleResult(attributeModifiers, level);
     }
 
     public static List<Config.SpawnerModifier> getModifiersForSpawner(LocationData locationData, EntityData entityData) {
         var spawnerModifiers = new ArrayList<Config.SpawnerModifier>();
-        for (var modifier: getModifiersForEntity(locationData, entityData)) {
-            if(modifier.spawners != null) {
-                spawnerModifiers.add(modifier.spawners);
-            }
-        }
+//        for (var modifier: getModifiersForEntity(locationData, entityData)) {
+//            if(modifier.spawners != null) {
+//                spawnerModifiers.add(modifier.spawners);
+//            }
+//        }
         return spawnerModifiers;
     }
 
-    public static List<Config.EntityModifier> getModifiersForEntity(LocationData locationData, EntityData entityData) {
+    public static List<Config.EntityModifier> getModifiersForEntity(Config.EntityModifier[] definitions, EntityData entityData) {
         var entityModifiers = new ArrayList<Config.EntityModifier>();
-//        var locations = getLocationsMatching(locationData);
-//        for (var location : locations) {
-//            for(var entityModifier: location.entities) {
-//                if (entityData.matches(entityModifier.entity_matches)) {
-//                    entityModifiers.add(entityModifier);
-//                }
-//            }
-//        }
+        for(var entityModifier: definitions) {
+            if (entityData.matches(entityModifier.entity_matches)) {
+                entityModifiers.add(entityModifier);
+            }
+        }
         return entityModifiers;
     }
 
     public record Location(Config.EntityModifier[] entities,
                            Config.Rewards rewards) { }
 
+    @Nullable
     public static Difficulty getDifficulty(LocationData locationData) {
         var highestLevel = 0;
         for (var dimension : DungeonDifficulty.configManager.value.dimensions) {
