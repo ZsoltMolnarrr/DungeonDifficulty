@@ -2,18 +2,18 @@ package net.dungeon_difficulty.logic;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.world.World;
 
 public class EntityScaling {
-    public static void scale(Entity entity, World world) {
+    public static void scale(Entity entity, ServerWorld world) {
         if (entity instanceof LivingEntity) {
             var livingEntity = (LivingEntity)entity;
             var locationData = PatternMatching.LocationData.create(world, livingEntity.getBlockPos());
             var entityData = PatternMatching.EntityData.create(livingEntity);
 
-            // EntityScaling.apply(PerPlayerDifficulty.getAttributeModifiers(entityData, world), livingEntity);
+            EntityScaling.apply(PerPlayerDifficulty.getAttributeModifiers(entityData, world), livingEntity);
             EntityScaling.apply(PatternMatching.getAttributeModifiersForEntity(locationData, entityData), livingEntity);
 
             for (var itemStack: livingEntity.getItemsEquipped()) {

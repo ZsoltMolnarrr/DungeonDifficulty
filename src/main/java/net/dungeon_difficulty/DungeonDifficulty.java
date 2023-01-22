@@ -1,6 +1,5 @@
 package net.dungeon_difficulty;
 
-import com.google.gson.Gson;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.CommandManager;
 import net.dungeon_difficulty.config.Config;
@@ -36,7 +35,7 @@ public class DungeonDifficulty implements ModInitializer {
         var config = configManager.value;
         if (config.meta != null) {
             configManager.sanitize = config.meta.sanitize_config;
-            if (config.meta.override_with_default) {
+            if (!config.meta.allow_customization) {
                 configManager.value = Default.config;
             }
         }

@@ -6,15 +6,18 @@ public class Config {
 
     public Meta meta = new Meta();
     public class Meta {
-        public String comment = "IMPORTANT! Make sure to set `override_with_default` to `false` to allow customization of the config";
-        public boolean override_with_default = true;
+        public String comment = "IMPORTANT! Make sure to set `allow_customization` to `true` to allow customization of the config";
+        public boolean allow_customization = false;
         public boolean sanitize_config = true;
         public Double rounding_unit = 0.5;
     }
 
     public PerPlayerDifficulty perPlayerDifficulty;
     public static class PerPlayerDifficulty {
-        public EntityBaseModifier[] entities = new EntityBaseModifier[]{};
+        public boolean enabled = true;
+        public enum Counting { EVERYWHERE, DIMENSION }
+        public Counting counting = Counting.EVERYWHERE;
+        public EntityModifier[] entities = new EntityModifier[]{};
     }
 
     public DifficultyType[] difficulty_types;
@@ -76,11 +79,6 @@ public class Config {
         public float experience_multiplier = 1;
     }
 
-    public static class EntityBaseModifier {
-        public EntityModifier.Filters entity_matches = new EntityModifier.Filters();
-        public AttributeBaseMultiplier[] attributes = new AttributeBaseMultiplier[]{};
-    }
-
     public static class Rewards {
         public ItemModifier[] armor = new ItemModifier[]{};
         public ItemModifier[] weapons = new ItemModifier[]{};
@@ -116,17 +114,6 @@ public class Config {
             return (randomness > 0)
                     ?  rng.nextFloat(value - randomness, value + randomness)
                     : value;
-        }
-    }
-
-    public static class AttributeBaseMultiplier {
-        public String attribute = null;
-        public float value = 0;
-
-        public AttributeBaseMultiplier() { }
-        public AttributeBaseMultiplier(String attribute, float value) {
-            this.attribute = attribute;
-            this.value = value;
         }
     }
 

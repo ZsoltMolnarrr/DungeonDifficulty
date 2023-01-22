@@ -32,13 +32,13 @@ public class Default {
 
         // Per Player Difficulty
         var perPlayerDifficulty = new Config.PerPlayerDifficulty();
-        var perPlayerEntityModifier = new Config.EntityBaseModifier();
+        var perPlayerEntityModifier = new Config.EntityModifier();
         perPlayerEntityModifier.entity_matches.entity_id_regex = Regex.ANY;
-        perPlayerEntityModifier.attributes = new Config.AttributeBaseMultiplier[] {
-                new Config.AttributeBaseMultiplier("generic.attack_damage", 0.2F),
-                new Config.AttributeBaseMultiplier("generic.max_health", 0.5F)
+        perPlayerEntityModifier.attributes = new Config.AttributeModifier[] {
+                createDamageMultiplier(0.2F, 0),
+                createHealthMultiplier(0.2F, 0F)
         };
-        perPlayerDifficulty.entities = new Config.EntityBaseModifier[] {
+        perPlayerDifficulty.entities = new Config.EntityModifier[] {
                 perPlayerEntityModifier
         };
 
