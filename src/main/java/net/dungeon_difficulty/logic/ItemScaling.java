@@ -67,22 +67,22 @@ public class ItemScaling {
             var locationData = PatternMatching.LocationData.create(world, position);
             var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.WEAPONS, lootTableId, itemId, rarity);
             debug("Item scaling start." + " dimension: " + dimensionId + " position: " + position + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
-            var modifiers = PatternMatching.getModifiersForItem(locationData, itemData);
-            debug("Pattern matching found " + modifiers.size() + " attribute modifiers");
-            applyModifiersForItemStack(new EquipmentSlot[]{ EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND }, itemId, itemStack, modifiers);
+            var result = PatternMatching.getModifiersForItem(locationData, itemData);
+            debug("Pattern matching found " + result.modifiers().size() + " attribute modifiers");
+            applyModifiersForItemStack(new EquipmentSlot[]{ EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND }, itemId, itemStack, result.modifiers(), result.level());
         }
         if (itemStack.getItem() instanceof ArmorItem) {
             var armor = (ArmorItem)itemStack.getItem();
             var locationData = PatternMatching.LocationData.create(world, position);
             var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.ARMOR, lootTableId, itemId, rarity);
             debug("Item scaling start." + " dimension: " + dimensionId + " position: " + position + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
-            var modifiers = PatternMatching.getModifiersForItem(locationData, itemData);
-            debug("Pattern matching found " + modifiers.size() + " attribute modifiers");
-            applyModifiersForItemStack(new EquipmentSlot[]{ armor.getSlotType() }, itemId, itemStack, modifiers);
+            var result = PatternMatching.getModifiersForItem(locationData, itemData);
+            debug("Pattern matching found " + result.modifiers().size() + " attribute modifiers");
+            applyModifiersForItemStack(new EquipmentSlot[]{ armor.getSlotType() }, itemId, itemStack, result.modifiers(), result.level());
         }
     }
 
-    private static void applyModifiersForItemStack(EquipmentSlot[] slots, String itemId, ItemStack itemStack, List<Config.AttributeModifier> modifiers) {
+    private static void applyModifiersForItemStack(EquipmentSlot[] slots, String itemId, ItemStack itemStack, List<Config.AttributeModifier> modifiers, int level) {
         copyItemAttributesToNBT(itemStack); // We need to do this, to avoid unscaled attributes vanishing
         for (int i = 0; i < modifiers.size(); ++i) {
             var modifier = modifiers.get(i);
@@ -98,7 +98,7 @@ public class ItemScaling {
                 if (modifier.attribute == null) {
                     continue;
                 }
-                var modifierValue = modifier.randomizedValue();
+                var modifierValue = modifier.randomizedValue() * level;
                 debug("Starting to applying " + modifier.attribute + " to " + itemId);
 
                 // The attribute we want to modify
@@ -137,7 +137,7 @@ public class ItemScaling {
                         }
                         case MULTIPLY -> {
                             debug("Multiplying: " + valueSummary + " * " + modifierValue);
-                            valueSummary *= modifierValue;
+                            valueSummary *= 1F + modifierValue;
                         }
                     }
                     debug("Value summary updated to: " + valueSummary);

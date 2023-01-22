@@ -17,6 +17,27 @@ public class Config {
         public EntityBaseModifier[] entities = new EntityBaseModifier[]{};
     }
 
+    public DifficultyType[] difficulty_types;
+    public static class DifficultyType {
+        public String name;
+        public EntityModifier[] entities = new EntityModifier[]{};
+        public Rewards rewards = new Rewards();
+
+        public DifficultyType() { }
+        public DifficultyType(String name) {
+            this.name = name;
+        }
+    }
+    public static class DifficultyReference {
+        public String name;
+        public int level = 0;
+        public DifficultyReference() { }
+        public DifficultyReference(String name, int level) {
+            this.name = name;
+            this.level = level;
+        }
+    }
+
     public Dimension[] dimensions;
 
     public static class Dimension {
@@ -25,8 +46,7 @@ public class Config {
         }
         public Filters world_matches = new Filters();
 
-        public EntityModifier[] entities = new EntityModifier[]{};
-        public Rewards rewards = new Rewards();
+        public DifficultyReference difficulty;
         public Zone[] zones = new Zone[]{};
     }
 
@@ -37,8 +57,7 @@ public class Config {
         }
         public Filters zone_matches = new Filters();
 
-        public EntityModifier[] entities = new EntityModifier[]{};
-        public Rewards rewards = new Rewards();
+        public DifficultyReference difficulty;
     }
 
     public enum Operation { ADD, MULTIPLY }

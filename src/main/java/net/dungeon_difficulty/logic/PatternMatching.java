@@ -9,6 +9,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeKeys;
 import net.dungeon_difficulty.config.Config;
 import net.dungeon_difficulty.config.Regex;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -89,33 +90,36 @@ public class PatternMatching {
         ARMOR, WEAPONS
     }
 
-    public static List<Config.AttributeModifier> getModifiersForItem(LocationData locationData, ItemData itemData) {
+    public record ItemModifiers(List<Config.AttributeModifier> modifiers, int level) { }
+    public static ItemModifiers getModifiersForItem(LocationData locationData, ItemData itemData) {
         var attributeModifiers = new ArrayList<Config.AttributeModifier>();
-        var locations = getLocationsMatching(locationData);
-        for (var location: locations) {
-            if (location.rewards != null) {
+        var difficulty = getDifficulty(locationData);
+        var level = 0;
+        if (difficulty != null) {
+            level = difficulty.level();
+            var rewards = difficulty.type().rewards;
+            if (rewards != null) {
                 Config.ItemModifier[] itemModifiers = null;
                 switch (itemData.kind) {
                     case ARMOR -> {
-                        itemModifiers = location.rewards.armor;
+                        itemModifiers = rewards.armor;
                     }
                     case WEAPONS -> {
-                        itemModifiers = location.rewards.weapons;
+                        itemModifiers = rewards.weapons;
                     }
                 }
-                if (itemModifiers == null) {
-                    continue;
-                }
-                for(var entry: itemModifiers) {
-                    if (itemData.matches(entry.item_matches)) {
-                        attributeModifiers.addAll(Arrays.asList(entry.attributes));
+                if (itemModifiers != null) {
+                    for(var entry: itemModifiers) {
+                        if (itemData.matches(entry.item_matches)) {
+                            attributeModifiers.addAll(Arrays.asList(entry.attributes));
+                        }
                     }
                 }
             }
-
         }
-        return attributeModifiers;
+        return new ItemModifiers(attributeModifiers, level);
     }
+
 
     public record EntityData(String entityId, boolean isHostile) {
         public static EntityData create(LivingEntity entity) {
@@ -168,35 +172,54 @@ public class PatternMatching {
 
     public static List<Config.EntityModifier> getModifiersForEntity(LocationData locationData, EntityData entityData) {
         var entityModifiers = new ArrayList<Config.EntityModifier>();
-        var locations = getLocationsMatching(locationData);
-        for (var location : locations) {
-            for(var entityModifier: location.entities) {
-                if (entityData.matches(entityModifier.entity_matches)) {
-                    entityModifiers.add(entityModifier);
-                }
-            }
-        }
+//        var locations = getLocationsMatching(locationData);
+//        for (var location : locations) {
+//            for(var entityModifier: location.entities) {
+//                if (entityData.matches(entityModifier.entity_matches)) {
+//                    entityModifiers.add(entityModifier);
+//                }
+//            }
+//        }
         return entityModifiers;
     }
 
     public record Location(Config.EntityModifier[] entities,
                            Config.Rewards rewards) { }
 
-    public static List<Location> getLocationsMatching(LocationData locationData) {
-        var locations = new ArrayList<Location>();
-        for (var entry : DungeonDifficulty.configManager.value.dimensions) {
-            if (locationData.matches(entry.world_matches)) {
-                locations.add(new Location(entry.entities, entry.rewards));
-                if (entry.zones != null) {
-                    for(var zone: entry.zones) {
+    public static Difficulty getDifficulty(LocationData locationData) {
+        var highestLevel = 0;
+        for (var dimension : DungeonDifficulty.configManager.value.dimensions) {
+            if (locationData.matches(dimension.world_matches)) {
+                var dimensionDifficulty = new Difficulty(findDifficultyType(dimension.difficulty.name), dimension.difficulty.level);
+                if (dimension.zones != null) {
+                    for(var zone: dimension.zones) {
                         if(locationData.matches(zone.zone_matches)) {
-                            locations.add(new Location(zone.entities, zone.rewards));
+                            var zoneDifficulty = new Difficulty(findDifficultyType(zone.difficulty.name), zone.difficulty.level);
+                            if (zoneDifficulty.isValid()) {
+                                return zoneDifficulty;
+                            }
                         }
                     }
                 }
+                if (dimensionDifficulty.isValid()) {
+                    return dimensionDifficulty;
+                }
             }
         }
-        return locations;
+        return null;
+    }
+
+    @Nullable
+    private static Config.DifficultyType findDifficultyType(String name) {
+        if (name == null || name.isEmpty()) {
+            return null;
+        }
+        for(var entry: DungeonDifficulty.configManager.value.difficulty_types) {
+            if (name.equals(entry.name)) {
+                return entry;
+            }
+        }
+        return null;
     }
 
     private static boolean matches(String subject, String nullableRegex) {
