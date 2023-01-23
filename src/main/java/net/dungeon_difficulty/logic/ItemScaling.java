@@ -21,7 +21,6 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.world.World;
 import org.slf4j.Logger;
 
 import java.util.*;
@@ -65,7 +64,7 @@ public class ItemScaling {
         scale(itemStack, world, lootTableId, locationData);
     }
 
-    public static void scale(ItemStack itemStack, World world, String lootTableId, PatternMatching.LocationData locationData) {
+    public static void scale(ItemStack itemStack, ServerWorld world, String lootTableId, PatternMatching.LocationData locationData) {
         var itemId = Registry.ITEM.getId(itemStack.getItem()).toString();
         var rarity = itemStack.getRarity().toString();
         var dimensionId = world.getRegistryKey().getValue().toString(); // Just for logging
@@ -73,7 +72,7 @@ public class ItemScaling {
         if (itemStack.getItem() instanceof ToolItem || itemStack.getItem() instanceof RangedWeaponItem) {
             var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.WEAPONS, lootTableId, itemId, rarity);
             debug("Item scaling start." + " dimension: " + dimensionId + " position: " + position + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
-            var result = PatternMatching.getModifiersForItem(locationData, itemData);
+            var result = PatternMatching.getModifiersForItem(locationData, itemData, world);
             debug("Pattern matching found " + result.modifiers().size() + " attribute modifiers");
             applyModifiersForItemStack(new EquipmentSlot[]{ EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND }, itemId, itemStack, result.modifiers(), result.level());
         }
@@ -81,7 +80,7 @@ public class ItemScaling {
             var armor = (ArmorItem)itemStack.getItem();
             var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.ARMOR, lootTableId, itemId, rarity);
             debug("Item scaling start." + " dimension: " + dimensionId + " position: " + position + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
-            var result = PatternMatching.getModifiersForItem(locationData, itemData);
+            var result = PatternMatching.getModifiersForItem(locationData, itemData, world);
             debug("Pattern matching found " + result.modifiers().size() + " attribute modifiers");
             applyModifiersForItemStack(new EquipmentSlot[]{ armor.getSlotType() }, itemId, itemStack, result.modifiers(), result.level());
         }
@@ -112,7 +111,7 @@ public class ItemScaling {
         }
 
         copyItemAttributesToNBT(itemStack); // We need to do this, to avoid unscaled attributes vanishing
-        // if (true) return;
+
         var summary = new HashMap<String, ModifierSummary>();
         for (var modifier : modifiers) {
             var element = summary.get(modifier.attribute);
@@ -134,8 +133,7 @@ public class ItemScaling {
             // The attribute modifiers from this item stack
             var attributeModifiers = itemStack.getAttributeModifiers(slot);
             if (attributeModifiers.isEmpty()) { continue; }
-//            var gson = new GsonBuilder().setPrettyPrinting().create();
-//            System.out.println("ItemStack attributes after copying: " + gson.toJson(attributeModifiers));
+            // System.out.println("ItemStack attributes after copying: " + itemStack.getNbt());
 
             for (var entry: summary.entrySet()) {
                 // Apply additions
@@ -238,7 +236,7 @@ public class ItemScaling {
                 );
 
             }
-            // System.out.println("ItemStack NBT: " + itemStack.getNbt().toString());
+            //System.out.println("ItemStack NBT: " + itemStack.getNbt().toString());
         }
     }
 
@@ -264,7 +262,7 @@ public class ItemScaling {
             }
             for(var element: slotSpecificItemAttributes) {
                 for(var entry: element.attributes.entries()) {
-                    // debug("copyItemAttributesToNBT slot:" +  element.slot + " - adding: " + entry.getKey() + " - modifier: " + entry.getValue());
+                    // System.out.println("copyItemAttributesToNBT slot:" +  element.slot + " - adding: " + entry.getKey() + " - modifier: " + entry.getValue());
                     var attribute = entry.getKey();
                     itemStack.addAttributeModifier(
                             attribute,

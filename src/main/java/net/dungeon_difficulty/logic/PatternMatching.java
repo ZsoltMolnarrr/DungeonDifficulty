@@ -1,6 +1,8 @@
 package net.dungeon_difficulty.logic;
 
 import net.dungeon_difficulty.DungeonDifficulty;
+import net.dungeon_difficulty.config.Config;
+import net.dungeon_difficulty.config.Regex;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.Monster;
 import net.minecraft.server.world.ServerWorld;
@@ -9,9 +11,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.biome.BiomeKeys;
-import net.dungeon_difficulty.config.Config;
-import net.dungeon_difficulty.config.Regex;
-import net.minecraft.world.gen.structure.Structure;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -66,10 +65,14 @@ public class PatternMatching {
                 }
                 result = result && foundMatchingTag;
             }
-            if (filters.structure_id != null && world != null) {
-                var key = RegistryKey.of(Registry.STRUCTURE_KEY, new Identifier(filters.structure_id));
-                if (key != null) {
-                    result = result && world.getStructureAccessor().getStructureContaining(position, key).hasChildren();
+            if (result && filters.structure_id != null) {
+                if (world != null) {
+                    var key = RegistryKey.of(Registry.STRUCTURE_KEY, new Identifier(filters.structure_id));
+                    if (key != null) {
+                        result = result && world.getStructureAccessor().getStructureContaining(position, key).hasChildren();
+                    }
+                } else {
+                    result = false;
                 }
             }
             // System.out.println("PatternMatching - biome:" + biome + " matches: " + filters.biome_regex + " - " + result);
@@ -100,9 +103,9 @@ public class PatternMatching {
     }
 
     public record ItemScaleResult(List<Config.AttributeModifier> modifiers, int level) { }
-    public static ItemScaleResult getModifiersForItem(LocationData locationData, ItemData itemData) {
+    public static ItemScaleResult getModifiersForItem(LocationData locationData, ItemData itemData, ServerWorld world) {
         var attributeModifiers = new ArrayList<Config.AttributeModifier>();
-        var difficulty = getDifficulty(locationData, null);
+        var difficulty = getDifficulty(locationData, world);
         var level = 0;
         if (difficulty != null) {
             level = difficulty.level();
