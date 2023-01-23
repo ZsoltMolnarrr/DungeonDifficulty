@@ -99,7 +99,7 @@ public class PatternMatching {
             level = difficulty.level();
             var rewards = difficulty.type().rewards;
             if (rewards != null) {
-                Config.ItemModifier[] itemModifiers = null;
+                List<Config.ItemModifier> itemModifiers = null;
                 switch (itemData.kind) {
                     case ARMOR -> {
                         itemModifiers = rewards.armor;
@@ -167,17 +167,25 @@ public class PatternMatching {
         return new EntityScaleResult(attributeModifiers, level);
     }
 
-    public static List<Config.SpawnerModifier> getModifiersForSpawner(LocationData locationData, EntityData entityData) {
+    public record SpawnerScaleResult(List<Config.SpawnerModifier> modifiers, int level) { }
+
+    public static SpawnerScaleResult getModifiersForSpawner(LocationData locationData, EntityData entityData) {
         var spawnerModifiers = new ArrayList<Config.SpawnerModifier>();
-//        for (var modifier: getModifiersForEntity(locationData, entityData)) {
-//            if(modifier.spawners != null) {
-//                spawnerModifiers.add(modifier.spawners);
-//            }
-//        }
-        return spawnerModifiers;
+        var difficulty = getDifficulty(locationData);
+        int level = 0;
+        if (difficulty != null) {
+            level = difficulty.level();
+            // System.out.println("Found difficulty for spawner: " + difficulty.type().name + " level " + level);
+            for (var modifier: getModifiersForEntity(difficulty.type().entities, entityData)) {
+                if (modifier.spawners != null) {
+                    spawnerModifiers.add(modifier.spawners);
+                }
+            }
+        }
+        return new SpawnerScaleResult(spawnerModifiers, level);
     }
 
-    public static List<Config.EntityModifier> getModifiersForEntity(Config.EntityModifier[] definitions, EntityData entityData) {
+    public static List<Config.EntityModifier> getModifiersForEntity(List<Config.EntityModifier> definitions, EntityData entityData) {
         var entityModifiers = new ArrayList<Config.EntityModifier>();
         for(var entityModifier: definitions) {
             if (entityData.matches(entityModifier.entity_matches)) {
@@ -192,7 +200,6 @@ public class PatternMatching {
 
     @Nullable
     public static Difficulty getDifficulty(LocationData locationData) {
-        var highestLevel = 0;
         for (var dimension : DungeonDifficulty.configManager.value.dimensions) {
             if (locationData.matches(dimension.world_matches)) {
                 var dimensionDifficulty = new Difficulty(findDifficultyType(dimension.difficulty.name), dimension.difficulty.level);
@@ -219,7 +226,7 @@ public class PatternMatching {
         if (name == null || name.isEmpty()) {
             return null;
         }
-        for(var entry: DungeonDifficulty.configManager.value.difficulty_types) {
+        for(var entry: DifficultyTypes.resolved) {
             if (name.equals(entry.name)) {
                 return entry;
             }

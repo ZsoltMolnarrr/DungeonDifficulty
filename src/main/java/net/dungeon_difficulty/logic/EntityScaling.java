@@ -1,5 +1,6 @@
 package net.dungeon_difficulty.logic;
 
+import net.dungeon_difficulty.DungeonDifficulty;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -16,8 +17,10 @@ public class EntityScaling {
             EntityScaling.apply(PerPlayerDifficulty.getAttributeModifiers(entityData, world), livingEntity);
             EntityScaling.apply(PatternMatching.getAttributeModifiersForEntity(locationData, entityData), livingEntity);
 
-            for (var itemStack: livingEntity.getItemsEquipped()) {
-                ItemScaling.scale(itemStack, world, entityData.entityId(), locationData);
+            if (DungeonDifficulty.configManager.value.meta.entity_equipment_scaling) {
+                for (var itemStack : livingEntity.getItemsEquipped()) {
+                    ItemScaling.scale(itemStack, world, entityData.entityId(), locationData);
+                }
             }
         }
     }

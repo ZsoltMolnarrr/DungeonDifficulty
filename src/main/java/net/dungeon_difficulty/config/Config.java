@@ -1,15 +1,16 @@
 package net.dungeon_difficulty.config;
 
+import java.util.List;
 import java.util.Random;
 
 public class Config {
-
     public Meta meta = new Meta();
     public class Meta {
         public String comment = "IMPORTANT! Make sure to set `allow_customization` to `true` to allow customization of the config";
         public boolean allow_customization = false;
         public boolean sanitize_config = true;
         public Double rounding_unit = 0.5;
+        public boolean entity_equipment_scaling = true;
     }
 
     public PerPlayerDifficulty perPlayerDifficulty;
@@ -23,7 +24,8 @@ public class Config {
     public DifficultyType[] difficulty_types;
     public static class DifficultyType {
         public String name;
-        public EntityModifier[] entities = new EntityModifier[]{};
+        public String parent;
+        public List<EntityModifier> entities = List.of();
         public Rewards rewards = new Rewards();
 
         public DifficultyType() { }
@@ -80,8 +82,8 @@ public class Config {
     }
 
     public static class Rewards {
-        public ItemModifier[] armor = new ItemModifier[]{};
-        public ItemModifier[] weapons = new ItemModifier[]{};
+        public List<ItemModifier> armor = List.of();
+        public List<ItemModifier> weapons = List.of();
     }
 
     public static class ItemModifier {
@@ -118,11 +120,11 @@ public class Config {
     }
 
     public static class SpawnerModifier {
-        public float spawn_range_multiplier = 1;
-        public float spawn_count_multiplier = 1;
-        public float max_nearby_entities_multiplier = 1;
-        public float min_spawn_delay_multiplier = 1;
-        public float max_spawn_delay_multiplier = 1;
-        public float required_player_range_multiplier = 1;
+        public float spawn_range_multiplier = 0;
+        public float spawn_count_multiplier = 0;
+        public float max_nearby_entities_multiplier = 0;
+        public float min_spawn_delay_multiplier = 0;
+        public float max_spawn_delay_multiplier = 0;
+        public float required_player_range_multiplier = 0;
     }
 }

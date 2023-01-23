@@ -1,24 +1,26 @@
 package net.dungeon_difficulty.config;
 
+import java.util.List;
+
 public class Default {
     public static Config config = createDefaultConfig();
 
     private static Config createDefaultConfig() {
         // Difficulty types
         var normalDifficulty = new Config.DifficultyType("normal");
-        normalDifficulty.rewards.weapons = new Config.ItemModifier[]{
+        normalDifficulty.rewards.weapons = List.of(
                 createItemModifier(new Config.AttributeModifier[]{
                         createDamageMultiplier(0.3F, 0.2F),
                         createProjectileMultiplier(0.3F, 0.2F)
-                }),
-        };
-        normalDifficulty.rewards.armor = new Config.ItemModifier[]{
+                })
+        );
+        normalDifficulty.rewards.armor = List.of(
                 createItemModifier(new Config.AttributeModifier[]{
                         createArmorMultiplier(0.2F),
                         createHealthBonus(2)
-                }),
-        };
-        normalDifficulty.entities = new Config.EntityModifier[] {
+                })
+        );
+        normalDifficulty.entities = List.of(
                 createEntityModifier(Regex.ANY,
                         new Config.AttributeModifier[]{
                                 createDamageMultiplier(0.5F, 0),
@@ -27,8 +29,24 @@ public class Default {
                         },
                         null,
                         2F)
-        };
+        );
 
+        var dungeonDifficulty = new Config.DifficultyType("dungeon");
+        dungeonDifficulty.parent = normalDifficulty.name;
+
+        var dungeonSpawners = new Config.SpawnerModifier();
+        dungeonSpawners = new Config.SpawnerModifier();
+        dungeonSpawners.min_spawn_delay_multiplier = -0.2F;
+        dungeonSpawners.max_spawn_delay_multiplier = -0.2F;
+        dungeonSpawners.spawn_count_multiplier = 0.5F;
+        dungeonSpawners.max_nearby_entities_multiplier = 1F;
+
+        dungeonDifficulty.entities = List.of(
+                createEntityModifier(Regex.ANY,
+                        new Config.AttributeModifier[]{ },
+                        dungeonSpawners,
+                        2F)
+        );
 
         // Per Player Difficulty
         var perPlayerDifficulty = new Config.PerPlayerDifficulty();
@@ -48,7 +66,7 @@ public class Default {
         overworld.difficulty = new Config.DifficultyReference(normalDifficulty.name, 1);
         var nether = new Config.Dimension();
         nether.world_matches.dimension_regex = "minecraft:the_nether";
-        nether.difficulty = new Config.DifficultyReference(normalDifficulty.name, 2);
+        nether.difficulty = new Config.DifficultyReference(dungeonDifficulty.name, 4);
         var end = new Config.Dimension();
         end.world_matches.dimension_regex = "minecraft:the_end";
         end.difficulty = new Config.DifficultyReference(normalDifficulty.name, 3);
@@ -196,7 +214,7 @@ public class Default {
 //        anyDimension.rewards.weapons = new Config.ItemModifier[] { rares, epics };
 
         var config = new Config();
-        config.difficulty_types = new Config.DifficultyType[] { normalDifficulty };
+        config.difficulty_types = new Config.DifficultyType[] { normalDifficulty, dungeonDifficulty };
         config.dimensions = new Config.Dimension[] { overworld, nether, end };
         config.perPlayerDifficulty = perPlayerDifficulty;
         return config;

@@ -1,11 +1,12 @@
 package net.dungeon_difficulty;
 
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.minecraft.server.command.CommandManager;
 import net.dungeon_difficulty.config.Config;
 import net.dungeon_difficulty.config.Default;
+import net.dungeon_difficulty.logic.DifficultyTypes;
 import net.dungeon_difficulty.logic.ItemScaling;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.minecraft.server.command.CommandManager;
 import net.tinyconfig.ConfigManager;
 
 public class DungeonDifficulty implements ModInitializer {
@@ -25,6 +26,8 @@ public class DungeonDifficulty implements ModInitializer {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(CommandManager.literal(MODID + "_config_reload").executes(context -> {
                 DungeonDifficulty.reloadConfig();
+                // var gson = new GsonBuilder().setPrettyPrinting().create();
+                // System.out.println("Resolved difficulty types: " + gson.toJson(DifficultyTypes.resolved));
                 return 1;
             }));
         });
@@ -39,6 +42,7 @@ public class DungeonDifficulty implements ModInitializer {
                 configManager.value = Default.config;
             }
         }
+        DifficultyTypes.resolve();
         configManager.save();
         // System.out.println("PowerScale config refreshed: " + (new Gson()).toJson(configManager.value));
     }
