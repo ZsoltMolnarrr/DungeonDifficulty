@@ -2,6 +2,8 @@ package net.dungeon_difficulty.logic;
 
 import com.google.common.collect.Multimap;
 import com.mojang.logging.LogUtils;
+import net.dungeon_difficulty.DungeonDifficulty;
+import net.dungeon_difficulty.config.Config;
 import net.fabricmc.fabric.api.loot.v2.LootTableEvents;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
@@ -19,8 +21,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
-import net.dungeon_difficulty.DungeonDifficulty;
-import net.dungeon_difficulty.config.Config;
 import org.slf4j.Logger;
 
 import java.util.*;
@@ -86,93 +86,207 @@ public class ItemScaling {
         }
     }
 
+    private record ModifierSummary(float add, float multiplyBase) {
+        public ModifierSummary add(float value) {
+            return new ModifierSummary(add + value, multiplyBase);
+        }
+        public ModifierSummary multiplyBase(float value) {
+            return new ModifierSummary(add, multiplyBase  + value);
+        }
+    }
+
     private static void applyModifiersForItemStack(EquipmentSlot[] slots, String itemId, ItemStack itemStack, List<Config.AttributeModifier> modifiers, int level) {
+        if (modifiers.isEmpty()) {
+            return;
+        }
         copyItemAttributesToNBT(itemStack); // We need to do this, to avoid unscaled attributes vanishing
-        for (int i = 0; i < modifiers.size(); ++i) {
-            var modifier = modifiers.get(i);
-            try {
-                var shouldRound = true;
-                for (int j = i + 1; j < modifiers.size(); ++j) {
-                    // Looking for an modifier for the same attribute after this
-                    if (modifiers.get(j).attribute.equals(modifier.attribute)) {
-                        shouldRound = false;
-                        break;
-                    }
+
+        var summary = new HashMap<String, ModifierSummary>();
+        for (var modifier : modifiers) {
+            var element = summary.get(modifier.attribute);
+            if (element == null) {
+                element = new ModifierSummary(0, 0);
+            }
+            switch (modifier.operation) {
+                case ADDITION -> {
+                    element = element.add(modifier.randomizedValue(level));
                 }
-                if (modifier.attribute == null) {
-                    continue;
+                case MULTIPLY_BASE -> {
+                    element = element.multiplyBase(modifier.randomizedValue(level));
                 }
-                var modifierValue = modifier.randomizedValue(level);
-                debug("Starting to applying " + modifier.attribute + " to " + itemId);
+            }
+            summary.put(modifier.attribute, element);
+        }
 
-                // The attribute we want to modify
-                var attribute = Registry.ATTRIBUTE.get(new Identifier(modifier.attribute));
+        Map<EquipmentSlot, Collection<EntityAttributeModifier>> slotSpecificAttributeCollections = new HashMap();
 
-                Map<EquipmentSlot, Collection<EntityAttributeModifier>> slotSpecificAttributeCollections = new HashMap();
+        for(var slot: slots) {
+            // The attribute modifiers from this item stack
+            var attributeModifiers = itemStack.getAttributeModifiers(slot);
+            if (attributeModifiers.isEmpty()) { continue; }
 
-                for(var slot: slots) {
-                    // The attribute modifiers from this item stack
-                    var attributeModifiers = itemStack.getAttributeModifiers(slot);
-
-                    // The modifiers changing the given attribute
-                    var attributeSpecificCollection = attributeModifiers.get(attribute);
-
-                    slotSpecificAttributeCollections.put(slot, attributeSpecificCollection);
+            for (var entry: summary.entrySet()) {
+                // Apply additions
+                try {
+                    var scaling = entry.getValue();
+                    if (scaling.add() == 0) {
+                        continue;
+                    }
+                    var attributeId = new Identifier(entry.getKey());
+                    var attribute = Registry.ATTRIBUTE.get(attributeId);
+                    var currentModifiers = attributeModifiers.get(attribute);
+                    var newValue = combineAdditionModifiers(currentModifiers) + scaling.add();
+                    removeAttributesFromItemStack(currentModifiers, itemStack);
+                    itemStack.addAttributeModifier(
+                            attribute,
+                            createEntityAttributeModifier(
+                                    slot,
+                                    attribute,
+                                    "DD Bonus",
+                                    newValue,
+                                    EntityAttributeModifier.Operation.ADDITION
+                            ),
+                            slot
+                    );
+                } catch (Exception e) {
+                    System.err.println("Failed to apply addition of " + entry.getKey() + " " + entry.getValue().add() + ", to: " + itemId);
+                    LOGGER.error("Reason: " + e.getMessage());
                 }
-
-                for(var entry: slotSpecificAttributeCollections.entrySet()) {
-                    var slot = entry.getKey();
-                    var attributeSpecificCollection = entry.getValue();
-                    var valueSummary = 0F;
-                    var mergedModifiers = new ArrayList<EntityAttributeModifier>();
-                    for (var attributeModifier : attributeSpecificCollection) {
-                        if (attributeModifier.getOperation() != EntityAttributeModifier.Operation.ADDITION) {
-                            continue;
-                        }
-
-                        valueSummary += attributeModifier.getValue();
-                        mergedModifiers.add(attributeModifier);
-                        debug("Found attribute value: " + attributeModifier.getValue()
-                                + " current: " + valueSummary + " to be modified to:" + modifier.operation + " " + modifierValue);
+            }
+            for (var entry: summary.entrySet()) {
+                // Apply multiply base
+                try {
+                    var scaling = entry.getValue();
+                    if (scaling.multiplyBase() == 0) {
+                        continue;
                     }
-                    switch (modifier.operation) {
-                        case ADDITION -> {
-                            valueSummary += modifierValue;
-                        }
-                        case MULTIPLY_BASE -> {
-                            debug("Multiplying: " + valueSummary + " * " + modifierValue);
-                            valueSummary *= 1F + modifierValue;
+                    var regex = entry.getKey();
+                    ArrayList<Identifier> attributeIds = new ArrayList<>();
+                    for(var attribute: attributeModifiers.keySet()) {
+                        var id = Registry.ATTRIBUTE.getId(attribute);
+                        var idString = id.toString();
+                        if (PatternMatching.matches(idString, regex)) {
+                            attributeIds.add(id);
                         }
                     }
-                    debug("Value summary updated to: " + valueSummary);
-                    if (valueSummary != 0) {
-                        for(var attributeModifier : mergedModifiers) {
-                            removeAttributesFromItemStack(attributeModifier, itemStack);
-                        }
-                        var roundingUnit = getRoundingUnit();
-                        if (shouldRound && roundingUnit != null) {
-                            valueSummary = (float)MathHelper.round(valueSummary, roundingUnit);
-                            debug("Rounded summary by " + roundingUnit + " to: " + valueSummary);
-                        }
-                        debug("Applying " + modifier.attribute + " to " + itemId + " value: " + valueSummary);
+                    for (var attributeId: attributeIds) {
+                        var attribute = Registry.ATTRIBUTE.get(attributeId);
+                        var currentModifiers = attributeModifiers.get(attribute);
+                        var newValue = combineAdditionModifiers(currentModifiers) * (1F + scaling.multiplyBase());
+                        removeAttributesFromItemStack(currentModifiers, itemStack);
                         itemStack.addAttributeModifier(
                                 attribute,
                                 createEntityAttributeModifier(
                                         slot,
                                         attribute,
-                                        "DD Scaled",
-                                        valueSummary,
+                                        "DD Multiply",
+                                        newValue,
                                         EntityAttributeModifier.Operation.ADDITION
                                 ),
                                 slot
                         );
                     }
+                } catch (Exception e) {
+                    System.err.println("Failed to apply multiply_base of " + entry.getKey() + " " + entry.getValue().add() + ", to: " + itemId);
+                    LOGGER.error("Reason: " + e.getMessage());
                 }
-            } catch (Exception e) {
-                LOGGER.error("Failed to apply modifier to: " + itemId + " modifier:" + modifier);
-                LOGGER.error("Reason: " + e.getMessage());
             }
         }
+//
+//        for (int i = 0; i < modifiers.size(); ++i) {
+//            var modifier = modifiers.get(i);
+//            try {
+//                var shouldRound = true;
+//                for (int j = i + 1; j < modifiers.size(); ++j) {
+//                    // Looking for anoth modifier for the same attribute after this
+//                    if (modifiers.get(j).attribute.equals(modifier.attribute)) {
+//                        shouldRound = false;
+//                        break;
+//                    }
+//                }
+//                if (modifier.attribute == null) {
+//                    continue;
+//                }
+//                var modifierValue = modifier.randomizedValue(level);
+//                debug("Starting to applying " + modifier.attribute + " to " + itemId);
+//
+//                // The attribute we want to modify
+//                var attribute = Registry.ATTRIBUTE.get(new Identifier(modifier.attribute));
+//
+//                Map<EquipmentSlot, Collection<EntityAttributeModifier>> slotSpecificAttributeCollections = new HashMap();
+//
+//                for(var slot: slots) {
+//                    // The attribute modifiers from this item stack
+//                    var attributeModifiers = itemStack.getAttributeModifiers(slot);
+//
+//                    // The modifiers changing the given attribute
+//                    var attributeSpecificCollection = attributeModifiers.get(attribute);
+//
+//                    slotSpecificAttributeCollections.put(slot, attributeSpecificCollection);
+//                }
+//
+//                for(var entry: slotSpecificAttributeCollections.entrySet()) {
+//                    var slot = entry.getKey();
+//                    var attributeSpecificCollection = entry.getValue();
+//                    var valueSummary = 0F;
+//                    var mergedModifiers = new ArrayList<EntityAttributeModifier>();
+//                    for (var attributeModifier : attributeSpecificCollection) {
+//                        if (attributeModifier.getOperation() != EntityAttributeModifier.Operation.ADDITION) {
+//                            continue;
+//                        }
+//
+//                        valueSummary += attributeModifier.getValue();
+//                        mergedModifiers.add(attributeModifier);
+//                        debug("Found attribute value: " + attributeModifier.getValue()
+//                                + " current: " + valueSummary + " to be modified to:" + modifier.operation + " " + modifierValue);
+//                    }
+//                    switch (modifier.operation) {
+//                        case ADDITION -> {
+//                            valueSummary += modifierValue;
+//                        }
+//                        case MULTIPLY_BASE -> {
+//                            debug("Multiplying: " + valueSummary + " * " + modifierValue);
+//                            valueSummary *= 1F + modifierValue;
+//                        }
+//                    }
+//                    debug("Value summary updated to: " + valueSummary);
+//                    if (valueSummary != 0) {
+//                        for(var attributeModifier : mergedModifiers) {
+//                            removeAttributesFromItemStack(attributeModifier, itemStack);
+//                        }
+//                        var roundingUnit = getRoundingUnit();
+//                        if (shouldRound && roundingUnit != null) {
+//                            valueSummary = (float)MathHelper.round(valueSummary, roundingUnit);
+//                            debug("Rounded summary by " + roundingUnit + " to: " + valueSummary);
+//                        }
+//                        debug("Applying " + modifier.attribute + " to " + itemId + " value: " + valueSummary);
+//                        itemStack.addAttributeModifier(
+//                                attribute,
+//                                createEntityAttributeModifier(
+//                                        slot,
+//                                        attribute,
+//                                        "DD Scaled",
+//                                        valueSummary,
+//                                        EntityAttributeModifier.Operation.ADDITION
+//                                ),
+//                                slot
+//                        );
+//                    }
+//                }
+//            } catch (Exception e) {
+//                LOGGER.error("Failed to apply modifier to: " + itemId + " modifier:" + modifier);
+//                LOGGER.error("Reason: " + e.getMessage());
+//            }
+//        }
+    }
+
+    private static double combineAdditionModifiers(Collection<EntityAttributeModifier> modifiers) {
+        float summary = 0;
+        for (var modifier : modifiers) {
+            if (modifier.getOperation() != EntityAttributeModifier.Operation.ADDITION) { continue; }
+            summary += modifier.getValue();
+        }
+        return summary;
     }
 
     public record SlotSpecificItemAttributes(
@@ -209,6 +323,12 @@ public class ItemScaling {
             return new EntityAttributeModifier(hardCodedUUID, name, value, operation);
         } else {
             return new EntityAttributeModifier(name, value, operation);
+        }
+    }
+
+    private static void removeAttributesFromItemStack(Collection<EntityAttributeModifier> modifiers, ItemStack itemStack) {
+        for (var modifier: modifiers) {
+            removeAttributesFromItemStack(modifier, itemStack);
         }
     }
 

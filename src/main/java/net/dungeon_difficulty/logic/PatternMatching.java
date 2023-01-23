@@ -236,7 +236,7 @@ public class PatternMatching {
         return null;
     }
 
-    private static boolean matches(String subject, String nullableRegex) {
+    public static boolean matches(String subject, @Nullable String nullableRegex) {
         if (subject == null) {
             subject = "";
         }
