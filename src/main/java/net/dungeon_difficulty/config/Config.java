@@ -59,6 +59,7 @@ public class Config {
         public static class Filters {
             public String biome_regex = Regex.ANY;
             public String biome_tag_regex = Regex.ANY;
+            public String structure_id = null;
         }
         public Filters zone_matches = new Filters();
 

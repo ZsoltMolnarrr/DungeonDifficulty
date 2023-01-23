@@ -17,6 +17,7 @@ import net.minecraft.loot.function.LootFunctionType;
 import net.minecraft.loot.function.LootFunctionTypes;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
@@ -59,7 +60,7 @@ public class ItemScaling {
         });
     }
 
-    public static void scale(ItemStack itemStack, World world, BlockPos position, String lootTableId) {
+    public static void scale(ItemStack itemStack, ServerWorld world, BlockPos position, String lootTableId) {
         var locationData = PatternMatching.LocationData.create(world, position);
         scale(itemStack, world, lootTableId, locationData);
     }

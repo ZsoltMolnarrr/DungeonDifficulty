@@ -20,7 +20,7 @@ public class EntityScaling {
             scalableEntity.setLocationData(locationData);
 
             EntityScaling.apply(PerPlayerDifficulty.getAttributeModifiers(entityData, world), livingEntity);
-            EntityScaling.apply(PatternMatching.getAttributeModifiersForEntity(locationData, entityData), livingEntity);
+            EntityScaling.apply(PatternMatching.getAttributeModifiersForEntity(locationData, entityData, world), livingEntity);
 
             if (DungeonDifficulty.configManager.value.meta.entity_equipment_scaling) {
                 for (var itemStack : livingEntity.getItemsEquipped()) {

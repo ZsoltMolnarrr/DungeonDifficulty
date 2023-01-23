@@ -45,7 +45,7 @@ public class MobSpawnerLogicMixin {
                 var isMonster = testEntity instanceof Monster;
                 var entityData = new PatternMatching.EntityData(entityId, isMonster);
                 var locationData = PatternMatching.LocationData.create(world, pos);
-                var scaling = PatternMatching.getModifiersForSpawner(locationData, entityData);
+                var scaling = PatternMatching.getModifiersForSpawner(locationData, entityData, world);
 //                if (modifiers.size() > 0) {
 //                    System.out.println("Scaling spawner of: " + entityId + " at: " + pos);
 //                }

@@ -64,9 +64,17 @@ public class Default {
         var overworld = new Config.Dimension();
         overworld.world_matches.dimension_regex = "minecraft:overworld";
         overworld.difficulty = new Config.DifficultyReference(normalDifficulty.name, 1);
+
+        var pyramid = new Config.Zone();
+        pyramid.zone_matches.structure_id = "desert_pyramid";
+        pyramid.difficulty = new Config.DifficultyReference(normalDifficulty.name, 4);
+
+        overworld.zones = new Config.Zone[] { pyramid };
+
         var nether = new Config.Dimension();
         nether.world_matches.dimension_regex = "minecraft:the_nether";
         nether.difficulty = new Config.DifficultyReference(dungeonDifficulty.name, 4);
+
         var end = new Config.Dimension();
         end.world_matches.dimension_regex = "minecraft:the_end";
         end.difficulty = new Config.DifficultyReference(normalDifficulty.name, 3);

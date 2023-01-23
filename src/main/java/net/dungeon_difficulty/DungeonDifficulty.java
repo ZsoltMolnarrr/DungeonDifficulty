@@ -26,6 +26,7 @@ public class DungeonDifficulty implements ModInitializer {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(CommandManager.literal(MODID + "_config_reload").executes(context -> {
                 DungeonDifficulty.reloadConfig();
+
                 // var gson = new GsonBuilder().setPrettyPrinting().create();
                 // System.out.println("Resolved difficulty types: " + gson.toJson(DifficultyTypes.resolved));
                 return 1;

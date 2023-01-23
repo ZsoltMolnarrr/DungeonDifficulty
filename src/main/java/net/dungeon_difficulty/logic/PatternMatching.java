@@ -3,12 +3,15 @@ package net.dungeon_difficulty.logic;
 import net.dungeon_difficulty.DungeonDifficulty;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.Monster;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.world.World;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.biome.BiomeKeys;
 import net.dungeon_difficulty.config.Config;
 import net.dungeon_difficulty.config.Regex;
+import net.minecraft.world.gen.structure.Structure;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -22,7 +25,7 @@ public class PatternMatching {
     public record BiomeData(String key, List<String> tags) { }
 
     public record LocationData(String dimensionId, BlockPos position, BiomeData biome) {
-        public static LocationData create(World world, BlockPos position) {
+        public static LocationData create(ServerWorld world, BlockPos position) {
             var dimensionId = world.getRegistryKey().getValue().toString();
             BiomeData biome = null;
             if (position != null) {
@@ -46,7 +49,7 @@ public class PatternMatching {
             return result;
         }
 
-        public boolean matches(Config.Zone.Filters filters) {
+        public boolean matches(Config.Zone.Filters filters, @Nullable ServerWorld world) {
             if (filters == null || biome == null) {
                 return true;
             }
@@ -62,6 +65,12 @@ public class PatternMatching {
                     }
                 }
                 result = result && foundMatchingTag;
+            }
+            if (filters.structure_id != null && world != null) {
+                var key = RegistryKey.of(Registry.STRUCTURE_KEY, new Identifier(filters.structure_id));
+                if (key != null) {
+                    result = result && world.getStructureAccessor().getStructureContaining(position, key).hasChildren();
+                }
             }
             // System.out.println("PatternMatching - biome:" + biome + " matches: " + filters.biome_regex + " - " + result);
             return result;
@@ -93,7 +102,7 @@ public class PatternMatching {
     public record ItemScaleResult(List<Config.AttributeModifier> modifiers, int level) { }
     public static ItemScaleResult getModifiersForItem(LocationData locationData, ItemData itemData) {
         var attributeModifiers = new ArrayList<Config.AttributeModifier>();
-        var difficulty = getDifficulty(locationData);
+        var difficulty = getDifficulty(locationData, null);
         var level = 0;
         if (difficulty != null) {
             level = difficulty.level();
@@ -154,9 +163,9 @@ public class PatternMatching {
 
     public record EntityScaleResult(List<Config.AttributeModifier> modifiers, int level, float experienceMultiplier) { }
 
-    public static EntityScaleResult getAttributeModifiersForEntity(LocationData locationData, EntityData entityData) {
+    public static EntityScaleResult getAttributeModifiersForEntity(LocationData locationData, EntityData entityData, ServerWorld world) {
         var attributeModifiers = new ArrayList<Config.AttributeModifier>();
-        var difficulty = getDifficulty(locationData);
+        var difficulty = getDifficulty(locationData, world);
         var level = 0;
         float experienceMultiplier = 0;
         if (difficulty != null) {
@@ -171,9 +180,9 @@ public class PatternMatching {
 
     public record SpawnerScaleResult(List<Config.SpawnerModifier> modifiers, int level) { }
 
-    public static SpawnerScaleResult getModifiersForSpawner(LocationData locationData, EntityData entityData) {
+    public static SpawnerScaleResult getModifiersForSpawner(LocationData locationData, EntityData entityData, ServerWorld world) {
         var spawnerModifiers = new ArrayList<Config.SpawnerModifier>();
-        var difficulty = getDifficulty(locationData);
+        var difficulty = getDifficulty(locationData, world);
         int level = 0;
         if (difficulty != null) {
             level = difficulty.level();
@@ -201,13 +210,13 @@ public class PatternMatching {
                            Config.Rewards rewards) { }
 
     @Nullable
-    public static Difficulty getDifficulty(LocationData locationData) {
+    public static Difficulty getDifficulty(LocationData locationData, ServerWorld world) {
         for (var dimension : DungeonDifficulty.configManager.value.dimensions) {
             if (locationData.matches(dimension.world_matches)) {
                 var dimensionDifficulty = new Difficulty(findDifficultyType(dimension.difficulty.name), dimension.difficulty.level);
                 if (dimension.zones != null) {
                     for(var zone: dimension.zones) {
-                        if(locationData.matches(zone.zone_matches)) {
+                        if(locationData.matches(zone.zone_matches, world)) {
                             var zoneDifficulty = new Difficulty(findDifficultyType(zone.difficulty.name), zone.difficulty.level);
                             if (zoneDifficulty.isValid()) {
                                 return zoneDifficulty;
