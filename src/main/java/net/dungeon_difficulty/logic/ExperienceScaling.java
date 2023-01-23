@@ -5,14 +5,18 @@ import net.minecraft.world.World;
 
 public class ExperienceScaling {
     public static int scale(World world, LivingEntity entity, int experience) {
-        var locationData = PatternMatching.LocationData.create(world, entity.getBlockPos());
+        var locationData = ((EntityScalable)entity).getLocationData();
+        if (locationData == null) {
+            locationData = PatternMatching.LocationData.create(world, entity.getBlockPos());
+        }
         var entityData = PatternMatching.EntityData.create(entity);
-        float multiplier = 1.0F;
-//        for (var modifier: PatternMatching.getModifiersForEntity(locationData, entityData)) {
-//            multiplier *= modifier.experience_multiplier;
-//        }
-        var xp = Math.round((float)experience * multiplier);
-        // System.out.println("Scaled XP from: " + experience + " to: " + xp);
+        var scaling = PatternMatching.getAttributeModifiersForEntity(locationData, entityData);
+        var xp = experience;
+        if (scaling != null) {
+            // System.out.println("scaling.experienceMultiplier(): " + scaling.experienceMultiplier() + " scaling.level(): " + scaling.level());
+            xp = Math.round((float) experience * (1F + scaling.experienceMultiplier() * scaling.level()));
+            // System.out.println("Scaled XP from: " + experience + " to: " + xp);
+        }
         return xp;
     }
 }

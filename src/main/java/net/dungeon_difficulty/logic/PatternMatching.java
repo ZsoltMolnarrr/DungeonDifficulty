@@ -152,19 +152,21 @@ public class PatternMatching {
         }
     }
 
-    public record EntityScaleResult(List<Config.AttributeModifier> modifiers, int level) { }
+    public record EntityScaleResult(List<Config.AttributeModifier> modifiers, int level, float experienceMultiplier) { }
 
     public static EntityScaleResult getAttributeModifiersForEntity(LocationData locationData, EntityData entityData) {
         var attributeModifiers = new ArrayList<Config.AttributeModifier>();
         var difficulty = getDifficulty(locationData);
         var level = 0;
+        float experienceMultiplier = 0;
         if (difficulty != null) {
             level = difficulty.level();
             for (var modifier: getModifiersForEntity(difficulty.type().entities, entityData)) {
                 attributeModifiers.addAll(Arrays.asList(modifier.attributes));
+                experienceMultiplier += modifier.experience_multiplier;
             }
         }
-        return new EntityScaleResult(attributeModifiers, level);
+        return new EntityScaleResult(attributeModifiers, level, experienceMultiplier);
     }
 
     public record SpawnerScaleResult(List<Config.SpawnerModifier> modifiers, int level) { }

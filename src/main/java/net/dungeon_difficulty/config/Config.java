@@ -78,7 +78,7 @@ public class Config {
         public Filters entity_matches = new Filters();
         public AttributeModifier[] attributes = new AttributeModifier[]{};
         public SpawnerModifier spawners = null;
-        public float experience_multiplier = 1;
+        public float experience_multiplier = 0;
     }
 
     public static class Rewards {
@@ -101,7 +101,7 @@ public class Config {
         public String attribute;
         public Operation operation = Operation.MULTIPLY_BASE;
         public float randomness = 0;
-        public float value = 1;
+        public float value = 0;
 
         public AttributeModifier() {}
 

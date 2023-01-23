@@ -28,7 +28,7 @@ public class Default {
                                 createHealthMultiplier(0.4F, 0.1F)
                         },
                         null,
-                        2F)
+                        0.2F)
         );
 
         var dungeonDifficulty = new Config.DifficultyType("dungeon");
@@ -45,7 +45,7 @@ public class Default {
                 createEntityModifier(Regex.ANY,
                         new Config.AttributeModifier[]{ },
                         dungeonSpawners,
-                        2F)
+                        0)
         );
 
         // Per Player Difficulty

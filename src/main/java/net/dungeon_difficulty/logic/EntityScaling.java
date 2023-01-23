@@ -13,6 +13,7 @@ public class EntityScaling {
             var livingEntity = (LivingEntity)entity;
             var locationData = PatternMatching.LocationData.create(world, livingEntity.getBlockPos());
             var entityData = PatternMatching.EntityData.create(livingEntity);
+            ((EntityScalable)livingEntity).setLocationData(locationData);
 
             EntityScaling.apply(PerPlayerDifficulty.getAttributeModifiers(entityData, world), livingEntity);
             EntityScaling.apply(PatternMatching.getAttributeModifiersForEntity(locationData, entityData), livingEntity);

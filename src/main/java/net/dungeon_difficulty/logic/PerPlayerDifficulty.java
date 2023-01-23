@@ -9,7 +9,7 @@ import java.util.List;
 
 public class PerPlayerDifficulty {
     public static PatternMatching.EntityScaleResult getAttributeModifiers(PatternMatching.EntityData entityData, ServerWorld world) {
-        var empty = new PatternMatching.EntityScaleResult(List.of(), 0);
+        var empty = new PatternMatching.EntityScaleResult(List.of(), 0, 0);
         var perPlayer = DungeonDifficulty.configManager.value.perPlayerDifficulty;
         if (perPlayer == null || !perPlayer.enabled || perPlayer.entities == null || perPlayer.entities.length == 0 || perPlayer.counting == null) {
             return empty;
@@ -35,6 +35,6 @@ public class PerPlayerDifficulty {
                 attributeModifiers.addAll(List.of(entityBaseModifier.attributes));
             }
         }
-        return new PatternMatching.EntityScaleResult(attributeModifiers, applyCount);
+        return new PatternMatching.EntityScaleResult(attributeModifiers, applyCount, 0);
     }
 }
