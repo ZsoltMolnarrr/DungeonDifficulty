@@ -11,9 +11,13 @@ public class EntityScaling {
     public static void scale(Entity entity, ServerWorld world) {
         if (entity instanceof LivingEntity) {
             var livingEntity = (LivingEntity)entity;
+            var scalableEntity = ((EntityScalable)livingEntity);
+            if (scalableEntity.isAlreadyScaled()) {
+                return;
+            }
             var locationData = PatternMatching.LocationData.create(world, livingEntity.getBlockPos());
             var entityData = PatternMatching.EntityData.create(livingEntity);
-            ((EntityScalable)livingEntity).setLocationData(locationData);
+            scalableEntity.setLocationData(locationData);
 
             EntityScaling.apply(PerPlayerDifficulty.getAttributeModifiers(entityData, world), livingEntity);
             EntityScaling.apply(PatternMatching.getAttributeModifiersForEntity(locationData, entityData), livingEntity);
@@ -23,6 +27,7 @@ public class EntityScaling {
                     ItemScaling.scale(itemStack, world, entityData.entityId(), locationData);
                 }
             }
+            scalableEntity.markAlreadyScaled();
         }
     }
 
