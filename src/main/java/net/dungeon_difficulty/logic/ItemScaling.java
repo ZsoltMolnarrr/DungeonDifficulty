@@ -96,11 +96,22 @@ public class ItemScaling {
     }
 
     private static void applyModifiersForItemStack(EquipmentSlot[] slots, String itemId, ItemStack itemStack, List<Config.AttributeModifier> modifiers, int level) {
-        if (modifiers.isEmpty()) {
+        if (modifiers.isEmpty() || level == 0) {
             return;
         }
-        copyItemAttributesToNBT(itemStack); // We need to do this, to avoid unscaled attributes vanishing
 
+        ArrayList<EntityAttribute> originalAttributeOrder = new ArrayList<>();
+        for (var slot: slots) {
+            var multimap = itemStack.getAttributeModifiers(slot);
+            if (multimap.isEmpty()) { continue; }
+            for (var entry: multimap.entries()) {
+                originalAttributeOrder.add(entry.getKey());
+            }
+            break;
+        }
+
+        copyItemAttributesToNBT(itemStack); // We need to do this, to avoid unscaled attributes vanishing
+        // if (true) return;
         var summary = new HashMap<String, ModifierSummary>();
         for (var modifier : modifiers) {
             var element = summary.get(modifier.attribute);
@@ -118,12 +129,12 @@ public class ItemScaling {
             summary.put(modifier.attribute, element);
         }
 
-        Map<EquipmentSlot, Collection<EntityAttributeModifier>> slotSpecificAttributeCollections = new HashMap();
-
         for(var slot: slots) {
             // The attribute modifiers from this item stack
             var attributeModifiers = itemStack.getAttributeModifiers(slot);
             if (attributeModifiers.isEmpty()) { continue; }
+//            var gson = new GsonBuilder().setPrettyPrinting().create();
+//            System.out.println("ItemStack attributes after copying: " + gson.toJson(attributeModifiers));
 
             for (var entry: summary.entrySet()) {
                 // Apply additions
@@ -136,6 +147,10 @@ public class ItemScaling {
                     var attribute = Registry.ATTRIBUTE.get(attributeId);
                     var currentModifiers = attributeModifiers.get(attribute);
                     var newValue = combineAdditionModifiers(currentModifiers) + scaling.add();
+                    var roundingUnit = getRoundingUnit();
+                    if (roundingUnit != null) {
+                        newValue = MathHelper.round(newValue, roundingUnit);
+                    }
                     removeAttributesFromItemStack(currentModifiers, itemStack);
                     itemStack.addAttributeModifier(
                             attribute,
@@ -173,6 +188,10 @@ public class ItemScaling {
                         var attribute = Registry.ATTRIBUTE.get(attributeId);
                         var currentModifiers = attributeModifiers.get(attribute);
                         var newValue = combineAdditionModifiers(currentModifiers) * (1F + scaling.multiplyBase());
+                        var roundingUnit = getRoundingUnit();
+                        if (roundingUnit != null) {
+                            newValue = MathHelper.round(newValue, roundingUnit);
+                        }
                         removeAttributesFromItemStack(currentModifiers, itemStack);
                         itemStack.addAttributeModifier(
                                 attribute,
@@ -191,93 +210,35 @@ public class ItemScaling {
                     LOGGER.error("Reason: " + e.getMessage());
                 }
             }
+
+            // System.out.println("Restoring original order of attributes");
+            var unsortedAttributes = itemStack.getAttributeModifiers(slot);
+            itemStack.getNbt().put("AttributeModifiers", new NbtList()); // Resetting the list of attribute modifiers
+            // System.out.println("ItemStack NBT: " + itemStack.getNbt().toString());
+            for (var attribute: originalAttributeOrder) {
+                // System.out.println(" - " + Registry.ATTRIBUTE.getId(attribute).toString());
+                var modifiersToRestore = unsortedAttributes.get(attribute);
+                for (var modifierToRestore: modifiersToRestore) {
+                    itemStack.addAttributeModifier(
+                            attribute,
+                            modifierToRestore,
+                            slot
+                    );
+                }
+                unsortedAttributes.removeAll(attribute);
+            }
+            for (var entry: unsortedAttributes.entries()) {
+                var attribute = entry.getKey();
+                var modifierToRestore = entry.getValue();
+                itemStack.addAttributeModifier(
+                        attribute,
+                        modifierToRestore,
+                        slot
+                );
+
+            }
+            // System.out.println("ItemStack NBT: " + itemStack.getNbt().toString());
         }
-//
-//        for (int i = 0; i < modifiers.size(); ++i) {
-//            var modifier = modifiers.get(i);
-//            try {
-//                var shouldRound = true;
-//                for (int j = i + 1; j < modifiers.size(); ++j) {
-//                    // Looking for anoth modifier for the same attribute after this
-//                    if (modifiers.get(j).attribute.equals(modifier.attribute)) {
-//                        shouldRound = false;
-//                        break;
-//                    }
-//                }
-//                if (modifier.attribute == null) {
-//                    continue;
-//                }
-//                var modifierValue = modifier.randomizedValue(level);
-//                debug("Starting to applying " + modifier.attribute + " to " + itemId);
-//
-//                // The attribute we want to modify
-//                var attribute = Registry.ATTRIBUTE.get(new Identifier(modifier.attribute));
-//
-//                Map<EquipmentSlot, Collection<EntityAttributeModifier>> slotSpecificAttributeCollections = new HashMap();
-//
-//                for(var slot: slots) {
-//                    // The attribute modifiers from this item stack
-//                    var attributeModifiers = itemStack.getAttributeModifiers(slot);
-//
-//                    // The modifiers changing the given attribute
-//                    var attributeSpecificCollection = attributeModifiers.get(attribute);
-//
-//                    slotSpecificAttributeCollections.put(slot, attributeSpecificCollection);
-//                }
-//
-//                for(var entry: slotSpecificAttributeCollections.entrySet()) {
-//                    var slot = entry.getKey();
-//                    var attributeSpecificCollection = entry.getValue();
-//                    var valueSummary = 0F;
-//                    var mergedModifiers = new ArrayList<EntityAttributeModifier>();
-//                    for (var attributeModifier : attributeSpecificCollection) {
-//                        if (attributeModifier.getOperation() != EntityAttributeModifier.Operation.ADDITION) {
-//                            continue;
-//                        }
-//
-//                        valueSummary += attributeModifier.getValue();
-//                        mergedModifiers.add(attributeModifier);
-//                        debug("Found attribute value: " + attributeModifier.getValue()
-//                                + " current: " + valueSummary + " to be modified to:" + modifier.operation + " " + modifierValue);
-//                    }
-//                    switch (modifier.operation) {
-//                        case ADDITION -> {
-//                            valueSummary += modifierValue;
-//                        }
-//                        case MULTIPLY_BASE -> {
-//                            debug("Multiplying: " + valueSummary + " * " + modifierValue);
-//                            valueSummary *= 1F + modifierValue;
-//                        }
-//                    }
-//                    debug("Value summary updated to: " + valueSummary);
-//                    if (valueSummary != 0) {
-//                        for(var attributeModifier : mergedModifiers) {
-//                            removeAttributesFromItemStack(attributeModifier, itemStack);
-//                        }
-//                        var roundingUnit = getRoundingUnit();
-//                        if (shouldRound && roundingUnit != null) {
-//                            valueSummary = (float)MathHelper.round(valueSummary, roundingUnit);
-//                            debug("Rounded summary by " + roundingUnit + " to: " + valueSummary);
-//                        }
-//                        debug("Applying " + modifier.attribute + " to " + itemId + " value: " + valueSummary);
-//                        itemStack.addAttributeModifier(
-//                                attribute,
-//                                createEntityAttributeModifier(
-//                                        slot,
-//                                        attribute,
-//                                        "DD Scaled",
-//                                        valueSummary,
-//                                        EntityAttributeModifier.Operation.ADDITION
-//                                ),
-//                                slot
-//                        );
-//                    }
-//                }
-//            } catch (Exception e) {
-//                LOGGER.error("Failed to apply modifier to: " + itemId + " modifier:" + modifier);
-//                LOGGER.error("Reason: " + e.getMessage());
-//            }
-//        }
     }
 
     private static double combineAdditionModifiers(Collection<EntityAttributeModifier> modifiers) {

@@ -10,13 +10,13 @@ public class Default {
         var normalDifficulty = new Config.DifficultyType("normal");
         normalDifficulty.rewards.weapons = List.of(
                 createItemModifier(new Config.AttributeModifier[]{
-                        createDamageMultiplier(0.3F, 0.2F),
-                        createProjectileMultiplier(0.3F, 0.2F)
+                        createDamageMultiplier(0.2F, 0.1F),
+                        createPowerMultiplier(0.2F, 0.1F)
                 })
         );
         normalDifficulty.rewards.armor = List.of(
                 createItemModifier(new Config.AttributeModifier[]{
-                        createArmorMultiplier(0.2F),
+                        createArmorMultiplier(0.1F),
                         createHealthBonus(2)
                 })
         );
@@ -238,7 +238,13 @@ public class Default {
     }
 
     private static Config.AttributeModifier createDamageMultiplier(float value, float randomness) {
-        var modifier = new Config.AttributeModifier("generic.attack_damage", value);
+        var modifier = new Config.AttributeModifier("damage", value);
+        modifier.randomness = randomness;
+        return modifier;
+    }
+
+    private static Config.AttributeModifier createPowerMultiplier(float value, float randomness) {
+        var modifier = new Config.AttributeModifier("power", value);
         modifier.randomness = randomness;
         return modifier;
     }
