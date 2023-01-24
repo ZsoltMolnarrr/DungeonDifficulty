@@ -19,6 +19,8 @@ public class EntityScaling {
             var entityData = PatternMatching.EntityData.create(livingEntity);
             scalableEntity.setLocationData(locationData);
 
+            var relativeHealth = livingEntity.getHealth() / livingEntity.getMaxHealth();
+
             EntityScaling.apply(PerPlayerDifficulty.getAttributeModifiers(entityData, world), livingEntity);
             EntityScaling.apply(PatternMatching.getAttributeModifiersForEntity(locationData, entityData, world), livingEntity);
 
@@ -27,12 +29,13 @@ public class EntityScaling {
                     ItemScaling.scale(itemStack, world, entityData.entityId(), locationData);
                 }
             }
+
             scalableEntity.markAlreadyScaled();
+            livingEntity.setHealth(relativeHealth * livingEntity.getMaxHealth());
         }
     }
 
     private static void apply(PatternMatching.EntityScaleResult scaling, LivingEntity entity) {
-        var relativeHealth = entity.getHealth() / entity.getMaxHealth();
         var level = scaling.level();
         if (level <= 0) { return; }
         for (var modifier: scaling.modifiers()) {
@@ -61,6 +64,5 @@ public class EntityScaling {
                 }
             }
         }
-        entity.setHealth(relativeHealth * entity.getMaxHealth());
     }
 }

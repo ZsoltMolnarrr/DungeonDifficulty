@@ -172,7 +172,6 @@ public class PatternMatching {
         var level = 0;
         float experienceMultiplier = 0;
         if (difficulty != null) {
-            System.out.println("Scaling entity: " + difficulty.type().name + " " + difficulty.level());
             level = difficulty.level();
             for (var modifier: getModifiersForEntity(difficulty.type().entities, entityData)) {
                 attributeModifiers.addAll(Arrays.asList(modifier.attributes));
