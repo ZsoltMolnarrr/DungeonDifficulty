@@ -2,6 +2,8 @@ package net.dungeon_difficulty.logic;
 
 import com.google.common.collect.Multimap;
 import com.mojang.logging.LogUtils;
+import net.dungeon_difficulty.DungeonDifficulty;
+import net.dungeon_difficulty.config.Config;
 import net.fabricmc.fabric.api.loot.v2.LootTableEvents;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
@@ -18,9 +20,7 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.dungeon_difficulty.DungeonDifficulty;
-import net.dungeon_difficulty.config.Config;
+import net.minecraft.server.world.ServerWorld;
 import org.slf4j.Logger;
 
 import java.util.*;
@@ -59,116 +59,194 @@ public class ItemScaling {
         });
     }
 
-    public static void scale(ItemStack itemStack, World world, BlockPos position, String lootTableId) {
+    public static void scale(ItemStack itemStack, ServerWorld world, BlockPos position, String lootTableId) {
+        var locationData = PatternMatching.LocationData.create(world, position);
+        scale(itemStack, world, lootTableId, locationData);
+    }
+
+    public static void scale(ItemStack itemStack, ServerWorld world, String lootTableId, PatternMatching.LocationData locationData) {
         var itemId = Registries.ITEM.getId(itemStack.getItem()).toString();
         var rarity = itemStack.getRarity().toString();
         var dimensionId = world.getRegistryKey().getValue().toString(); // Just for logging
+        var position = locationData.position();
         if (itemStack.getItem() instanceof ToolItem || itemStack.getItem() instanceof RangedWeaponItem) {
-            var locationData = PatternMatching.LocationData.create(world, position);
             var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.WEAPONS, lootTableId, itemId, rarity);
             debug("Item scaling start." + " dimension: " + dimensionId + " position: " + position + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
-            var modifiers = PatternMatching.getModifiersForItem(locationData, itemData);
-            debug("Pattern matching found " + modifiers.size() + " attribute modifiers");
-            applyModifiersForItemStack(new EquipmentSlot[]{ EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND }, itemId, itemStack, modifiers);
+            var result = PatternMatching.getModifiersForItem(locationData, itemData, world);
+            debug("Pattern matching found " + result.modifiers().size() + " attribute modifiers");
+            applyModifiersForItemStack(new EquipmentSlot[]{ EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND }, itemId, itemStack, result.modifiers(), result.level());
         }
         if (itemStack.getItem() instanceof ArmorItem) {
             var armor = (ArmorItem)itemStack.getItem();
-            var locationData = PatternMatching.LocationData.create(world, position);
             var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.ARMOR, lootTableId, itemId, rarity);
             debug("Item scaling start." + " dimension: " + dimensionId + " position: " + position + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
-            var modifiers = PatternMatching.getModifiersForItem(locationData, itemData);
-            debug("Pattern matching found " + modifiers.size() + " attribute modifiers");
-            applyModifiersForItemStack(new EquipmentSlot[]{ armor.getSlotType() }, itemId, itemStack, modifiers);
+            var result = PatternMatching.getModifiersForItem(locationData, itemData, world);
+            debug("Pattern matching found " + result.modifiers().size() + " attribute modifiers");
+            applyModifiersForItemStack(new EquipmentSlot[]{ armor.getSlotType() }, itemId, itemStack, result.modifiers(), result.level());
         }
     }
 
-    private static void applyModifiersForItemStack(EquipmentSlot[] slots, String itemId, ItemStack itemStack, List<Config.AttributeModifier> modifiers) {
+    private record ModifierSummary(float add, float multiplyBase) {
+        public ModifierSummary add(float value) {
+            return new ModifierSummary(add + value, multiplyBase);
+        }
+        public ModifierSummary multiplyBase(float value) {
+            return new ModifierSummary(add, multiplyBase  + value);
+        }
+    }
+
+    private static void applyModifiersForItemStack(EquipmentSlot[] slots, String itemId, ItemStack itemStack, List<Config.AttributeModifier> modifiers, int level) {
+        if (modifiers.isEmpty() || level == 0) {
+            return;
+        }
+
+        ArrayList<EntityAttribute> originalAttributeOrder = new ArrayList<>();
+        for (var slot: slots) {
+            var multimap = itemStack.getAttributeModifiers(slot);
+            if (multimap.isEmpty()) { continue; }
+            for (var entry: multimap.entries()) {
+                originalAttributeOrder.add(entry.getKey());
+            }
+            break;
+        }
+
         copyItemAttributesToNBT(itemStack); // We need to do this, to avoid unscaled attributes vanishing
-        for (int i = 0; i < modifiers.size(); ++i) {
-            var modifier = modifiers.get(i);
-            try {
-                var shouldRound = true;
-                for (int j = i + 1; j < modifiers.size(); ++j) {
-                    // Looking for an modifier for the same attribute after this
-                    if (modifiers.get(j).attribute.equals(modifier.attribute)) {
-                        shouldRound = false;
-                        break;
-                    }
+
+        var summary = new HashMap<String, ModifierSummary>();
+        for (var modifier : modifiers) {
+            var element = summary.get(modifier.attribute);
+            if (element == null) {
+                element = new ModifierSummary(0, 0);
+            }
+            switch (modifier.operation) {
+                case ADDITION -> {
+                    element = element.add(modifier.randomizedValue(level));
                 }
-                if (modifier.attribute == null) {
-                    continue;
+                case MULTIPLY_BASE -> {
+                    element = element.multiplyBase(modifier.randomizedValue(level));
                 }
-                var modifierValue = modifier.randomizedValue();
-                debug("Starting to applying " + modifier.attribute + " to " + itemId);
+            }
+            summary.put(modifier.attribute, element);
+        }
 
-                // The attribute we want to modify
-                var attribute = Registries.ATTRIBUTE.get(new Identifier(modifier.attribute));
+        for(var slot: slots) {
+            // The attribute modifiers from this item stack
+            var attributeModifiers = itemStack.getAttributeModifiers(slot);
+            if (attributeModifiers.isEmpty()) { continue; }
+            // System.out.println("ItemStack attributes after copying: " + itemStack.getNbt());
 
-                Map<EquipmentSlot, Collection<EntityAttributeModifier>> slotSpecificAttributeCollections = new HashMap();
-
-                for(var slot: slots) {
-                    // The attribute modifiers from this item stack
-                    var attributeModifiers = itemStack.getAttributeModifiers(slot);
-
-                    // The modifiers changing the given attribute
-                    var attributeSpecificCollection = attributeModifiers.get(attribute);
-
-                    slotSpecificAttributeCollections.put(slot, attributeSpecificCollection);
+            for (var entry: summary.entrySet()) {
+                // Apply additions
+                try {
+                    var scaling = entry.getValue();
+                    if (scaling.add() == 0) {
+                        continue;
+                    }
+                    var attributeId = new Identifier(entry.getKey());
+                    var attribute = Registries.ATTRIBUTE.get(attributeId);
+                    var currentModifiers = attributeModifiers.get(attribute);
+                    var newValue = combineAdditionModifiers(currentModifiers) + scaling.add();
+                    var roundingUnit = getRoundingUnit();
+                    if (roundingUnit != null) {
+                        newValue = MathHelper.round(newValue, roundingUnit);
+                    }
+                    removeAttributesFromItemStack(currentModifiers, attributeId.toString(), itemStack);
+                    itemStack.addAttributeModifier(
+                            attribute,
+                            createEntityAttributeModifier(
+                                    slot,
+                                    attribute,
+                                    "DD Bonus",
+                                    newValue,
+                                    EntityAttributeModifier.Operation.ADDITION
+                            ),
+                            slot
+                    );
+                } catch (Exception e) {
+                    System.err.println("Failed to apply addition of " + entry.getKey() + " " + entry.getValue().add() + ", to: " + itemId);
+                    LOGGER.error("Reason: " + e.getMessage());
                 }
-
-                for(var entry: slotSpecificAttributeCollections.entrySet()) {
-                    var slot = entry.getKey();
-                    var attributeSpecificCollection = entry.getValue();
-                    var valueSummary = 0F;
-                    var mergedModifiers = new ArrayList<EntityAttributeModifier>();
-                    for (var attributeModifier : attributeSpecificCollection) {
-                        if (attributeModifier.getOperation() != EntityAttributeModifier.Operation.ADDITION) {
-                            continue;
-                        }
-
-                        valueSummary += attributeModifier.getValue();
-                        mergedModifiers.add(attributeModifier);
-                        debug("Found attribute value: " + attributeModifier.getValue()
-                                + " current: " + valueSummary + " to be modified to:" + modifier.operation + " " + modifierValue);
+            }
+            for (var entry: summary.entrySet()) {
+                // Apply multiply base
+                try {
+                    var scaling = entry.getValue();
+                    if (scaling.multiplyBase() == 0) {
+                        continue;
                     }
-                    switch (modifier.operation) {
-                        case ADD -> {
-                            valueSummary += modifierValue;
-                        }
-                        case MULTIPLY -> {
-                            debug("Multiplying: " + valueSummary + " * " + modifierValue);
-                            valueSummary *= modifierValue;
+                    var regex = entry.getKey();
+                    ArrayList<Identifier> attributeIds = new ArrayList<>();
+                    for(var attribute: attributeModifiers.keySet()) {
+                        var id = Registries.ATTRIBUTE.getId(attribute);
+                        var idString = id.toString();
+                        if (PatternMatching.matches(idString, regex)) {
+                            attributeIds.add(id);
                         }
                     }
-                    debug("Value summary updated to: " + valueSummary);
-                    if (valueSummary != 0) {
-                        for(var attributeModifier : mergedModifiers) {
-                            removeAttributesFromItemStack(attributeModifier, itemStack);
-                        }
+                    for (var attributeId: attributeIds) {
+                        var attribute = Registries.ATTRIBUTE.get(attributeId);
+                        var currentModifiers = attributeModifiers.get(attribute);
+                        var newValue = combineAdditionModifiers(currentModifiers) * (1F + scaling.multiplyBase());
                         var roundingUnit = getRoundingUnit();
-                        if (shouldRound && roundingUnit != null) {
-                            valueSummary = (float)MathHelper.round(valueSummary, roundingUnit);
-                            debug("Rounded summary by " + roundingUnit + " to: " + valueSummary);
+                        if (roundingUnit != null) {
+                            newValue = MathHelper.round(newValue, roundingUnit);
                         }
-                        debug("Applying " + modifier.attribute + " to " + itemId + " value: " + valueSummary);
+                        removeAttributesFromItemStack(currentModifiers, attributeId.toString(), itemStack);
                         itemStack.addAttributeModifier(
                                 attribute,
                                 createEntityAttributeModifier(
                                         slot,
                                         attribute,
-                                        "Scaled attribute modifier",
-                                        valueSummary,
+                                        "DD Multiply",
+                                        newValue,
                                         EntityAttributeModifier.Operation.ADDITION
                                 ),
                                 slot
                         );
                     }
+                } catch (Exception e) {
+                    System.err.println("Failed to apply multiply_base of " + entry.getKey() + " " + entry.getValue().add() + ", to: " + itemId);
+                    LOGGER.error("Reason: " + e.getMessage());
                 }
-            } catch (Exception e) {
-                LOGGER.error("Failed to apply modifier to: " + itemId + " modifier:" + modifier);
-                LOGGER.error("Reason: " + e.getMessage());
             }
+
+            // System.out.println("Restoring original order of attributes");
+            var unsortedAttributes = itemStack.getAttributeModifiers(slot);
+            itemStack.getNbt().put("AttributeModifiers", new NbtList()); // Resetting the list of attribute modifiers
+            // System.out.println("ItemStack NBT: " + itemStack.getNbt().toString());
+            for (var attribute: originalAttributeOrder) {
+                // System.out.println(" - " + Registry.ATTRIBUTE.getId(attribute).toString());
+                var modifiersToRestore = unsortedAttributes.get(attribute);
+                for (var modifierToRestore: modifiersToRestore) {
+                    itemStack.addAttributeModifier(
+                            attribute,
+                            modifierToRestore,
+                            slot
+                    );
+                }
+                unsortedAttributes.removeAll(attribute);
+            }
+            for (var entry: unsortedAttributes.entries()) {
+                var attribute = entry.getKey();
+                var modifierToRestore = entry.getValue();
+                itemStack.addAttributeModifier(
+                        attribute,
+                        modifierToRestore,
+                        slot
+                );
+
+            }
+            //System.out.println("ItemStack NBT: " + itemStack.getNbt().toString());
         }
+    }
+
+    private static double combineAdditionModifiers(Collection<EntityAttributeModifier> modifiers) {
+        float summary = 0;
+        for (var modifier : modifiers) {
+            if (modifier.getOperation() != EntityAttributeModifier.Operation.ADDITION) { continue; }
+            summary += modifier.getValue();
+        }
+        return summary;
     }
 
     public record SlotSpecificItemAttributes(
@@ -184,7 +262,7 @@ public class ItemScaling {
             }
             for(var element: slotSpecificItemAttributes) {
                 for(var entry: element.attributes.entries()) {
-                    // debug("copyItemAttributesToNBT slot:" +  element.slot + " - adding: " + entry.getKey() + " - modifier: " + entry.getValue());
+                    // System.out.println("copyItemAttributesToNBT slot:" +  element.slot + " - adding: " + entry.getKey() + " - modifier: " + entry.getValue());
                     var attribute = entry.getKey();
                     itemStack.addAttributeModifier(
                             attribute,
@@ -208,11 +286,18 @@ public class ItemScaling {
         }
     }
 
-    private static void removeAttributesFromItemStack(EntityAttributeModifier attributeModifier, ItemStack itemStack) {
+    private static void removeAttributesFromItemStack(Collection<EntityAttributeModifier> modifiers, String attributeId, ItemStack itemStack) {
+        for (var modifier: modifiers) {
+            removeAttributesFromItemStack(modifier, attributeId, itemStack);
+        }
+    }
+
+    private static void removeAttributesFromItemStack(EntityAttributeModifier attributeModifier, String attributeId, ItemStack itemStack) {
         NbtList nbtList = itemStack.getNbt().getList("AttributeModifiers", 10);
         nbtList.removeIf(element -> {
             if (element instanceof NbtCompound compound) {
-                return compound.getUuid("UUID").equals(attributeModifier.getId());
+                return compound.getUuid("UUID").equals(attributeModifier.getId())
+                        && compound.getString("AttributeName").equals(attributeId);
             }
             return false;
         });
@@ -238,7 +323,7 @@ public class ItemScaling {
     }
 
     private static Double getRoundingUnit() {
-        var config = DungeonDifficulty.configManager.value;
+        var config = DungeonDifficulty.config.value;
         if (config.meta != null && config.meta.rounding_unit != null) {
             return config.meta.rounding_unit;
         }

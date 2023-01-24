@@ -1,168 +1,98 @@
 package net.dungeon_difficulty.config;
 
+import java.util.List;
+
 public class Default {
     public static Config config = createDefaultConfig();
 
     private static Config createDefaultConfig() {
+        // Difficulty types
+        var normalDifficulty = new Config.DifficultyType("normal");
+        normalDifficulty.entities = List.of(
+                createEntityModifier(Regex.ANY,
+                        new Config.AttributeModifier[]{
+                                createDamageMultiplier(0.25F, 0),
+                                createArmorBonus(1),
+                                createHealthMultiplier(0.25F, 0.1F)
+                        },
+                        null,
+                        0.2F)
+        );
+
+        var dungeonDifficulty = new Config.DifficultyType("dungeon");
+        dungeonDifficulty.parent = normalDifficulty.name;
+
+        var dungeonSpawners = new Config.SpawnerModifier();
+        dungeonSpawners = new Config.SpawnerModifier();
+        dungeonSpawners.min_spawn_delay_multiplier = -0.2F;
+        dungeonSpawners.max_spawn_delay_multiplier = -0.2F;
+        dungeonSpawners.spawn_count_multiplier = 0.5F;
+        dungeonSpawners.max_nearby_entities_multiplier = 1F;
+
+        dungeonDifficulty.entities = List.of(
+                createEntityModifier(Regex.ANY,
+                        new Config.AttributeModifier[]{ },
+                        dungeonSpawners,
+                        0)
+        );
+        dungeonDifficulty.rewards.armor = List.of(
+                createItemModifier(new Config.AttributeModifier[]{
+                        createArmorMultiplier(0.1F),
+                        createHealthBonus(1)
+                })
+        );
+        dungeonDifficulty.rewards.weapons = List.of(
+                createItemModifier(new Config.AttributeModifier[]{
+                        createDamageMultiplier(0.15F, 0.05F),
+                        createPowerMultiplier(0.15F, 0.05F)
+                })
+        );
+
         // Per Player Difficulty
         var perPlayerDifficulty = new Config.PerPlayerDifficulty();
-        var perPlayerEntityModifier = new Config.EntityBaseModifier();
+        var perPlayerEntityModifier = new Config.EntityModifier();
         perPlayerEntityModifier.entity_matches.entity_id_regex = Regex.ANY;
-        perPlayerEntityModifier.attributes = new Config.AttributeBaseMultiplier[] {
-                new Config.AttributeBaseMultiplier("generic.attack_damage", 0.2F),
-                new Config.AttributeBaseMultiplier("generic.max_health", 0.5F)
+        perPlayerEntityModifier.attributes = new Config.AttributeModifier[] {
+                createDamageMultiplier(0.2F, 0),
+                createHealthMultiplier(0.2F, 0F)
         };
-        perPlayerDifficulty.entities = new Config.EntityBaseModifier[] {
+        perPlayerDifficulty.entities = new Config.EntityModifier[] {
                 perPlayerEntityModifier
         };
 
         // Surface
         var overworld = new Config.Dimension();
         overworld.world_matches.dimension_regex = "minecraft:overworld";
-
-        var cold_biomes = new Config.Zone();
-        cold_biomes.zone_matches.biome_regex = "frozen|snowy|ice";
-        cold_biomes.rewards.weapons = new Config.ItemModifier[] {
-                createItemModifier(
-                        "minecraft:bow",
-                        null,
-                        new Config.AttributeModifier[]{
-                                createProjectileMultiplier(1.3F, 0)
-                        }
-                ),
-        };
-        cold_biomes.entities = new Config.EntityModifier[] {
-                createEntityModifier(
-                        "stray|skeleton",
-                        new Config.AttributeModifier[]{
-                                createHealthMultiplier(1.25F, 0.25F),
-                                createArmorBonus(4)
-                        },
-                        null,
-                        1.5F)
+        overworld.zones = new Config.Zone[] {
+                structure("stronghold", dungeonDifficulty.name, 4),
+                structure("monument", dungeonDifficulty.name, 2),
+                structure("desert_pyramid", dungeonDifficulty.name, 2),
+                structure("jungle_pyramid", dungeonDifficulty.name, 2),
+                structure("pillager_outpost", normalDifficulty.name, 2),
+                biome("desert", normalDifficulty.name, 1),
+                biome("frozen|snowy|ice", normalDifficulty.name, 1),
+                biome("jungle", normalDifficulty.name, 1),
         };
 
-        var desert = new Config.Zone();
-        desert.zone_matches.biome_regex = "desert";
-        desert.rewards.weapons = new Config.ItemModifier[]{
-                createItemModifier(
-                        null,
-                        "chests/desert_pyramid",
-                        new Config.AttributeModifier[]{
-                                createDamageMultiplier(1.3F, 0),
-                        }
-                ),
-        };
-        desert.entities = new Config.EntityModifier[] {
-                createEntityModifier(
-                        "skeleton",
-                        new Config.AttributeModifier[]{
-                                createHealthMultiplier(1.75F, 0.25F),
-                                createArmorBonus(4)
-                        },
-                        null,
-                        1.5F),
-                createEntityModifier(
-                        "husk",
-                        new Config.AttributeModifier[]{
-                                createDamageMultiplier(1.5F,0),
-                                createHealthMultiplier(2F, 0.5F)
-                        },
-                        null,
-                        1.5F)
-        };
-        overworld.zones = new Config.Zone[] { cold_biomes, desert };
-
-        // Nether
         var nether = new Config.Dimension();
         nether.world_matches.dimension_regex = "minecraft:the_nether";
-        nether.rewards.weapons = new Config.ItemModifier[]{
-                createItemModifier(new Config.AttributeModifier[]{
-                        createDamageMultiplier(1.3F, 0.2F),
-                        createProjectileMultiplier(1.3F, 0.2F)
-                }),
+        nether.difficulty = new Config.DifficultyReference(normalDifficulty.name, 3);
+        nether.zones = new Config.Zone[] {
+                structure("fortress", dungeonDifficulty.name, 4),
+                structure("bastion_remnant", dungeonDifficulty.name, 4)
         };
-        nether.rewards.armor = new Config.ItemModifier[]{
-                createItemModifier(new Config.AttributeModifier[]{
-                        createArmorMultiplier(1.2F),
-                        createHealthBonus(2)
-                }),
-        };
-        var blazeSpawners = new Config.SpawnerModifier();
-        blazeSpawners = new Config.SpawnerModifier();
-        blazeSpawners.min_spawn_delay_multiplier = 0.5F;
-        blazeSpawners.max_spawn_delay_multiplier = 0.5F;
-        blazeSpawners.spawn_count_multiplier = 2F;
-        blazeSpawners.max_nearby_entities_multiplier = 3F;
-        nether.entities = new Config.EntityModifier[] {
-            createEntityModifier(Regex.ANY,
-                    new Config.AttributeModifier[]{
-                        createDamageMultiplier(1.5F, 0),
-                        createArmorBonus(2),
-                        createHealthMultiplier(1.4F, 0.1F)
-                    },
-                    null,
-                    2F),
-            createEntityModifier("blaze",
-                    new Config.AttributeModifier[]{
-                        createHealthMultiplier(1.5F, 0),
-                        createArmorBonus(2)
-                    },
-                    blazeSpawners,
-                    1)
-        };
+
 
         var end = new Config.Dimension();
         end.world_matches.dimension_regex = "minecraft:the_end";
-        end.rewards.weapons = new Config.ItemModifier[]{
-                createItemModifier(new Config.AttributeModifier[]{
-                        createDamageMultiplier(1.8F, 0.2F),
-                        createProjectileMultiplier(1.8F, 0.2F)
-                }),
+        end.difficulty = new Config.DifficultyReference(normalDifficulty.name, 5);
+        end.zones = new Config.Zone[] {
+                structure("end_city", dungeonDifficulty.name, 6)
         };
-        end.rewards.armor = new Config.ItemModifier[]{
-                createItemModifier(new Config.AttributeModifier[]{
-                        createArmorMultiplier(1.5F),
-                        createHealthBonus(4)
-                }),
-        };
-        end.entities = new Config.EntityModifier[] {
-                createEntityModifier("^((?!dragon).)*$",
-                        new Config.AttributeModifier[]{
-                                createDamageMultiplier(2F, 0),
-                                createArmorBonus(4),
-                                createHealthMultiplier(1.8F, 0.2F)
-                        },
-                        null,
-                        3F),
-                createEntityModifier("dragon",
-                        new Config.AttributeModifier[]{
-                                createHealthMultiplier(2F, 0),
-                                createArmorBonus(10)
-                        },
-                        null,
-                        2F)
-        };
-
-        var anyDimension = new Config.Dimension();
-        var epics = createItemModifier(
-                new Config.AttributeModifier[]{
-                        createDamageMultiplier(1.2F,0),
-                        createProjectileMultiplier(1.2F, 0)
-                }
-        );
-        epics.item_matches.rarity_regex = "epic";
-        var rares = createItemModifier(
-                new Config.AttributeModifier[]{
-                        createDamageMultiplier(1.1F,0),
-                        createProjectileMultiplier(1.1F, 0)
-                }
-        );
-        rares.item_matches.rarity_regex = "rare";
-        anyDimension.rewards.weapons = new Config.ItemModifier[] { rares, epics };
 
         var config = new Config();
-        config.dimensions = new Config.Dimension[] { overworld, nether, end, anyDimension };
+        config.difficulty_types = new Config.DifficultyType[] { normalDifficulty, dungeonDifficulty };
+        config.dimensions = new Config.Dimension[] { overworld, nether, end };
         config.perPlayerDifficulty = perPlayerDifficulty;
         return config;
     }
@@ -185,7 +115,13 @@ public class Default {
     }
 
     private static Config.AttributeModifier createDamageMultiplier(float value, float randomness) {
-        var modifier = new Config.AttributeModifier("generic.attack_damage", value);
+        var modifier = new Config.AttributeModifier("damage", value);
+        modifier.randomness = randomness;
+        return modifier;
+    }
+
+    private static Config.AttributeModifier createPowerMultiplier(float value, float randomness) {
+        var modifier = new Config.AttributeModifier("power", value);
         modifier.randomness = randomness;
         return modifier;
     }
@@ -202,7 +138,7 @@ public class Default {
 
     private static Config.AttributeModifier createArmorBonus(float value) {
         var modifier = new Config.AttributeModifier("generic.armor", value);
-        modifier.operation = Config.Operation.ADD;
+        modifier.operation = Config.Operation.ADDITION;
         return modifier;
     }
 
@@ -214,7 +150,7 @@ public class Default {
 
     private static Config.AttributeModifier createHealthBonus(float value) {
         var modifier = new Config.AttributeModifier("generic.max_health", value);
-        modifier.operation = Config.Operation.ADD;
+        modifier.operation = Config.Operation.ADDITION;
         return modifier;
     }
 
@@ -226,5 +162,19 @@ public class Default {
         entityModifier.spawners = spawnerModifier;
         entityModifier.experience_multiplier = xpMultiplier;
         return entityModifier;
+    }
+
+    private static Config.Zone biome(String regex, String difficulty, int level) {
+        var zone = new Config.Zone();
+        zone.zone_matches.biome_regex = regex;
+        zone.difficulty = new Config.DifficultyReference(difficulty, level);
+        return zone;
+    }
+
+    private static Config.Zone structure(String id, String difficulty, int level) {
+        var zone = new Config.Zone();
+        zone.zone_matches.structure_id = id;
+        zone.difficulty = new Config.DifficultyReference(difficulty, level);
+        return zone;
     }
 }

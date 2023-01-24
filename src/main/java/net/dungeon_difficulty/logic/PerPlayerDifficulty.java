@@ -1,36 +1,40 @@
 package net.dungeon_difficulty.logic;
 
-import net.minecraft.world.World;
 import net.dungeon_difficulty.DungeonDifficulty;
 import net.dungeon_difficulty.config.Config;
+import net.minecraft.server.world.ServerWorld;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class PerPlayerDifficulty {
-    public static List<Config.AttributeModifier> getAttributeModifiers(PatternMatching.EntityData entityData, World world) {
-        var playerCount = world.getServer().getPlayerManager().getPlayerList().size(); // world.getPlayers().size();
-        if (playerCount < 2) {
-            return List.of();
-        }
-        var perPlayer = DungeonDifficulty.configManager.value.perPlayerDifficulty;
-        if (perPlayer == null || perPlayer.entities == null || perPlayer.entities.length == 0) {
-            return List.of();
+    public static PatternMatching.EntityScaleResult getAttributeModifiers(PatternMatching.EntityData entityData, ServerWorld world) {
+        var empty = new PatternMatching.EntityScaleResult(List.of(), 0, 0);
+        var perPlayer = DungeonDifficulty.config.value.perPlayerDifficulty;
+        if (perPlayer == null || !perPlayer.enabled || perPlayer.entities == null || perPlayer.entities.length == 0 || perPlayer.counting == null) {
+            return empty;
         }
 
-        float multiplier = playerCount - 1;
+        var playerCount = 0;
+        switch (perPlayer.counting) {
+            case EVERYWHERE -> {
+                playerCount = world.getServer().getPlayerManager().getPlayerList().size();
+            }
+            case DIMENSION -> {
+                playerCount = world.getPlayers().size();
+            }
+        }
+        if (playerCount < 2) {
+            return empty;
+        }
+
+        int applyCount = playerCount - 1;
         var attributeModifiers = new ArrayList<Config.AttributeModifier>();
         for(var entityBaseModifier: perPlayer.entities) {
             if (entityData.matches(entityBaseModifier.entity_matches)) {
-                for(var baseAttributeModifier: entityBaseModifier.attributes) {
-                    var attributeModifier = new Config.AttributeModifier();
-                    attributeModifier.attribute = baseAttributeModifier.attribute;
-                    attributeModifier.value = 1.0F + (multiplier * baseAttributeModifier.value);
-                    attributeModifier.operation = Config.Operation.MULTIPLY;
-                    attributeModifiers.add(attributeModifier);
-                }
+                attributeModifiers.addAll(List.of(entityBaseModifier.attributes));
             }
         }
-        return attributeModifiers;
+        return new PatternMatching.EntityScaleResult(attributeModifiers, applyCount, 0);
     }
 }
