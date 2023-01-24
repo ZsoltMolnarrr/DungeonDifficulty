@@ -323,7 +323,7 @@ public class ItemScaling {
     }
 
     private static Double getRoundingUnit() {
-        var config = DungeonDifficulty.configManager.value;
+        var config = DungeonDifficulty.config.value;
         if (config.meta != null && config.meta.rounding_unit != null) {
             return config.meta.rounding_unit;
         }

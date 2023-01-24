@@ -12,8 +12,8 @@ import net.tinyconfig.ConfigManager;
 public class DungeonDifficulty implements ModInitializer {
     public static String MODID = "dungeon_difficulty";
 
-    public static ConfigManager<Config> configManager = new ConfigManager<Config>
-            (MODID, Default.config)
+    public static ConfigManager<Config> config = new ConfigManager<Config>
+            (MODID + "_v2", Default.config)
             .builder()
             .sanitize(true)
             .build();
@@ -26,7 +26,6 @@ public class DungeonDifficulty implements ModInitializer {
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(CommandManager.literal(MODID + "_config_reload").executes(context -> {
                 DungeonDifficulty.reloadConfig();
-
                 // var gson = new GsonBuilder().setPrettyPrinting().create();
                 // System.out.println("Resolved difficulty types: " + gson.toJson(DifficultyTypes.resolved));
                 return 1;
@@ -35,16 +34,16 @@ public class DungeonDifficulty implements ModInitializer {
     }
 
     public static void reloadConfig() {
-        configManager.load();
-        var config = configManager.value;
+        config.load();
+        var config = DungeonDifficulty.config.value;
         if (config.meta != null) {
-            configManager.sanitize = config.meta.sanitize_config;
+            DungeonDifficulty.config.sanitize = config.meta.sanitize_config;
             if (!config.meta.allow_customization) {
-                configManager.value = Default.config;
+                DungeonDifficulty.config.value = Default.config;
             }
         }
         DifficultyTypes.resolve();
-        configManager.save();
+        DungeonDifficulty.config.save();
         // System.out.println("PowerScale config refreshed: " + (new Gson()).toJson(configManager.value));
     }
 }

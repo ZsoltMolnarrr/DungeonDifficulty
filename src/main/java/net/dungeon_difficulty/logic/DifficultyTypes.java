@@ -13,8 +13,8 @@ public class DifficultyTypes {
 
     public static void resolve() {
         var resolved = new ArrayList<Config.DifficultyType>();
-        var types = DungeonDifficulty.configManager.value.difficulty_types;
-        for (var type: DungeonDifficulty.configManager.value.difficulty_types) {
+        var types = DungeonDifficulty.config.value.difficulty_types;
+        for (var type: DungeonDifficulty.config.value.difficulty_types) {
             resolved.add(resolve(type, types));
         }
         DifficultyTypes.resolved = resolved;

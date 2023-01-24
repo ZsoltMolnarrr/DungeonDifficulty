@@ -214,7 +214,7 @@ public class PatternMatching {
 
     @Nullable
     public static Difficulty getDifficulty(LocationData locationData, ServerWorld world) {
-        for (var dimension : DungeonDifficulty.configManager.value.dimensions) {
+        for (var dimension : DungeonDifficulty.config.value.dimensions) {
             if (locationData.matches(dimension.world_matches)) {
                 var dimensionDifficulty = findDifficulty(dimension.difficulty);
                 if (dimension.zones != null) {
