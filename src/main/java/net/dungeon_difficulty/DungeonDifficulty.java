@@ -9,7 +9,7 @@ import net.dungeon_difficulty.logic.ItemScaling;
 import net.fabricmc.api.ModInitializer;
 import net.tinyconfig.ConfigManager;
 
-public class DungeonDifficulty implements ModInitializer {
+public class DungeonDifficulty implements ModInitializer { // :)
     public static String MODID = "dungeon_difficulty";
 
     public static ConfigManager<Config> configManager = new ConfigManager<Config>
