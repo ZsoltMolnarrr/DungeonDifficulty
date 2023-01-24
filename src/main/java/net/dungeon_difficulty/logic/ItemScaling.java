@@ -150,7 +150,7 @@ public class ItemScaling {
                     if (roundingUnit != null) {
                         newValue = MathHelper.round(newValue, roundingUnit);
                     }
-                    removeAttributesFromItemStack(currentModifiers, itemStack);
+                    removeAttributesFromItemStack(currentModifiers, attributeId.toString(), itemStack);
                     itemStack.addAttributeModifier(
                             attribute,
                             createEntityAttributeModifier(
@@ -191,7 +191,7 @@ public class ItemScaling {
                         if (roundingUnit != null) {
                             newValue = MathHelper.round(newValue, roundingUnit);
                         }
-                        removeAttributesFromItemStack(currentModifiers, itemStack);
+                        removeAttributesFromItemStack(currentModifiers, attributeId.toString(), itemStack);
                         itemStack.addAttributeModifier(
                                 attribute,
                                 createEntityAttributeModifier(
@@ -286,17 +286,18 @@ public class ItemScaling {
         }
     }
 
-    private static void removeAttributesFromItemStack(Collection<EntityAttributeModifier> modifiers, ItemStack itemStack) {
+    private static void removeAttributesFromItemStack(Collection<EntityAttributeModifier> modifiers, String attributeId, ItemStack itemStack) {
         for (var modifier: modifiers) {
-            removeAttributesFromItemStack(modifier, itemStack);
+            removeAttributesFromItemStack(modifier, attributeId, itemStack);
         }
     }
 
-    private static void removeAttributesFromItemStack(EntityAttributeModifier attributeModifier, ItemStack itemStack) {
+    private static void removeAttributesFromItemStack(EntityAttributeModifier attributeModifier, String attributeId, ItemStack itemStack) {
         NbtList nbtList = itemStack.getNbt().getList("AttributeModifiers", 10);
         nbtList.removeIf(element -> {
             if (element instanceof NbtCompound compound) {
-                return compound.getUuid("UUID").equals(attributeModifier.getId());
+                return compound.getUuid("UUID").equals(attributeModifier.getId())
+                        && compound.getString("AttributeName").equals(attributeId);
             }
             return false;
         });
