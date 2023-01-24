@@ -172,6 +172,7 @@ public class PatternMatching {
         var level = 0;
         float experienceMultiplier = 0;
         if (difficulty != null) {
+            System.out.println("Scaling entity: " + difficulty.type().name + " " + difficulty.level());
             level = difficulty.level();
             for (var modifier: getModifiersForEntity(difficulty.type().entities, entityData)) {
                 attributeModifiers.addAll(Arrays.asList(modifier.attributes));
@@ -216,18 +217,18 @@ public class PatternMatching {
     public static Difficulty getDifficulty(LocationData locationData, ServerWorld world) {
         for (var dimension : DungeonDifficulty.configManager.value.dimensions) {
             if (locationData.matches(dimension.world_matches)) {
-                var dimensionDifficulty = new Difficulty(findDifficultyType(dimension.difficulty.name), dimension.difficulty.level);
+                var dimensionDifficulty = findDifficulty(dimension.difficulty);
                 if (dimension.zones != null) {
                     for(var zone: dimension.zones) {
                         if(locationData.matches(zone.zone_matches, world)) {
-                            var zoneDifficulty = new Difficulty(findDifficultyType(zone.difficulty.name), zone.difficulty.level);
-                            if (zoneDifficulty.isValid()) {
+                            var zoneDifficulty = findDifficulty(zone.difficulty);
+                            if (zoneDifficulty != null && zoneDifficulty.isValid()) {
                                 return zoneDifficulty;
                             }
                         }
                     }
                 }
-                if (dimensionDifficulty.isValid()) {
+                if (dimensionDifficulty != null && dimensionDifficulty.isValid()) {
                     return dimensionDifficulty;
                 }
             }
@@ -236,13 +237,17 @@ public class PatternMatching {
     }
 
     @Nullable
-    private static Config.DifficultyType findDifficultyType(String name) {
+    private static Difficulty findDifficulty(Config.DifficultyReference reference) {
+        if (reference == null) {
+            return null;
+        }
+        var name = reference.name;
         if (name == null || name.isEmpty()) {
             return null;
         }
         for(var entry: DifficultyTypes.resolved) {
             if (name.equals(entry.name)) {
-                return entry;
+                return new Difficulty(entry, reference.level);
             }
         }
         return null;
