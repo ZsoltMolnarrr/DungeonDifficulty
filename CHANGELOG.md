@@ -5,6 +5,7 @@
 - Add entity scaling safeguard (to scaling multiple times)
 - Add structure specific difficulty
 - Fix item attributes with matching UUIDs disappearing
+- Fix experience modifier
 - New default config
 
 # 1.2.1
