@@ -1,6 +1,5 @@
 package net.dungeon_difficulty.logic;
 
-import net.dungeon_difficulty.DungeonDifficulty;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -11,13 +10,13 @@ public class EntityScaling {
     public static void scale(Entity entity, ServerWorld world) {
         if (entity instanceof LivingEntity) {
             var livingEntity = (LivingEntity)entity;
-            var scalableEntity = ((EntityScalable)livingEntity);
+            var scalableEntity = ((EntityDifficultyScalable)livingEntity);
             if (scalableEntity.isAlreadyScaled()) {
                 return;
             }
             var locationData = PatternMatching.LocationData.create(world, livingEntity.getBlockPos());
             var entityData = PatternMatching.EntityData.create(livingEntity);
-            scalableEntity.setLocationData(locationData);
+            scalableEntity.setScalingLocationData(locationData);
 
             var relativeHealth = livingEntity.getHealth() / livingEntity.getMaxHealth();
 

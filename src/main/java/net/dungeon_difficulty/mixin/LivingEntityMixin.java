@@ -1,6 +1,6 @@
 package net.dungeon_difficulty.mixin;
 
-import net.dungeon_difficulty.logic.EntityScalable;
+import net.dungeon_difficulty.logic.EntityDifficultyScalable;
 import net.dungeon_difficulty.logic.ExperienceScaling;
 import net.dungeon_difficulty.logic.PatternMatching;
 import net.minecraft.entity.LivingEntity;
@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LivingEntity.class)
-public class LivingEntityMixin implements EntityScalable {
+public class LivingEntityMixin implements EntityDifficultyScalable {
 
     // MARK: Rescaling safeguard
 
@@ -53,12 +53,12 @@ public class LivingEntityMixin implements EntityScalable {
     private PatternMatching.LocationData locationData_DungeonDifficulty;
 
     @Override
-    public PatternMatching.LocationData getLocationData() {
+    public PatternMatching.LocationData getScalingLocationData() {
         return locationData_DungeonDifficulty;
     }
 
     @Override
-    public void setLocationData(PatternMatching.LocationData data) {
+    public void setScalingLocationData(PatternMatching.LocationData data) {
         locationData_DungeonDifficulty = data;
     }
 
