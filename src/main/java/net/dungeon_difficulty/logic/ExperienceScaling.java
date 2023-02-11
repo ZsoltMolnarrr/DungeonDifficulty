@@ -2,11 +2,10 @@ package net.dungeon_difficulty.logic;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.World;
 
 public class ExperienceScaling {
     public static int scale(ServerWorld world, LivingEntity entity, int experience) {
-        var locationData = ((EntityScalable)entity).getLocationData();
+        var locationData = ((EntityDifficultyScalable)entity).getScalingLocationData();
         if (locationData == null) {
             locationData = PatternMatching.LocationData.create(world, entity.getBlockPos());
         }
