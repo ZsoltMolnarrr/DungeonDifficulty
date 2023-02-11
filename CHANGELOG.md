@@ -1,3 +1,6 @@
+# 2.0.1
+- Temporarily remove scaling equipment of spawned mobs 
+
 # 2.0.0
 - Rework configuration structure, now much more user-friendly for changes
 - Rework per player difficulty for more linear scaling, added toggle

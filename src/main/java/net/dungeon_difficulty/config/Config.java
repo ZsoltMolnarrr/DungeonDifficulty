@@ -10,7 +10,7 @@ public class Config {
         public boolean allow_customization = false;
         public boolean sanitize_config = true;
         public Double rounding_unit = 0.5;
-        public boolean entity_equipment_scaling = true;
+        //public boolean entity_equipment_scaling = false;
     }
 
     public PerPlayerDifficulty perPlayerDifficulty;
