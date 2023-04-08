@@ -49,7 +49,7 @@ public class ItemScaling {
                     var position = lootContext.get(LootContextParameters.ORIGIN);
                     BlockPos blockPosition = null;
                     if (position != null) {
-                        blockPosition = new BlockPos(position);
+                        blockPosition = BlockPos.ofFloored(position);
                     }
                     scale(itemStack, lootContext.getWorld(), blockPosition, lootTableId.toString());
                     return itemStack;
