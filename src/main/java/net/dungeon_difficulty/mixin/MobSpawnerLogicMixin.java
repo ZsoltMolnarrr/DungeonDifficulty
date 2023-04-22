@@ -33,10 +33,12 @@ public class MobSpawnerLogicMixin {
     @Inject(method = "serverTick", at = @At("HEAD"))
     private void pre_serverTick(ServerWorld world, BlockPos pos, CallbackInfo ci) {
         if(!initialized) {
-            initialized = true;
-            if(this.spawnEntry.getNbt().contains(modifiedKey)) {
+            if(this.spawnEntry != null
+                    && this.spawnEntry.getNbt() != null
+                    && this.spawnEntry.getNbt().contains(modifiedKey)) {
                 return;
             }
+            initialized = true;
 
             try {
                 var entityId = this.spawnEntry.getNbt().getString("id");
@@ -87,8 +89,8 @@ public class MobSpawnerLogicMixin {
         this.maxSpawnDelay = MathHelper.clamp(Math.round(this.maxSpawnDelay * (1F + maxSpawnDelay)), 20, 20000);
         this.requiredPlayerRange = MathHelper.clamp(Math.round(this.requiredPlayerRange * (1F + requiredPlayerRange)), 1, 200);
 
-//        if (scaling.modifiers().size() > 0) {
-//            this.spawnEntry.getNbt().putBoolean(modifiedKey, true);
+        if (scaling.modifiers().size() > 0) {
+            this.spawnEntry.getNbt().putBoolean(modifiedKey, true);
 //            System.out.println("Spawner scaled");
 //            System.out.println(" spawnRange:" + this.spawnRange
 //                    + " spawnCount:" + this.spawnCount
@@ -96,6 +98,6 @@ public class MobSpawnerLogicMixin {
 //                    + " minSpawnDelay:" + this.minSpawnDelay
 //                    + " maxSpawnDelay:" + this.maxSpawnDelay
 //                    + " requiredPlayerRange:" + this.requiredPlayerRange);
-//        }
+        }
     }
 }

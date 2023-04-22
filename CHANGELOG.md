@@ -1,3 +1,6 @@
+# 2.0.2
+- Fix Null Pointer Exception in Mob Spawner custom rule set causing server wide crash. #7
+
 # 2.0.1
 - Temporarily remove scaling equipment of spawned mobs 
 
