@@ -33,12 +33,11 @@ public class MobSpawnerLogicMixin {
     @Inject(method = "serverTick", at = @At("HEAD"))
     private void pre_serverTick(ServerWorld world, BlockPos pos, CallbackInfo ci) {
         if(!initialized) {
-            if(this.spawnEntry != null
-                    && this.spawnEntry.getNbt() != null
-                    && this.spawnEntry.getNbt().contains(modifiedKey)) {
+            if(this.spawnEntry == null
+                    || this.spawnEntry.getNbt() == null
+                    || this.spawnEntry.getNbt().contains(modifiedKey)) {
                 return;
             }
-            initialized = true;
 
             try {
                 var entityId = this.spawnEntry.getNbt().getString("id");
@@ -52,6 +51,7 @@ public class MobSpawnerLogicMixin {
 //                    System.out.println("Scaling spawner of: " + entityId + " at: " + pos);
 //                }
                 scaleSpawner(scaling);
+                initialized = true;
             } catch (Exception e) {
                 e.printStackTrace();
             }
