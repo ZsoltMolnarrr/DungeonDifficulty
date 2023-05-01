@@ -1,3 +1,6 @@
+# 2.0.3
+- Fix manually placed spawners not spawning mobs #8
+
 # 2.0.2
 - Fix Null Pointer Exception in Mob Spawner custom rule set causing server wide crash. #7
 
