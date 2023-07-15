@@ -1,5 +1,6 @@
 # 2.0.4
 - Fix recursive loot scaling #10
+- Fix mobs placed as part of structure NBT not scaled #12
 
 # 2.0.3
 - Fix manually placed spawners not spawning mobs #8
