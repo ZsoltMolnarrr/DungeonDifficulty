@@ -1,5 +1,6 @@
 package net.dungeon_difficulty;
 
+import com.google.gson.GsonBuilder;
 import net.dungeon_difficulty.config.Config;
 import net.dungeon_difficulty.config.Default;
 import net.dungeon_difficulty.logic.DifficultyTypes;
@@ -25,9 +26,11 @@ public class DungeonDifficulty implements ModInitializer {
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(CommandManager.literal(MODID + "_config_reload").executes(context -> {
+                System.out.println("Reloading Dungeon Difficulty config");
                 DungeonDifficulty.reloadConfig();
-                // var gson = new GsonBuilder().setPrettyPrinting().create();
-                // System.out.println("Resolved difficulty types: " + gson.toJson(DifficultyTypes.resolved));
+//                var gson = new GsonBuilder().setPrettyPrinting().create();
+//                System.out.println("Resolved difficulty types: " + gson.toJson(DifficultyTypes.resolved));
+//                System.out.println("Full: " + gson.toJson(DungeonDifficulty.config.value));
                 return 1;
             }));
         });

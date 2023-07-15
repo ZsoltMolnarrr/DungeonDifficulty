@@ -27,7 +27,8 @@ import java.util.*;
 
 public class ItemScaling {
     static final Logger LOGGER = LogUtils.getLogger();
-    
+    private static final String ITEMSTACK_ATTRIBUTES_NBT_KEY = "AttributeModifiers";
+    private static final String ALREADY_SCALED_NBT_KEY = "DDS";
     private static final boolean debugLogging = false;
     private static void debug(String message) {
         if (debugLogging) {
@@ -60,6 +61,12 @@ public class ItemScaling {
     }
 
     public static void scale(ItemStack itemStack, ServerWorld world, BlockPos position, String lootTableId) {
+        if (itemStack.hasNbt()) {
+            var nbt = itemStack.getNbt();
+            if (nbt != null && nbt.contains(ALREADY_SCALED_NBT_KEY)) {
+                return; // Avoid scaling items multiple times
+            }
+        }
         var locationData = PatternMatching.LocationData.create(world, position);
         scale(itemStack, world, lootTableId, locationData);
     }
@@ -128,6 +135,8 @@ public class ItemScaling {
             }
             summary.put(modifier.attribute, element);
         }
+
+        boolean scalingApplied = false;
 
         for(var slot: slots) {
             // The attribute modifiers from this item stack
@@ -203,6 +212,7 @@ public class ItemScaling {
                                 ),
                                 slot
                         );
+                        scalingApplied = true;
                     }
                 } catch (Exception e) {
                     System.err.println("Failed to apply multiply_base of " + entry.getKey() + " " + entry.getValue().add() + ", to: " + itemId);
@@ -212,7 +222,7 @@ public class ItemScaling {
 
             // System.out.println("Restoring original order of attributes");
             var unsortedAttributes = itemStack.getAttributeModifiers(slot);
-            itemStack.getNbt().put("AttributeModifiers", new NbtList()); // Resetting the list of attribute modifiers
+            itemStack.getNbt().put(ITEMSTACK_ATTRIBUTES_NBT_KEY, new NbtList()); // Resetting the list of attribute modifiers
             // System.out.println("ItemStack NBT: " + itemStack.getNbt().toString());
             for (var attribute: originalAttributeOrder) {
                 // System.out.println(" - " + Registry.ATTRIBUTE.getId(attribute).toString());
@@ -238,6 +248,10 @@ public class ItemScaling {
             }
             //System.out.println("ItemStack NBT: " + itemStack.getNbt().toString());
         }
+
+        if (scalingApplied && itemStack.hasNbt()) {
+            itemStack.getNbt().putBoolean(ALREADY_SCALED_NBT_KEY, true);
+        }
     }
 
     private static double combineAdditionModifiers(Collection<EntityAttributeModifier> modifiers) {
@@ -254,7 +268,7 @@ public class ItemScaling {
             Multimap<EntityAttribute, EntityAttributeModifier> attributes) { }
 
     private static void copyItemAttributesToNBT(ItemStack itemStack) {
-        if (!itemStack.hasNbt() || !itemStack.getNbt().contains("AttributeModifiers", 9)) {
+        if (!itemStack.hasNbt() || !itemStack.getNbt().contains(ITEMSTACK_ATTRIBUTES_NBT_KEY, 9)) {
             // If no metadata yet
             List<SlotSpecificItemAttributes> slotSpecificItemAttributes = new ArrayList<>();
             for(var slot: EquipmentSlot.values()) {
@@ -293,7 +307,7 @@ public class ItemScaling {
     }
 
     private static void removeAttributesFromItemStack(EntityAttributeModifier attributeModifier, String attributeId, ItemStack itemStack) {
-        NbtList nbtList = itemStack.getNbt().getList("AttributeModifiers", 10);
+        NbtList nbtList = itemStack.getNbt().getList(ITEMSTACK_ATTRIBUTES_NBT_KEY, 10);
         nbtList.removeIf(element -> {
             if (element instanceof NbtCompound compound) {
                 return compound.getUuid("UUID").equals(attributeModifier.getId())
