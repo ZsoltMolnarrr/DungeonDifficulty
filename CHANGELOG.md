@@ -1,3 +1,6 @@
+# 2.0.5
+- Fix difficulty modifiers being applied to players #13
+
 # 2.0.4
 - Fix recursive loot scaling #10
 - Fix mobs placed as part of structure NBT not scaled #12

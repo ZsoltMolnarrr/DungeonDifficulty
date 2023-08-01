@@ -2,14 +2,17 @@ package net.dungeon_difficulty.logic;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 
 public class EntityScaling {
     public static void scale(Entity entity, ServerWorld world) {
-        if (entity instanceof LivingEntity) {
-            var livingEntity = (LivingEntity)entity;
+        if (entity instanceof PlayerEntity) {
+            return;
+        }
+        if (entity instanceof LivingEntity livingEntity) {
             var scalableEntity = ((EntityDifficultyScalable)livingEntity);
             if (scalableEntity.isAlreadyScaled()) {
                 return;
