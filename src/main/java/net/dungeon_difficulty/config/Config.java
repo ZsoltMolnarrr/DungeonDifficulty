@@ -5,7 +5,7 @@ import java.util.Random;
 
 public class Config {
     public Meta meta = new Meta();
-    public class Meta {
+    public class Meta { public Meta() { }
         public String comment = "IMPORTANT! Make sure to set `allow_customization` to `true` to allow customization of the config";
         public boolean allow_customization = false;
         public boolean sanitize_config = true;
@@ -14,7 +14,7 @@ public class Config {
     }
 
     public PerPlayerDifficulty perPlayerDifficulty;
-    public static class PerPlayerDifficulty {
+    public static class PerPlayerDifficulty { public PerPlayerDifficulty() { }
         public boolean enabled = true;
         public enum Counting { EVERYWHERE, DIMENSION }
         public Counting counting = Counting.EVERYWHERE;
@@ -22,21 +22,18 @@ public class Config {
     }
 
     public DifficultyType[] difficulty_types;
-    public static class DifficultyType {
+    public static class DifficultyType { public DifficultyType() { }
         public String name;
         public String parent;
         public List<EntityModifier> entities = List.of();
         public Rewards rewards = new Rewards();
-
-        public DifficultyType() { }
         public DifficultyType(String name) {
             this.name = name;
         }
     }
-    public static class DifficultyReference {
+    public static class DifficultyReference { public DifficultyReference() { }
         public String name;
         public int level = 0;
-        public DifficultyReference() { }
         public DifficultyReference(String name, int level) {
             this.name = name;
             this.level = level;
@@ -45,7 +42,7 @@ public class Config {
 
     public Dimension[] dimensions;
 
-    public static class Dimension {
+    public static class Dimension { public Dimension() { }
         public static class Filters {
             public String dimension_regex = Regex.ANY;
         }
@@ -55,8 +52,8 @@ public class Config {
         public Zone[] zones = new Zone[]{};
     }
 
-    public static class Zone {
-        public static class Filters {
+    public static class Zone { public Zone() { }
+        public static class Filters { public Filters() { }
             public String biome_regex = Regex.ANY;
             public String biome_tag_regex = Regex.ANY;
             public String structure_id = null;
@@ -68,7 +65,7 @@ public class Config {
 
     public enum Operation { ADDITION, MULTIPLY_BASE }
 
-    public static class EntityModifier {
+    public static class EntityModifier { public EntityModifier() { }
         public static class Filters {
             public enum Attitude {
                 FRIENDLY, HOSTILE, ANY
@@ -82,12 +79,12 @@ public class Config {
         public float experience_multiplier = 0;
     }
 
-    public static class Rewards {
+    public static class Rewards { public Rewards() { }
         public List<ItemModifier> armor = List.of();
         public List<ItemModifier> weapons = List.of();
     }
 
-    public static class ItemModifier {
+    public static class ItemModifier { public ItemModifier() { }
         public static class Filters {
             public String item_id_regex = Regex.ANY;
             public String loot_table_regex = Regex.ANY;
@@ -98,13 +95,11 @@ public class Config {
         public AttributeModifier[] attributes = new AttributeModifier[]{};
     }
 
-    public static class AttributeModifier {
+    public static class AttributeModifier { public AttributeModifier() { }
         public String attribute;
         public Operation operation = Operation.MULTIPLY_BASE;
         public float randomness = 0;
         public float value = 0;
-
-        public AttributeModifier() {}
 
         public AttributeModifier(String attribute, float value) {
             this.attribute = attribute;
@@ -120,7 +115,7 @@ public class Config {
         }
     }
 
-    public static class SpawnerModifier {
+    public static class SpawnerModifier { public SpawnerModifier() { }
         public float spawn_range_multiplier = 0;
         public float spawn_count_multiplier = 0;
         public float max_nearby_entities_multiplier = 0;
