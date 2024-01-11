@@ -51,7 +51,7 @@ public class Default {
         // Per Player Difficulty
         var perPlayerDifficulty = new Config.PerPlayerDifficulty();
         var perPlayerEntityModifier = new Config.EntityModifier();
-        perPlayerEntityModifier.entity_matches.entity_id_regex = Regex.ANY;
+        perPlayerEntityModifier.entity_matches.entity_id_regex = "^(?!the_bumblezone:cosmic_crystal_entity).*$";
         perPlayerEntityModifier.attributes = new Config.AttributeModifier[] {
                 createDamageMultiplier(0.2F, 0),
                 createHealthMultiplier(0.2F, 0F)
