@@ -1,3 +1,7 @@
+# 2.0.6
+
+- Improve compatibility with BumbleZone
+
 # 2.0.5
 - Fix difficulty modifiers being applied to players #13
 
