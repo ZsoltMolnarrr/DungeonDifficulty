@@ -1,3 +1,7 @@
+# 2.1.0
+
+- Replace Projectile Damage Attribute with Ranged Weapon API
+
 # 2.0.6
 
 - Improve compatibility with BumbleZone, thanks to TelepathicGrunt
