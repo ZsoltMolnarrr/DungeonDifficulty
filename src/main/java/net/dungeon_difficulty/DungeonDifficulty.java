@@ -1,6 +1,7 @@
 package net.dungeon_difficulty;
 
 import com.google.gson.GsonBuilder;
+import net.dungeon_difficulty.config.ClientConfig;
 import net.dungeon_difficulty.config.Config;
 import net.dungeon_difficulty.config.Default;
 import net.dungeon_difficulty.logic.DifficultyTypes;
@@ -19,8 +20,15 @@ public class DungeonDifficulty implements ModInitializer { // :)
             .sanitize(true)
             .build();
 
+    public static ConfigManager<ClientConfig> clientConfig = new ConfigManager<>
+            (MODID + "_client", new ClientConfig())
+            .builder()
+            .sanitize(true)
+            .build();
+
     @Override
     public void onInitialize() {
+        clientConfig.refresh();
         reloadConfig();
         ItemScaling.initialize();
 

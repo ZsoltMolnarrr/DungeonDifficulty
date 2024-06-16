@@ -28,7 +28,7 @@ import java.util.*;
 public class ItemScaling {
     static final Logger LOGGER = LogUtils.getLogger();
     private static final String ITEMSTACK_ATTRIBUTES_NBT_KEY = "AttributeModifiers";
-    private static final String ALREADY_SCALED_NBT_KEY = "DDS";
+    public static final String ALREADY_SCALED_NBT_KEY = "DDS";
     private static final boolean debugLogging = false;
     private static void debug(String message) {
         if (debugLogging) {

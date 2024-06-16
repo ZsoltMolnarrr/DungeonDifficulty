@@ -1,3 +1,7 @@
+# 2.2.0
+
+- Scaled items now have increased rarity
+
 # 2.1.0
 
 - Replace Projectile Damage Attribute with Ranged Weapon API
