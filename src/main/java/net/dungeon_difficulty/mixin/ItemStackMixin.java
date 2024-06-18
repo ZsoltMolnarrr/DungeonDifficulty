@@ -1,6 +1,7 @@
 package net.dungeon_difficulty.mixin;
 
 import net.dungeon_difficulty.DungeonDifficulty;
+import net.dungeon_difficulty.logic.RarityHelper;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.item.ItemStack;
 import net.dungeon_difficulty.logic.ItemScaling;
@@ -39,9 +40,8 @@ public class ItemStackMixin {
         var nbt = itemStack().getNbt();
         if (nbt != null && nbt.contains(ItemScaling.ALREADY_SCALED_NBT_KEY)
                 && DungeonDifficulty.clientConfig.value.enable_scaled_items_rarity
-                && value.ordinal() <= DungeonDifficulty.clientConfig.value.scaled_item_rarity_max.ordinal()
-                && value.ordinal() < Rarity.values().length) {
-            var newValue = Rarity.values()[value.ordinal() + 1];
+                && value.ordinal() <= DungeonDifficulty.clientConfig.value.scaled_item_rarity_max.ordinal()) {
+            var newValue = RarityHelper.increasedRarity(value, 1);
             cir.setReturnValue(newValue);
         }
     }

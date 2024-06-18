@@ -1,3 +1,7 @@
+# 2.2.1
+
+- Enchanted items now have `Uncommon` instead `Rare` rarity (can be disabled in client config)
+
 # 2.2.0
 
 - Scaled items now have increased rarity

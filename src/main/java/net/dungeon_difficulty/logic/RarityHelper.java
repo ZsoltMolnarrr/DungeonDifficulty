@@ -24,6 +24,12 @@ public class RarityHelper {
     }
 
     public static Rarity increasedRarity(Rarity rarity, int bonus) {
-        return getRarityByIndex(Math.min(3, getRarityIndex(rarity) + bonus));
+        var nextIndex = rarity.ordinal() + bonus;
+        var maxIndex = Rarity.values().length - 1;
+        if (nextIndex <= maxIndex) {
+            return Rarity.values()[nextIndex];
+        } else {
+            return Rarity.values()[maxIndex];
+        }
     }
 }
