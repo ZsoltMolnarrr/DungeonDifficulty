@@ -1,5 +1,7 @@
 package net.dungeon_difficulty.config;
 
+import net.fabricmc.loader.api.FabricLoader;
+
 import java.util.List;
 
 public class Default {
@@ -52,6 +54,10 @@ public class Default {
         var perPlayerDifficulty = new Config.PerPlayerDifficulty();
         var perPlayerEntityModifier = new Config.EntityModifier();
         perPlayerEntityModifier.entity_matches.entity_id_regex = Regex.ANY;
+        if (FabricLoader.getInstance().isModLoaded("the_bumblezone")) {
+            perPlayerEntityModifier.entity_matches.entity_id_regex = "^(?!the_bumblezone:cosmic_crystal_entity).*$";
+        }
+
         perPlayerEntityModifier.attributes = new Config.AttributeModifier[] {
                 createDamageMultiplier(0.2F, 0),
                 createHealthMultiplier(0.2F, 0F)
@@ -127,7 +133,7 @@ public class Default {
     }
 
     private static Config.AttributeModifier createProjectileMultiplier(float value, float randomness) {
-        var modifier = new Config.AttributeModifier("projectile_damage:generic", value);
+        var modifier = new Config.AttributeModifier("ranged_weapon:damage", value);
         modifier.randomness = randomness;
         return modifier;
     }

@@ -1,3 +1,19 @@
+# 2.2.1
+
+- Enchanted items now have `Uncommon` instead `Rare` rarity (can be disabled in client config)
+
+# 2.2.0
+
+- Scaled items now have increased rarity
+
+# 2.1.0
+
+- Replace Projectile Damage Attribute with Ranged Weapon API
+
+# 2.0.6
+
+- Improve compatibility with BumbleZone, thanks to TelepathicGrunt
+
 # 2.0.5
 - Fix difficulty modifiers being applied to players #13
 
