@@ -16,20 +16,6 @@ import java.util.UUID;
 
 @Mixin(ItemStack.class)
 public class ItemStackMixin {
-    // This is a bugfix for Mojang :)
-    // `entityAttributeModifier.getId() == Item.ATTACK_DAMAGE_MODIFIER_ID` never matches for
-    // UUIDs those were deserialized from NBT
-    @Redirect(method = "getTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/attribute/EntityAttributeModifier;getId()Ljava/util/UUID;"))
-    public UUID fixId(EntityAttributeModifier instance) {
-        if (instance.getId().equals(ItemScaling.ItemAccessor.hardCodedAttackDamageModifier())) {
-            return ItemScaling.ItemAccessor.hardCodedAttackDamageModifier();
-        }
-        if (instance.getId().equals(ItemScaling.ItemAccessor.hardCodedAttackSpeedModifier())) {
-            return ItemScaling.ItemAccessor.hardCodedAttackSpeedModifier();
-        }
-        return instance.getId();
-    }
-
     private ItemStack itemStack() {
         return (ItemStack) (Object) this;
     }
@@ -37,6 +23,14 @@ public class ItemStackMixin {
     @Inject(method = "getRarity", at = @At("RETURN"), cancellable = true)
     private void injected(CallbackInfoReturnable<Rarity> cir) {
         var value = cir.getReturnValue();
+        var stack = itemStack();
+        if (DungeonDifficulty.clientConfig.value.enable_overriding_enchantment_rarity
+                && stack.hasEnchantments()) {
+            var newValue = RarityHelper.increasedRarity(this.rarity, 1);
+            cir.setReturnValue(newValue);
+            cir.cancel();
+        }
+
         var nbt = itemStack().getNbt();
         if (nbt != null && nbt.contains(ItemScaling.ALREADY_SCALED_NBT_KEY)
                 && DungeonDifficulty.clientConfig.value.enable_scaled_items_rarity
@@ -44,5 +38,6 @@ public class ItemStackMixin {
             var newValue = RarityHelper.increasedRarity(value, 1);
             cir.setReturnValue(newValue);
         }
+
     }
 }

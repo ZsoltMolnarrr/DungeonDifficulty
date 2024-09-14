@@ -14,15 +14,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Item.class)
 public class ItemMixin {
-    @Shadow @Final private Rarity rarity;
-
-    @Inject(method = "getRarity", at = @At("HEAD"), cancellable = true)
-    private void getRarity_HEAD_Override(ItemStack stack, CallbackInfoReturnable<Rarity> cir) {
-         if (DungeonDifficulty.clientConfig.value.enable_overriding_enchantment_rarity
-                 && stack.hasEnchantments()) {
-             var newValue = RarityHelper.increasedRarity(this.rarity, 1);
-             cir.setReturnValue(newValue);
-             cir.cancel();
-         }
-    }
+//    @Shadow @Final private Rarity rarity;
+//
+//    @Inject(method = "getRarity", at = @At("HEAD"), cancellable = true)
+//    private void getRarity_HEAD_Override(ItemStack stack, CallbackInfoReturnable<Rarity> cir) {
+//         if (DungeonDifficulty.clientConfig.value.enable_overriding_enchantment_rarity
+//                 && stack.hasEnchantments()) {
+//             var newValue = RarityHelper.increasedRarity(this.rarity, 1);
+//             cir.setReturnValue(newValue);
+//             cir.cancel();
+//         }
+//    }
 }
