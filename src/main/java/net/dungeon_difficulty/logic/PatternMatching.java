@@ -68,9 +68,11 @@ public class PatternMatching {
             }
             if (result && filters.structure_id != null) {
                 if (world != null) {
-                    var key = RegistryKey.of(RegistryKeys.STRUCTURE, new Identifier(filters.structure_id));
-                    if (key != null) {
-                        result = result && world.getStructureAccessor().getStructureContaining(position, key).hasChildren();
+                    // var key = RegistryKey.of(RegistryKeys.STRUCTURE, Identifier.of(filters.structure_id));
+                    var registry = world.toServerWorld().getServer().getRegistryManager().get(RegistryKeys.STRUCTURE);
+                    var structure = registry.get(Identifier.of(filters.structure_id));
+                    if (structure != null) {
+                        result = result && world.getStructureAccessor().getStructureContaining(position, structure).hasChildren();
                     }
                 } else {
                     result = false;

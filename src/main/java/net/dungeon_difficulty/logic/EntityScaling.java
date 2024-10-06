@@ -44,8 +44,8 @@ public class EntityScaling {
             if (modifier.attribute == null) {
                 continue;
             }
-            var attribute = Registries.ATTRIBUTE.get(new Identifier(modifier.attribute));
-            if (!entity.getAttributes().hasAttribute(attribute)) {
+            var attribute = Registries.ATTRIBUTE.getEntry(Identifier.of(modifier.attribute)).orElse(null);
+            if (attribute == null || !entity.getAttributes().hasAttribute(attribute)) {
                 continue;
             }
 
