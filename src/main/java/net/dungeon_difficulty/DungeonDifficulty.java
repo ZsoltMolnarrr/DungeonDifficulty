@@ -15,7 +15,7 @@ public class DungeonDifficulty implements ModInitializer { // :)
     public static String MODID = "dungeon_difficulty";
 
     public static ConfigManager<Config> config = new ConfigManager<Config>
-            (MODID + "_v2", Default.config)
+            (MODID, Default.config)
             .builder()
             .sanitize(true)
             .build();

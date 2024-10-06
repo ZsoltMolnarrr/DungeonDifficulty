@@ -2,6 +2,7 @@ package net.dungeon_difficulty.mixin;
 
 import net.dungeon_difficulty.DungeonDifficulty;
 import net.dungeon_difficulty.logic.RarityHelper;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.item.ItemStack;
 import net.dungeon_difficulty.logic.ItemScaling;
@@ -22,22 +23,20 @@ public class ItemStackMixin {
 
     @Inject(method = "getRarity", at = @At("RETURN"), cancellable = true)
     private void injected(CallbackInfoReturnable<Rarity> cir) {
-        var value = cir.getReturnValue();
-        var stack = itemStack();
+        var itemStack = itemStack();
+        Rarity rarity = itemStack.getOrDefault(DataComponentTypes.RARITY, Rarity.COMMON);
         if (DungeonDifficulty.clientConfig.value.enable_overriding_enchantment_rarity
-                && stack.hasEnchantments()) {
-            var newValue = RarityHelper.increasedRarity(this.rarity, 1);
-            cir.setReturnValue(newValue);
+                && itemStack.hasEnchantments()) {
+            rarity = RarityHelper.increasedRarity(rarity, 1);
+        }
+        if (DungeonDifficulty.clientConfig.value.enable_scaled_items_rarity
+                && ItemScaling.isScaled(itemStack)) {
+            rarity = RarityHelper.increasedRarity(rarity, 1);
+        }
+
+        if (rarity != cir.getReturnValue()) {
+            cir.setReturnValue(rarity);
             cir.cancel();
         }
-
-        var nbt = itemStack().getNbt();
-        if (nbt != null && nbt.contains(ItemScaling.ALREADY_SCALED_NBT_KEY)
-                && DungeonDifficulty.clientConfig.value.enable_scaled_items_rarity
-                && value.ordinal() <= DungeonDifficulty.clientConfig.value.scaled_item_rarity_max.ordinal()) {
-            var newValue = RarityHelper.increasedRarity(value, 1);
-            cir.setReturnValue(newValue);
-        }
-
     }
 }

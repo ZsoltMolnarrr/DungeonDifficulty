@@ -1,33 +1,35 @@
 package net.dungeon_difficulty.logic;
 
-import com.google.common.collect.Multimap;
 import com.mojang.logging.LogUtils;
 import net.dungeon_difficulty.DungeonDifficulty;
 import net.dungeon_difficulty.config.Config;
-import net.fabricmc.fabric.api.loot.v2.LootTableEvents;
+import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.AttributeModifierSlot;
+import net.minecraft.component.type.AttributeModifiersComponent;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.*;
 import net.minecraft.loot.context.LootContext;
 import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.loot.function.LootFunction;
 import net.minecraft.loot.function.LootFunctionType;
 import net.minecraft.loot.function.LootFunctionTypes;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.server.world.ServerWorld;
+import org.apache.commons.lang3.mutable.MutableDouble;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.*;
 
 public class ItemScaling {
     static final Logger LOGGER = LogUtils.getLogger();
-    private static final String ITEMSTACK_ATTRIBUTES_NBT_KEY = "AttributeModifiers";
     public static final String ALREADY_SCALED_NBT_KEY = "DDS";
     private static final boolean debugLogging = false;
     private static void debug(String message) {
@@ -37,7 +39,7 @@ public class ItemScaling {
     }
 
     public static void initialize() {
-        LootTableEvents.MODIFY.register((resourceManager, lootManager, id, tableBuilder, source) -> {
+        LootTableEvents.MODIFY.register((key, tableBuilder, source, registries) -> {
             LootFunction function = new LootFunction() {
                 @Override
                 public LootFunctionType getType() {
@@ -46,7 +48,7 @@ public class ItemScaling {
 
                 @Override
                 public ItemStack apply(ItemStack itemStack, LootContext lootContext) {
-                    var lootTableId = id;
+                    var lootTableId = key;
                     var position = lootContext.get(LootContextParameters.ORIGIN);
                     BlockPos blockPosition = null;
                     if (position != null) {
@@ -61,11 +63,8 @@ public class ItemScaling {
     }
 
     public static void scale(ItemStack itemStack, ServerWorld world, BlockPos position, String lootTableId) {
-        if (itemStack.hasNbt()) {
-            var nbt = itemStack.getNbt();
-            if (nbt != null && nbt.contains(ALREADY_SCALED_NBT_KEY)) {
-                return; // Avoid scaling items multiple times
-            }
+        if (isScaled(itemStack)) {
+            return; // Avoid scaling items multiple times
         }
         var locationData = PatternMatching.LocationData.create(world, position);
         scale(itemStack, world, lootTableId, locationData);
@@ -100,26 +99,48 @@ public class ItemScaling {
         public ModifierSummary multiplyBase(float value) {
             return new ModifierSummary(add, multiplyBase  + value);
         }
+        public boolean isEmpty() {
+            return add == 0 && multiplyBase == 0;
+        }
+        public float apply(float value) {
+            return (value + add) * (1F + multiplyBase);
+        }
     }
+
+
+    private record AddResult(double value, @Nullable Identifier id) { }
+    private static AddResult addValuesOf(AttributeModifiersComponent component, EquipmentSlot slot, RegistryEntry<EntityAttribute> givenAttribute) {
+        var mutableValue = new MutableDouble(0);
+        final @Nullable Identifier[] modifierId = {null};
+        component.applyModifiers(slot, (attribute,modifier) -> {
+                if (attribute.equals(givenAttribute) && modifier.operation() == EntityAttributeModifier.Operation.ADD_VALUE) {
+                    if (modifierId[0] == null) {
+                        modifierId[0] = modifier.id();
+                    }
+                    mutableValue.add(modifier.value());
+                }
+            }
+        );
+        return new AddResult(mutableValue.doubleValue(), modifierId[0]);
+    }
+
+    private record ScaledAttributeResult(double value) { }
 
     private static void applyModifiersForItemStack(EquipmentSlot[] slots, String itemId, ItemStack itemStack, List<Config.AttributeModifier> modifiers, int level) {
         if (modifiers.isEmpty() || level == 0) {
             return;
         }
+        var roundingUnit = getRoundingUnit();
 
-        ArrayList<EntityAttribute> originalAttributeOrder = new ArrayList<>();
-        for (var slot: slots) {
-            var multimap = itemStack.getAttributeModifiers(slot);
-            if (multimap.isEmpty()) { continue; }
-            for (var entry: multimap.entries()) {
-                originalAttributeOrder.add(entry.getKey());
+        var attributesComponents = itemStack.get(DataComponentTypes.ATTRIBUTE_MODIFIERS);
+        if (attributesComponents == null || attributesComponents.modifiers().isEmpty()) {
+            attributesComponents = itemStack.getItem().getAttributeModifiers();
+            if (attributesComponents == null) {
+                attributesComponents = itemStack.getOrDefault(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent.DEFAULT);
             }
-            break;
         }
 
-        copyItemAttributesToNBT(itemStack); // We need to do this, to avoid unscaled attributes vanishing
-
-        var summary = new HashMap<String, ModifierSummary>();
+        var summary = new LinkedHashMap<String, ModifierSummary>();
         for (var modifier : modifiers) {
             var element = summary.get(modifier.attribute);
             if (element == null) {
@@ -133,207 +154,79 @@ public class ItemScaling {
                     element = element.multiplyBase(modifier.randomizedValue(level));
                 }
             }
-            summary.put(modifier.attribute, element);
+            if (!element.isEmpty()) {
+                summary.put(modifier.attribute, element);
+            }
         }
 
-        boolean scalingApplied = false;
+        // System.out.println("Scaling item: " + itemId + " with " + summary.size() + " modifiers");
 
+        LinkedHashMap<EquipmentSlot, LinkedHashMap<RegistryEntry<EntityAttribute>,  ScaledAttributeResult>> results = new LinkedHashMap<>();
         for(var slot: slots) {
-            // The attribute modifiers from this item stack
-            var attributeModifiers = itemStack.getAttributeModifiers(slot);
-            if (attributeModifiers.isEmpty()) { continue; }
-            // System.out.println("ItemStack attributes after copying: " + itemStack.getNbt());
-
-            for (var entry: summary.entrySet()) {
-                // Apply additions
-                try {
-                    var scaling = entry.getValue();
-                    if (scaling.add() == 0) {
-                        continue;
-                    }
-                    var attributeId = new Identifier(entry.getKey());
-                    var attribute = Registries.ATTRIBUTE.get(attributeId);
-                    var currentModifiers = attributeModifiers.get(attribute);
-                    var newValue = combineAdditionModifiers(currentModifiers) + scaling.add();
-                    var roundingUnit = getRoundingUnit();
+            results.put(slot, new LinkedHashMap<>());
+            for (var attributeBoost : summary.entrySet()) {
+                List<RegistryEntry<EntityAttribute>> affectedAttributes = List.of();
+                var attributePattern = attributeBoost.getKey();
+                var exactMatch = Registries.ATTRIBUTE.getEntry(Identifier.of(attributePattern)).orElse(null);
+                if (exactMatch != null) {
+                    affectedAttributes = List.of(exactMatch);
+                } else {
+                    var arrayList = new ArrayList<RegistryEntry<EntityAttribute>>();
+                    attributesComponents.applyModifiers(slot, (attribute, modifier) -> {
+                        if (PatternMatching.matches(attribute.getKey().get().getValue().toString(), attributePattern)) {
+                            arrayList.add(attribute);
+                        }
+                    });
+                    affectedAttributes = arrayList;
+                }
+                for (var attribute: affectedAttributes) {
+                    var baseline = addValuesOf(attributesComponents, slot, attribute);
+                    var value = baseline.value;
+                    value = attributeBoost.getValue().apply((float) value);
                     if (roundingUnit != null) {
-                        newValue = MathHelper.round(newValue, roundingUnit);
+                        value = MathHelper.round(value, roundingUnit);
                     }
-                    removeAttributesFromItemStack(currentModifiers, attributeId.toString(), itemStack);
-                    itemStack.addAttributeModifier(
-                            attribute,
-                            createEntityAttributeModifier(
-                                    slot,
-                                    attribute,
-                                    "DD Bonus",
-                                    newValue,
-                                    EntityAttributeModifier.Operation.ADDITION
-                            ),
-                            slot
-                    );
-                } catch (Exception e) {
-                    System.err.println("Failed to apply addition of " + entry.getKey() + " " + entry.getValue().add() + ", to: " + itemId);
-                    LOGGER.error("Reason: " + e.getMessage());
-                }
-            }
-            for (var entry: summary.entrySet()) {
-                // Apply multiply base
-                try {
-                    var scaling = entry.getValue();
-                    if (scaling.multiplyBase() == 0) {
-                        continue;
-                    }
-                    var regex = entry.getKey();
-                    ArrayList<Identifier> attributeIds = new ArrayList<>();
-                    for(var attribute: attributeModifiers.keySet()) {
-                        var id = Registries.ATTRIBUTE.getId(attribute);
-                        var idString = id.toString();
-                        if (PatternMatching.matches(idString, regex)) {
-                            attributeIds.add(id);
-                        }
-                    }
-                    for (var attributeId: attributeIds) {
-                        var attribute = Registries.ATTRIBUTE.get(attributeId);
-                        var currentModifiers = attributeModifiers.get(attribute);
-                        var newValue = combineAdditionModifiers(currentModifiers) * (1F + scaling.multiplyBase());
-                        var roundingUnit = getRoundingUnit();
-                        if (roundingUnit != null) {
-                            newValue = MathHelper.round(newValue, roundingUnit);
-                        }
-                        removeAttributesFromItemStack(currentModifiers, attributeId.toString(), itemStack);
-                        itemStack.addAttributeModifier(
-                                attribute,
-                                createEntityAttributeModifier(
-                                        slot,
-                                        attribute,
-                                        "DD Multiply",
-                                        newValue,
-                                        EntityAttributeModifier.Operation.ADDITION
-                                ),
-                                slot
-                        );
-                        scalingApplied = true;
-                    }
-                } catch (Exception e) {
-                    System.err.println("Failed to apply multiply_base of " + entry.getKey() + " " + entry.getValue().add() + ", to: " + itemId);
-                    LOGGER.error("Reason: " + e.getMessage());
-                }
-            }
 
-            // System.out.println("Restoring original order of attributes");
-            var unsortedAttributes = itemStack.getAttributeModifiers(slot);
-            itemStack.getNbt().put(ITEMSTACK_ATTRIBUTES_NBT_KEY, new NbtList()); // Resetting the list of attribute modifiers
-            // System.out.println("ItemStack NBT: " + itemStack.getNbt().toString());
-            for (var attribute: originalAttributeOrder) {
-                // System.out.println(" - " + Registry.ATTRIBUTE.getId(attribute).toString());
-                var modifiersToRestore = unsortedAttributes.get(attribute);
-                for (var modifierToRestore: modifiersToRestore) {
-                    itemStack.addAttributeModifier(
-                            attribute,
-                            modifierToRestore,
-                            slot
-                    );
+                    results.get(slot).put(attribute, new ScaledAttributeResult(value));
                 }
-                unsortedAttributes.removeAll(attribute);
             }
-            for (var entry: unsortedAttributes.entries()) {
+        }
+
+
+        var newAttributeComponent = AttributeModifiersComponent.builder();
+        for (var slot: slots) {
+            var slotResults = results.get(slot);
+            attributesComponents.applyModifiers(slot, (attribute, modifier) -> {
+                var result = slotResults.get(attribute);
+                if (modifier.operation() == EntityAttributeModifier.Operation.ADD_VALUE
+                    && result != null) {
+                    var id = modifier.id();
+                    newAttributeComponent.add(
+                            attribute,
+                            new EntityAttributeModifier(id, result.value, EntityAttributeModifier.Operation.ADD_VALUE),
+                            AttributeModifierSlot.forEquipmentSlot(slot));
+                } else {
+                    newAttributeComponent.add(
+                            attribute,
+                            modifier,
+                            AttributeModifierSlot.forEquipmentSlot(slot));
+                }
+                slotResults.remove(attribute);
+            });
+            // Remainder of slot results (newly added modifiers)
+            for (var entry: slotResults.entrySet()) {
                 var attribute = entry.getKey();
-                var modifierToRestore = entry.getValue();
-                itemStack.addAttributeModifier(
+                var result = entry.getValue();
+                var id = Identifier.ofVanilla("dd_bonus");
+                newAttributeComponent.add(
                         attribute,
-                        modifierToRestore,
-                        slot
-                );
-
-            }
-            //System.out.println("ItemStack NBT: " + itemStack.getNbt().toString());
-        }
-
-        if (scalingApplied && itemStack.hasNbt()) {
-            itemStack.getNbt().putBoolean(ALREADY_SCALED_NBT_KEY, true);
-        }
-    }
-
-    private static double combineAdditionModifiers(Collection<EntityAttributeModifier> modifiers) {
-        float summary = 0;
-        for (var modifier : modifiers) {
-            if (modifier.getOperation() != EntityAttributeModifier.Operation.ADDITION) { continue; }
-            summary += modifier.getValue();
-        }
-        return summary;
-    }
-
-    public record SlotSpecificItemAttributes(
-            EquipmentSlot slot,
-            Multimap<EntityAttribute, EntityAttributeModifier> attributes) { }
-
-    private static void copyItemAttributesToNBT(ItemStack itemStack) {
-        if (!itemStack.hasNbt() || !itemStack.getNbt().contains(ITEMSTACK_ATTRIBUTES_NBT_KEY, 9)) {
-            // If no metadata yet
-            List<SlotSpecificItemAttributes> slotSpecificItemAttributes = new ArrayList<>();
-            for(var slot: EquipmentSlot.values()) {
-                slotSpecificItemAttributes.add(new SlotSpecificItemAttributes(slot, itemStack.getAttributeModifiers(slot)));
-            }
-            for(var element: slotSpecificItemAttributes) {
-                for(var entry: element.attributes.entries()) {
-                    // System.out.println("copyItemAttributesToNBT slot:" +  element.slot + " - adding: " + entry.getKey() + " - modifier: " + entry.getValue());
-                    var attribute = entry.getKey();
-                    itemStack.addAttributeModifier(
-                            attribute,
-                            entry.getValue(),
-                            element.slot
-                    );
-                }
+                        new EntityAttributeModifier(id, result.value, EntityAttributeModifier.Operation.ADD_VALUE),
+                        AttributeModifierSlot.forEquipmentSlot(slot));
             }
         }
-    }
 
-    private static EntityAttributeModifier createEntityAttributeModifier(EquipmentSlot slot, EntityAttribute attribute, String name, double value, EntityAttributeModifier.Operation operation) {
-        UUID hardCodedUUID = null; // = hardCodedUUID(attribute);
-        if (slot == EquipmentSlot.MAINHAND || slot == EquipmentSlot.OFFHAND) {
-            hardCodedUUID = hardCodedUUID(attribute);
-        }
-        if (hardCodedUUID != null) {
-            return new EntityAttributeModifier(hardCodedUUID, name, value, operation);
-        } else {
-            return new EntityAttributeModifier(name, value, operation);
-        }
-    }
-
-    private static void removeAttributesFromItemStack(Collection<EntityAttributeModifier> modifiers, String attributeId, ItemStack itemStack) {
-        for (var modifier: modifiers) {
-            removeAttributesFromItemStack(modifier, attributeId, itemStack);
-        }
-    }
-
-    private static void removeAttributesFromItemStack(EntityAttributeModifier attributeModifier, String attributeId, ItemStack itemStack) {
-        NbtList nbtList = itemStack.getNbt().getList(ITEMSTACK_ATTRIBUTES_NBT_KEY, 10);
-        nbtList.removeIf(element -> {
-            if (element instanceof NbtCompound compound) {
-                return compound.getUuid("UUID").equals(attributeModifier.getId())
-                        && compound.getString("AttributeName").equals(attributeId);
-            }
-            return false;
-        });
-    }
-
-    private static UUID hardCodedUUID(EntityAttribute entityAttribute) {
-        if (entityAttribute.equals(EntityAttributes.GENERIC_ATTACK_DAMAGE)) {
-            return ItemAccessor.hardCodedAttackDamageModifier();
-        }
-        if (entityAttribute.equals(EntityAttributes.GENERIC_ATTACK_SPEED)) {
-            return ItemAccessor.hardCodedAttackSpeedModifier();
-        }
-        return null;
-    }
-
-    public abstract static class ItemAccessor extends Item {
-        public ItemAccessor(Settings settings) {
-            super(settings);
-        }
-
-        public static UUID hardCodedAttackDamageModifier() { return ATTACK_DAMAGE_MODIFIER_ID; };
-        public static UUID hardCodedAttackSpeedModifier() { return ATTACK_SPEED_MODIFIER_ID; };
+        itemStack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, newAttributeComponent.build());
+        markAsScaled(itemStack);
     }
 
     private static Double getRoundingUnit() {
@@ -342,5 +235,19 @@ public class ItemScaling {
             return config.meta.rounding_unit;
         }
         return null;
+    }
+
+    public static void markAsScaled(ItemStack itemStack) {
+        itemStack.apply(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT, comp -> comp.apply(currentNbt -> {
+            currentNbt.putBoolean(ALREADY_SCALED_NBT_KEY, true);
+        }));
+    }
+
+    public static boolean isScaled(ItemStack itemStack) {
+        var nbt = itemStack.get(DataComponentTypes.CUSTOM_DATA);
+        if (nbt == null) {
+            return false;
+        }
+        return nbt.contains(ALREADY_SCALED_NBT_KEY);
     }
 }
