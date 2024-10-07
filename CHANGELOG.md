@@ -2,6 +2,9 @@
 
 - Update to Minecraft 1.21.1
 - Add shield scaling
+- Zone pattern matching now supports: biome regex, biome tags, structure regex, structure tags
+- Add new structure tags:
+  - `dungeon_difficulty:level_1` ... `dungeon_difficulty:level_6`
 
 # 2.2.1
 

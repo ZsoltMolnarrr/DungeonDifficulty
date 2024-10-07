@@ -1,0 +1,16 @@
+{
+  "values": [
+    {
+      "id": "minecraft:fortress",
+      "required": false
+    },
+    {
+      "id": "minecraft:bastion_remnant",
+      "required": false
+    },
+    {
+      "id": "minecraft:nether_fossil",
+      "required": false
+    }
+  ]
+}

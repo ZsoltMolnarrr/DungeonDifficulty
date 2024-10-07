@@ -54,9 +54,8 @@ public class Config {
 
     public static class Zone { public Zone() { }
         public static class Filters { public Filters() { }
-            public String biome_regex = Regex.ANY;
-            public String biome_tag_regex = Regex.ANY;
-            public String structure_id = null;
+            public String biome = Regex.ANY;
+            public String structure = null;
         }
         public Filters zone_matches = new Filters();
 

@@ -1,0 +1,16 @@
+{
+  "values": [
+    {
+      "id": "minecraft:abandoned_mineshaft",
+      "required": false
+    },
+    {
+      "id": "minecraft:simple_dungeon",
+      "required": false
+    },
+    {
+      "id": "minecraft:pillager_outpost",
+      "required": false
+    }
+  ]
+}

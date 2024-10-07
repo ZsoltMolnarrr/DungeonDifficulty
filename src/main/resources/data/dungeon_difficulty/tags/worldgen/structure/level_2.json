@@ -1,0 +1,16 @@
+{
+  "values": [
+    {
+      "id": "minecraft:desert_pyramid",
+      "required": false
+    },
+    {
+      "id": "minecraft:jungle_pyramid",
+      "required": false
+    },
+    {
+      "id": "minecraft:mansion",
+      "required": false
+    }
+  ]
+}

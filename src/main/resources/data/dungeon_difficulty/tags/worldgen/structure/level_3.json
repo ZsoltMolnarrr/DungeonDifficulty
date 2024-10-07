@@ -1,0 +1,20 @@
+{
+  "values": [
+    {
+      "id": "minecraft:monument",
+      "required": false
+    },
+    {
+      "id": "minecraft:stronghold",
+      "required": false
+    },
+    {
+      "id": "minecraft:trial_chambers",
+      "required": false
+    },
+    {
+      "id": "minecraft:ancient_city",
+      "required": false
+    }
+  ]
+}

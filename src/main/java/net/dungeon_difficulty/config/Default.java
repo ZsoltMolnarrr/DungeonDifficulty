@@ -1,5 +1,6 @@
 package net.dungeon_difficulty.config;
 
+import net.dungeon_difficulty.DungeonDifficulty;
 import net.fabricmc.loader.api.FabricLoader;
 
 import java.util.List;
@@ -70,22 +71,17 @@ public class Default {
         var overworld = new Config.Dimension();
         overworld.world_matches.dimension_regex = "minecraft:overworld";
         overworld.zones = new Config.Zone[] {
-                structure("stronghold", dungeonDifficulty.name, 4),
-                structure("monument", dungeonDifficulty.name, 2),
-                structure("desert_pyramid", dungeonDifficulty.name, 2),
-                structure("jungle_pyramid", dungeonDifficulty.name, 2),
-                structure("pillager_outpost", normalDifficulty.name, 2),
-                biome("desert", normalDifficulty.name, 1),
-                biome("frozen|snowy|ice", normalDifficulty.name, 1),
-                biome("jungle", normalDifficulty.name, 1),
+                structureTag("level_3", dungeonDifficulty.name, 3),
+                structureTag("level_2", dungeonDifficulty.name, 2),
+                structureTag("level_1", dungeonDifficulty.name, 1),
+                biomeId("desert|frozen|snowy|ice|jungle", normalDifficulty.name, 1)
         };
 
         var nether = new Config.Dimension();
         nether.world_matches.dimension_regex = "minecraft:the_nether";
         nether.difficulty = new Config.DifficultyReference(normalDifficulty.name, 3);
         nether.zones = new Config.Zone[] {
-                structure("fortress", dungeonDifficulty.name, 4),
-                structure("bastion_remnant", dungeonDifficulty.name, 4)
+                structureTag("level_4", dungeonDifficulty.name, 4),
         };
 
 
@@ -93,7 +89,8 @@ public class Default {
         end.world_matches.dimension_regex = "minecraft:the_end";
         end.difficulty = new Config.DifficultyReference(normalDifficulty.name, 5);
         end.zones = new Config.Zone[] {
-                structure("end_city", dungeonDifficulty.name, 6)
+                structureTag("level_6", dungeonDifficulty.name, 6),
+                structureTag("level_5", dungeonDifficulty.name, 5)
         };
 
         var config = new Config();
@@ -170,16 +167,23 @@ public class Default {
         return entityModifier;
     }
 
-    private static Config.Zone biome(String regex, String difficulty, int level) {
+    private static Config.Zone biomeId(String regex, String difficulty, int level) {
         var zone = new Config.Zone();
-        zone.zone_matches.biome_regex = regex;
+        zone.zone_matches.biome = regex;
         zone.difficulty = new Config.DifficultyReference(difficulty, level);
         return zone;
     }
 
-    private static Config.Zone structure(String id, String difficulty, int level) {
+    private static Config.Zone structureId(String id, String difficulty, int level) {
         var zone = new Config.Zone();
-        zone.zone_matches.structure_id = id;
+        zone.zone_matches.structure = id;
+        zone.difficulty = new Config.DifficultyReference(difficulty, level);
+        return zone;
+    }
+
+    private static Config.Zone structureTag(String tag, String difficulty, int level) {
+        var zone = new Config.Zone();
+        zone.zone_matches.structure = "#" + DungeonDifficulty.MODID + ":" + tag;
         zone.difficulty = new Config.DifficultyReference(difficulty, level);
         return zone;
     }

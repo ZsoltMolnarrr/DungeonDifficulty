@@ -8,10 +8,15 @@ import net.minecraft.entity.mob.Monster;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.structure.StructureStart;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeKeys;
+import net.minecraft.world.gen.structure.Structure;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -22,7 +27,7 @@ import java.util.regex.Pattern;
 
 public class PatternMatching {
 
-    public record BiomeData(String key, List<String> tags) { }
+    public record BiomeData(RegistryKey<Biome> key, String keyString) { }
 
     public record LocationData(String dimensionId, BlockPos position, BiomeData biome) {
         public static LocationData create(ServerWorld world, BlockPos position) {
@@ -30,11 +35,12 @@ public class PatternMatching {
             BiomeData biome = null;
             if (position != null) {
                 var biomeKey = world.getBiome(position).getKey().orElse(BiomeKeys.PLAINS);
-                var entry = world.getRegistryManager().get(RegistryKeys.BIOME).entryOf(biomeKey);
-                var tags = entry.streamTags().map(biomeTagKey -> {
-                    return biomeTagKey.id().toString();
-                }).toList();
-                biome = new BiomeData(biomeKey.getValue().toString(), tags);
+//                var entry = world.getRegistryManager().get(RegistryKeys.BIOME).entryOf(biomeKey);
+//                var tags = entry.streamTags().map(biomeTagKey -> {
+//                    return biomeTagKey.id().toString();
+//                }).toList();
+                var keyString = biomeKey.getValue().toString();
+                biome = new BiomeData(biomeKey, keyString);
                 // System.out.println("Biome info! Key: " + biome + " tags: " + tags);
             }
             return new LocationData(dimensionId, position, biome);
@@ -53,34 +59,73 @@ public class PatternMatching {
             if (filters == null || biome == null) {
                 return true;
             }
-            var result = PatternMatching.matches(biome.key, filters.biome_regex);
-            if (filters.biome_tag_regex != null
-                    && !filters.biome_tag_regex.isEmpty()
-                    && !filters.biome_tag_regex.equals(Regex.ANY)) {
-                var foundMatchingTag = false;
-                for(var tag: biome.tags) {
-                    if (PatternMatching.matches(tag, filters.biome_tag_regex)) {
-                        foundMatchingTag = true;
-                        break;
+            var result = false;
+            if (world == null) {
+                return false;
+            }
+            var registries = world.getServer().getRegistryManager();
+
+            // Biome pattern matching
+
+            if (biome.keyString.startsWith("#")) {
+                var tagString = biome.keyString.substring(1);
+                var id = Identifier.of(tagString);
+                var tag = TagKey.of(RegistryKeys.BIOME, id);
+                if (tag != null) {
+                    var registry = registries.get(RegistryKeys.BIOME);
+                    var entry = registry.getEntry(biome.key).orElse(null);
+                    if (entry != null) {
+                        result = entry.isIn(tag);
                     }
                 }
-                result = result && foundMatchingTag;
+            } else {
+                result = PatternMatching.matches(biome.keyString, filters.biome);
             }
-            if (result && filters.structure_id != null) {
-                if (world != null) {
-                    // var key = RegistryKey.of(RegistryKeys.STRUCTURE, Identifier.of(filters.structure_id));
-                    var registry = world.toServerWorld().getServer().getRegistryManager().get(RegistryKeys.STRUCTURE);
-                    var structure = registry.get(Identifier.of(filters.structure_id));
-                    if (structure != null) {
-                        result = result && world.getStructureAccessor().getStructureContaining(position, structure).hasChildren();
+
+            // Structure pattern matching
+
+            if (result && filters.structure != null && !filters.structure.isEmpty()) {
+                result = false;
+                var registry = registries.get(RegistryKeys.STRUCTURE);
+                var structureStartsUnfiltered = world.getStructureAccessor().getStructureStarts(new ChunkPos(position), s -> true);
+                if (filters.structure.startsWith("#")) {
+                    var tagString = filters.structure.substring(1);
+                    var id = Identifier.of(tagString);
+                    var tag = TagKey.of(RegistryKeys.STRUCTURE, id);
+                    if (tag != null) {
+                        for (var structureStart : structureStartsUnfiltered) {
+                            var entry = registry.getEntry(registry.getRawId(structureStart.getStructure())).orElse(null);
+                            if (entry != null
+                                    && entry.isIn(tag)
+                                    && isInsideStructure(world, position, structureStart)) {
+                                result = true;
+                                break;
+                            }
+                        }
                     }
                 } else {
-                    result = false;
+                    for (var structureStart : structureStartsUnfiltered) {
+                        var entry = registry.getEntry(registry.getRawId(structureStart.getStructure())).orElse(null);
+                        if (entry != null
+                                && PatternMatching.matches(entry.getKey().get().getValue().toString(), filters.structure)
+                                && isInsideStructure(world, position, structureStart)) {
+                            result = true;
+                            break;
+                        }
+                    }
                 }
             }
+
             // System.out.println("PatternMatching - biome:" + biome + " matches: " + filters.biome_regex + " - " + result);
             return result;
         }
+    }
+
+    private static boolean isInsideStructure(ServerWorld world, BlockPos pos, StructureStart structureStart) {
+        if (structureStart.hasChildren()) {
+            return structureStart.getBoundingBox().contains(pos);
+        }
+        return false;
     }
 
     public record ItemData(
@@ -180,6 +225,7 @@ public class PatternMatching {
                 attributeModifiers.addAll(Arrays.asList(modifier.attributes));
                 experienceMultiplier += modifier.experience_multiplier;
             }
+            System.out.println("Difficulty for entity: " + entityData.entityId() + " | difficulty: " + difficulty.type().name + " level " + level);
         }
         return new EntityScaleResult(attributeModifiers, level, experienceMultiplier);
     }
