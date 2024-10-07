@@ -46,8 +46,8 @@ public class Default {
         );
         dungeonDifficulty.rewards.weapons = List.of(
                 createItemModifier(new Config.AttributeModifier[]{
-                        createDamageMultiplier(0.15F, 0.05F),
-                        createPowerMultiplier(0.15F, 0.05F)
+                        createDamageMultiplier(0.1F, 0.05F),
+                        createPowerMultiplier(0.1F, 0.05F)
                 })
         );
 
@@ -87,7 +87,7 @@ public class Default {
 
         var end = new Config.Dimension();
         end.world_matches.dimension_regex = "minecraft:the_end";
-        end.difficulty = new Config.DifficultyReference(normalDifficulty.name, 5);
+        end.difficulty = new Config.DifficultyReference(normalDifficulty.name, 4);
         end.zones = new Config.Zone[] {
                 structureTag("level_6", dungeonDifficulty.name, 6),
                 structureTag("level_5", dungeonDifficulty.name, 5)

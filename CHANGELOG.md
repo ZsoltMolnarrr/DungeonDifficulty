@@ -1,3 +1,7 @@
+# 3.0.1
+
+- Update scaling defaults
+
 # 3.0.0
 
 - Update to Minecraft 1.21.1
