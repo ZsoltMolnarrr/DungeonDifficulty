@@ -27,8 +27,8 @@ public class Default {
 
         var dungeonSpawners = new Config.SpawnerModifier();
         dungeonSpawners = new Config.SpawnerModifier();
-        dungeonSpawners.min_spawn_delay_multiplier = -0.2F;
-        dungeonSpawners.max_spawn_delay_multiplier = -0.2F;
+        dungeonSpawners.min_spawn_delay_multiplier = -0.1F;
+        dungeonSpawners.max_spawn_delay_multiplier = -0.1F;
         dungeonSpawners.spawn_count_multiplier = 0.5F;
         dungeonSpawners.max_nearby_entities_multiplier = 1F;
 

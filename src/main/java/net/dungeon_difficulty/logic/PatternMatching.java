@@ -225,7 +225,7 @@ public class PatternMatching {
                 attributeModifiers.addAll(Arrays.asList(modifier.attributes));
                 experienceMultiplier += modifier.experience_multiplier;
             }
-            System.out.println("Difficulty for entity: " + entityData.entityId() + " | difficulty: " + difficulty.type().name + " level " + level);
+            // System.out.println("Difficulty for entity: " + entityData.entityId() + " | difficulty: " + difficulty.type().name + " level " + level);
         }
         return new EntityScaleResult(attributeModifiers, level, experienceMultiplier);
     }
@@ -238,12 +238,12 @@ public class PatternMatching {
         int level = 0;
         if (difficulty != null) {
             level = difficulty.level();
-            // System.out.println("Found difficulty for spawner: " + difficulty.type().name + " level " + level);
             for (var modifier: getModifiersForEntity(difficulty.type().entities, entityData)) {
                 if (modifier.spawners != null) {
                     spawnerModifiers.add(modifier.spawners);
                 }
             }
+            // System.out.println("Difficulty for entity: " + entityData.entityId() + " | difficulty: " + difficulty.type().name + " level " + level);
         }
         return new SpawnerScaleResult(spawnerModifiers, level);
     }
