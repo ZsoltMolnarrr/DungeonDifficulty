@@ -82,13 +82,19 @@ public class ItemScaling {
             debug("Pattern matching found " + result.modifiers().size() + " attribute modifiers");
             applyModifiersForItemStack(new EquipmentSlot[]{ EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND }, itemId, itemStack, result.modifiers(), result.level());
         }
-        if (itemStack.getItem() instanceof ArmorItem) {
-            var armor = (ArmorItem)itemStack.getItem();
+        if (itemStack.getItem() instanceof ArmorItem armor) {
             var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.ARMOR, lootTableId, itemId, rarity);
             debug("Item scaling start." + " dimension: " + dimensionId + " position: " + position + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
             var result = PatternMatching.getModifiersForItem(locationData, itemData, world);
             debug("Pattern matching found " + result.modifiers().size() + " attribute modifiers");
             applyModifiersForItemStack(new EquipmentSlot[]{ armor.getSlotType() }, itemId, itemStack, result.modifiers(), result.level());
+        }
+        if (itemStack.getItem() instanceof ShieldItem shield) {
+            var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.ARMOR, lootTableId, itemId, rarity);
+            debug("Item scaling start." + " dimension: " + dimensionId + " position: " + position + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
+            var result = PatternMatching.getModifiersForItem(locationData, itemData, world);
+            debug("Pattern matching found " + result.modifiers().size() + " attribute modifiers");
+            applyModifiersForItemStack(new EquipmentSlot[]{ EquipmentSlot.OFFHAND }, itemId, itemStack, result.modifiers(), result.level());
         }
     }
 

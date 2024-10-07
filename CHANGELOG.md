@@ -1,3 +1,8 @@
+# 3.0.0
+
+- Update to Minecraft 1.21.1
+- Add shield scaling
+
 # 2.2.1
 
 - Enchanted items now have `Uncommon` instead `Rare` rarity (can be disabled in client config)
