@@ -15,9 +15,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Mixin(ServerWorld.class)
 public abstract class ServerWorldMixin {
     // Logic moved to `ServerEntityManager` mixin, to fix entities spawning with structures
@@ -47,14 +44,15 @@ public abstract class ServerWorldMixin {
                 if (difficultyResult != null && difficultyResult.difficulty().isValid()) {
                     var difficulty = difficultyResult.difficulty();
 
-                    var previous = ((DifficultyHandler)player).getLastDifficultyAnnouncement();
+                    Difficulty.Announcement previous = null;
+                    if (!((DifficultyHandler)player).getLastDifficultyAnnouncements().isEmpty()) {
+                        previous = ((DifficultyHandler)player).getLastDifficultyAnnouncements().getLast();
+                    }
                     if (previous != null && previous.difficulty().equals(difficulty)) {
                         continue;
                     }
-                    var send = previous == null
-                            || !previous.dimensionId().equals(locationData.dimensionId())
-                            || player.age > (previous.age() + throttle_interval);
-                    announce(difficultyResult, player, send);
+
+                    announce(difficultyResult, player);
 
                     if (extra_performance_friendly_checking) {
                         // Only 1 player to check per tick
@@ -66,10 +64,22 @@ public abstract class ServerWorldMixin {
     }
 
     @Unique
-    private void announce(PatternMatching.DifficultySearchResult difficultyResult, ServerPlayerEntity player, boolean publish) {
+    private void announce(PatternMatching.DifficultySearchResult difficultyResult, ServerPlayerEntity player) {
         var difficulty = difficultyResult.difficulty();
         var locationData = difficultyResult.locationData();
+
+        ((DifficultyHandler)player).getLastDifficultyAnnouncements();
         var announcement = new Difficulty.Announcement(difficulty, player.age, locationData.dimensionId());
+        var announcements = ((DifficultyHandler)player).getLastDifficultyAnnouncements();
+        for (var previous: announcements) {
+            if (previous.difficulty().equals(difficulty)) {
+                return;
+            }
+        }
+        announcements.add(announcement);
+        if (announcements.size() > 2) {
+            announcements.removeFirst();
+        }
 
         var title = "Dungeon";
         if (difficultyResult.match() != null) {
@@ -89,10 +99,8 @@ public abstract class ServerWorldMixin {
             }
         }
 
-        if (publish) {
-            player.networkHandler.sendPacket(new TitleS2CPacket(Text.translatable(title)));
-            player.networkHandler.sendPacket(new SubtitleS2CPacket(Text.of(difficulty.type().name + " " + difficulty.level())));
-        }
-        ((DifficultyHandler)player).setLastDifficultyAnnouncement(announcement);
+
+        player.networkHandler.sendPacket(new TitleS2CPacket(Text.translatable(title)));
+        player.networkHandler.sendPacket(new SubtitleS2CPacket(Text.of(difficulty.type().name + " " + difficulty.level())));
     }
 }
