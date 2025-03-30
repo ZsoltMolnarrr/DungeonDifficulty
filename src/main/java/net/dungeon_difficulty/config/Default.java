@@ -94,9 +94,9 @@ public class Default {
         };
 
         var config = new Config();
-        config.difficulty_types = new Config.DifficultyType[] { normalDifficulty, dungeonDifficulty };
+        config.difficulty_types = List.of(normalDifficulty, dungeonDifficulty);
         config.dimensions = new Config.Dimension[] { overworld, nether, end };
-        config.perPlayerDifficulty = perPlayerDifficulty;
+        config.per_player_difficulty = perPlayerDifficulty;
         return config;
     }
 

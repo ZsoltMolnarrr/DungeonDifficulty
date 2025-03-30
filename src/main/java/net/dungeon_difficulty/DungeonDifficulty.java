@@ -15,14 +15,16 @@ public class DungeonDifficulty implements ModInitializer { // :)
     public static String MODID = "dungeon_difficulty";
 
     public static ConfigManager<Config> config = new ConfigManager<Config>
-            (MODID, Default.config)
+            ("config", Default.config)
             .builder()
+            .setDirectory(MODID)
             .sanitize(true)
             .build();
 
     public static ConfigManager<ClientConfig> clientConfig = new ConfigManager<>
-            (MODID + "_client", new ClientConfig())
+            ("config_client", new ClientConfig())
             .builder()
+            .setDirectory(MODID)
             .sanitize(true)
             .build();
 

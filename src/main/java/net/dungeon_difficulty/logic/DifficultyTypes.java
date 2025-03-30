@@ -20,9 +20,9 @@ public class DifficultyTypes {
         DifficultyTypes.resolved = resolved;
     }
 
-    private static Config.DifficultyType resolve(Config.DifficultyType type, Config.DifficultyType[] types) {
+    private static Config.DifficultyType resolve(Config.DifficultyType type, List<Config.DifficultyType> types) {
         if (type.parent != null && !type.parent.isEmpty()) {
-            var parent = Arrays.stream(types)
+            var parent = types.stream()
                     .filter(otherType -> type.parent.equals(otherType.name))
                     .findFirst().orElse(null);
             if (parent != null) {

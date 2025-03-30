@@ -1,5 +1,7 @@
 package net.dungeon_difficulty.config;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.List;
 import java.util.Random;
 
@@ -13,7 +15,7 @@ public class Config {
         //public boolean entity_equipment_scaling = false;
     }
 
-    public PerPlayerDifficulty perPlayerDifficulty;
+    public PerPlayerDifficulty per_player_difficulty;
     public static class PerPlayerDifficulty { public PerPlayerDifficulty() { }
         public boolean enabled = true;
         public enum Counting { EVERYWHERE, DIMENSION }
@@ -21,7 +23,7 @@ public class Config {
         public EntityModifier[] entities = new EntityModifier[]{};
     }
 
-    public DifficultyType[] difficulty_types;
+    public List<DifficultyType> difficulty_types = List.of();
     public static class DifficultyType { public DifficultyType() { }
         public String name;
         public String parent;
@@ -31,6 +33,13 @@ public class Config {
             this.name = name;
         }
     }
+    public List<Rewards> reward_types = List.of();
+    public static class Rewards { public Rewards() { }
+        public String name;
+        public List<ItemModifier> armor = List.of();
+        public List<ItemModifier> weapons = List.of();
+    }
+
     public static class DifficultyReference { public DifficultyReference() { }
         public String name;
         public int level = 0;
@@ -76,11 +85,6 @@ public class Config {
         public AttributeModifier[] attributes = new AttributeModifier[]{};
         public SpawnerModifier spawners = null;
         public float experience_multiplier = 0;
-    }
-
-    public static class Rewards { public Rewards() { }
-        public List<ItemModifier> armor = List.of();
-        public List<ItemModifier> weapons = List.of();
     }
 
     public static class ItemModifier { public ItemModifier() { }
