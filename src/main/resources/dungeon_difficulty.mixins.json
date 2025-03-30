@@ -8,6 +8,7 @@
     "LivingEntityMixin",
     "MobSpawnerLogicMixin",
     "ServerEntityManagerMixin",
+    "ServerPlayerMixin",
     "ServerWorldMixin"
   ],
   "client": [

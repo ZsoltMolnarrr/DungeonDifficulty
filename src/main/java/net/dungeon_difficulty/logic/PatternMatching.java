@@ -2,12 +2,13 @@ package net.dungeon_difficulty.logic;
 
 import net.dungeon_difficulty.DungeonDifficulty;
 import net.dungeon_difficulty.config.Config;
-import net.dungeon_difficulty.config.Regex;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.Monster;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.StructureStart;
@@ -27,21 +28,14 @@ import java.util.regex.Pattern;
 
 public class PatternMatching {
 
-    public record BiomeData(RegistryKey<Biome> key, String keyString) { }
+    public record BiomeData(RegistryEntry<Biome> biomeEntry) { }
 
     public record LocationData(String dimensionId, BlockPos position, BiomeData biome) {
         public static LocationData create(ServerWorld world, BlockPos position) {
             var dimensionId = world.getRegistryKey().getValue().toString();
             BiomeData biome = null;
             if (position != null) {
-                var biomeKey = world.getBiome(position).getKey().orElse(BiomeKeys.PLAINS);
-//                var entry = world.getRegistryManager().get(RegistryKeys.BIOME).entryOf(biomeKey);
-//                var tags = entry.streamTags().map(biomeTagKey -> {
-//                    return biomeTagKey.id().toString();
-//                }).toList();
-                var keyString = biomeKey.getValue().toString();
-                biome = new BiomeData(biomeKey, keyString);
-                // System.out.println("Biome info! Key: " + biome + " tags: " + tags);
+                biome = new BiomeData(world.getBiome(position));
             }
             return new LocationData(dimensionId, position, biome);
         }
@@ -55,34 +49,45 @@ public class PatternMatching {
             return result;
         }
 
-        public boolean matches(Config.Zone.Filters filters, @Nullable ServerWorld world) {
+        public enum Scope { DIMENSION, BIOME, STRUCTURE }
+        public record Match(boolean matches, Scope scope,
+                            @Nullable RegistryEntry<Biome> matchingBiome,
+                            @Nullable RegistryEntry<Structure> matchingStructure) {
+            public static Match trueMatch() {
+                return new Match(true, Scope.DIMENSION, null, null);
+            }
+            public static Match falseMatch() {
+                return new Match(false, Scope.DIMENSION, null, null);
+            }
+        }
+
+        public Match matches(Config.Zone.Filters filters, @Nullable ServerWorld world) {
             if (filters == null || biome == null) {
-                return true;
+                return Match.trueMatch();
             }
             var result = false;
             if (world == null) {
-                return false;
+                return Match.falseMatch();
             }
             var registries = world.getServer().getRegistryManager();
 
             // Biome pattern matching
 
-            if (biome.keyString.startsWith("#")) {
-                var tagString = biome.keyString.substring(1);
-                var id = Identifier.of(tagString);
-                var tag = TagKey.of(RegistryKeys.BIOME, id);
-                if (tag != null) {
-                    var registry = registries.get(RegistryKeys.BIOME);
-                    var entry = registry.getEntry(biome.key).orElse(null);
-                    if (entry != null) {
-                        result = entry.isIn(tag);
-                    }
-                }
-            } else {
-                result = PatternMatching.matches(biome.keyString, filters.biome);
+            Scope matchScope = Scope.DIMENSION;
+            RegistryEntry<Biome> matchingBiome = null;
+
+
+            if (filters.biome == null || filters.biome.isEmpty()) {
+                result = true;
+            } else if (universalMatchV2(biome.biomeEntry, RegistryKeys.BIOME, filters.biome)) {
+                result = true;
+                matchingBiome = biome.biomeEntry;
+                matchScope = Scope.BIOME;
             }
 
             // Structure pattern matching
+
+            RegistryEntry<Structure> matchingStructure = null;
 
             if (result && filters.structure != null && !filters.structure.isEmpty()) {
                 result = false;
@@ -98,6 +103,8 @@ public class PatternMatching {
                             if (entry != null
                                     && entry.isIn(tag)
                                     && isInsideStructure(world, position, structureStart)) {
+                                matchingStructure = entry;
+                                matchScope = Scope.STRUCTURE;
                                 result = true;
                                 break;
                             }
@@ -109,6 +116,8 @@ public class PatternMatching {
                         if (entry != null
                                 && PatternMatching.matches(entry.getKey().get().getValue().toString(), filters.structure)
                                 && isInsideStructure(world, position, structureStart)) {
+                            matchingStructure = entry;
+                            matchScope = Scope.STRUCTURE;
                             result = true;
                             break;
                         }
@@ -117,7 +126,7 @@ public class PatternMatching {
             }
 
             // System.out.println("PatternMatching - biome:" + biome + " matches: " + filters.biome_regex + " - " + result);
-            return result;
+            return new Match(result, matchScope, matchingBiome, matchingStructure);
         }
     }
 
@@ -261,23 +270,37 @@ public class PatternMatching {
     public record Location(Config.EntityModifier[] entities,
                            Config.Rewards rewards) { }
 
+
+    public record DifficultySearchResult(Difficulty difficulty, LocationData locationData, LocationData.Match match) {  }
+
+
     @Nullable
     public static Difficulty getDifficulty(LocationData locationData, ServerWorld world) {
+        var result = getDifficultyResult(locationData, world);
+        if (result != null) {
+            return result.difficulty();
+        }
+        return null;
+    }
+
+    @Nullable
+    public static DifficultySearchResult getDifficultyResult(LocationData locationData, ServerWorld world) {
         for (var dimension : DungeonDifficulty.config.value.dimensions) {
             if (locationData.matches(dimension.world_matches)) {
                 var dimensionDifficulty = findDifficulty(dimension.difficulty);
                 if (dimension.zones != null) {
                     for(var zone: dimension.zones) {
-                        if(locationData.matches(zone.zone_matches, world)) {
+                        var match = locationData.matches(zone.zone_matches, world);
+                        if(match.matches()) {
                             var zoneDifficulty = findDifficulty(zone.difficulty);
                             if (zoneDifficulty != null && zoneDifficulty.isValid()) {
-                                return zoneDifficulty;
+                                return new DifficultySearchResult(zoneDifficulty, locationData, match);
                             }
                         }
                     }
                 }
                 if (dimensionDifficulty != null && dimensionDifficulty.isValid()) {
-                    return dimensionDifficulty;
+                    return new DifficultySearchResult(dimensionDifficulty, locationData, null);
                 }
             }
         }
@@ -309,6 +332,51 @@ public class PatternMatching {
             return true;
         }
         Pattern pattern = Pattern.compile(nullableRegex, Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(subject);
+        return matcher.find();
+    }
+
+
+
+    public static final String TAG_PREFIX = "#";
+    public static final String REGEX_PREFIX = "~";
+
+    public static <T> boolean universalMatch(RegistryEntry<T> entry, RegistryKey<Registry<T>> registryKey, @Nullable String pattern) {
+        if (pattern == null) {
+            return true;
+        }
+        if (pattern.startsWith(TAG_PREFIX)) {
+            var tag = TagKey.of(registryKey, Identifier.of(pattern.substring(1)));
+            return entry.isIn(tag);
+        }
+        var id = entry.getKey().get().getValue().toString();
+        if (pattern.startsWith(REGEX_PREFIX)) {
+            return regexMatches(id, pattern.substring(1));
+        } else {
+            return id.equals(pattern);
+        }
+    }
+
+    public static <T> boolean universalMatchV2(RegistryEntry<T> entry, RegistryKey<Registry<T>> registryKey, @Nullable String pattern) {
+        if (pattern == null) {
+            return true;
+        }
+        if (pattern.startsWith(TAG_PREFIX)) {
+            var tag = TagKey.of(registryKey, Identifier.of(pattern.substring(1)));
+            return entry.isIn(tag);
+        }
+        var id = entry.getKey().get().getValue().toString();
+        return regexMatches(id, pattern);
+    }
+
+    public static boolean regexMatches(String subject, String regex) {
+        if (subject == null) {
+            return false;
+        }
+        if (regex == null || regex.isEmpty() || regex.equals("*")) {
+            return true;
+        }
+        Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(subject);
         return matcher.find();
     }
