@@ -1,11 +1,20 @@
 package net.dungeon_difficulty.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.dungeon_difficulty.DungeonDifficulty;
 import net.dungeon_difficulty.logic.RarityHelper;
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.dungeon_difficulty.logic.ItemScaling;
+import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Rarity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -14,6 +23,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.UUID;
+import java.util.function.Consumer;
 
 @Mixin(ItemStack.class)
 public class ItemStackMixin {
@@ -38,5 +48,20 @@ public class ItemStackMixin {
             cir.setReturnValue(rarity);
             cir.cancel();
         }
+    }
+
+    @WrapOperation(
+            method = "getTooltip",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;appendTooltip(Lnet/minecraft/component/ComponentType;Lnet/minecraft/item/Item$TooltipContext;Ljava/util/function/Consumer;Lnet/minecraft/item/tooltip/TooltipType;)V"))
+    private void injected(ItemStack instance, ComponentType<?> componentType, Item.TooltipContext context, Consumer<Text> textConsumer, TooltipType type, Operation<Void> original) {
+        if (componentType == DataComponentTypes.JUKEBOX_PLAYABLE) {
+            var level = ItemScaling.getScaleFactor(instance);
+            if (level > 0) {
+                textConsumer.accept(Text.translatable("item.power.level", level)
+                        .formatted(EntityAttribute.Category.POSITIVE.getFormatting(true))
+                );
+            }
+        }
+        original.call(instance, componentType, context, textConsumer, type);
     }
 }

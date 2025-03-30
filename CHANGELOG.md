@@ -1,3 +1,9 @@
+# 3.1.0
+
+- Add difficulty announcement titles
+- Add power level display onto scaled loot items
+- Relocate configs into `config/dungeon_difficulty`
+
 # 3.0.1
 
 - Update scaling defaults

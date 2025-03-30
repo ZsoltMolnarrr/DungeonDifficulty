@@ -43,6 +43,8 @@ public class DungeonDifficulty implements ModInitializer { // :)
                 return 1;
             }));
         });
+
+
     }
 
     public static void reloadConfig() {

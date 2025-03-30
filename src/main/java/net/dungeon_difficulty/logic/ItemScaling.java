@@ -30,7 +30,7 @@ import java.util.*;
 
 public class ItemScaling {
     static final Logger LOGGER = LogUtils.getLogger();
-    public static final String ALREADY_SCALED_NBT_KEY = "DDS";
+    public static final String REWARD_SCALE_FACTOR = "dd.rsf";
     private static final boolean debugLogging = false;
     private static void debug(String message) {
         if (debugLogging) {
@@ -232,7 +232,7 @@ public class ItemScaling {
         }
 
         itemStack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, newAttributeComponent.build());
-        markAsScaled(itemStack);
+        markAsScaled(itemStack, level);
     }
 
     private static Double getRoundingUnit() {
@@ -243,9 +243,9 @@ public class ItemScaling {
         return null;
     }
 
-    public static void markAsScaled(ItemStack itemStack) {
+    public static void markAsScaled(ItemStack itemStack, int level) {
         itemStack.apply(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT, comp -> comp.apply(currentNbt -> {
-            currentNbt.putBoolean(ALREADY_SCALED_NBT_KEY, true);
+            currentNbt.putInt(REWARD_SCALE_FACTOR, level);
         }));
     }
 
@@ -254,6 +254,17 @@ public class ItemScaling {
         if (nbt == null) {
             return false;
         }
-        return nbt.contains(ALREADY_SCALED_NBT_KEY);
+        return nbt.contains(REWARD_SCALE_FACTOR);
+    }
+
+    public static int getScaleFactor(ItemStack itemStack) {
+        var nbt = itemStack.get(DataComponentTypes.CUSTOM_DATA);
+        if (nbt == null) {
+            return 0;
+        }
+        if (nbt.contains(REWARD_SCALE_FACTOR)) {
+            return nbt.getNbt().getInt(REWARD_SCALE_FACTOR);
+        }
+        return 0;
     }
 }
