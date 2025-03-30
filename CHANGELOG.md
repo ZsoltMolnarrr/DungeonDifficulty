@@ -1,3 +1,7 @@
+# 3.1.1
+
+- Decouple loot level from difficulty level
+
 # 3.1.0
 
 - Add difficulty announcement titles

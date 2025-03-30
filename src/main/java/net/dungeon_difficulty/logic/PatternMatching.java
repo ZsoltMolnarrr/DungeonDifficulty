@@ -165,7 +165,7 @@ public class PatternMatching {
         var difficulty = getDifficulty(locationData, world);
         var level = 0;
         if (difficulty != null) {
-            level = difficulty.level();
+            level = difficulty.rewardLevel();
             var rewards = difficulty.type().rewards;
             if (rewards != null) {
                 List<Config.ItemModifier> itemModifiers = null;
@@ -318,7 +318,8 @@ public class PatternMatching {
         }
         for(var entry: DifficultyTypes.resolved) {
             if (name.equals(entry.name)) {
-                return new Difficulty(entry, reference.level);
+                var rewardLevel = reference.reward_level != null ? reference.reward_level : reference.level;
+                return new Difficulty(entry, reference.level, rewardLevel);
             }
         }
         return null;

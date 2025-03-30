@@ -4,7 +4,7 @@ import net.dungeon_difficulty.config.Config;
 
 import java.util.Locale;
 
-public record Difficulty(Config.DifficultyType type, int level) {
+public record Difficulty(Config.DifficultyType type, int level, int rewardLevel) {
     public boolean isValid() {
         return type != null && level > 0;
     }

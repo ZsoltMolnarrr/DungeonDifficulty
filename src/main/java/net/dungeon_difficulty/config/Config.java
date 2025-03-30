@@ -34,7 +34,6 @@ public class Config {
             this.name = name;
         }
     }
-    public List<Rewards> reward_types = List.of();
     public static class Rewards { public Rewards() { }
         public String name;
         public List<ItemModifier> armor = List.of();
@@ -44,6 +43,7 @@ public class Config {
     public static class DifficultyReference { public DifficultyReference() { }
         public String name;
         public int level = 0;
+        public Integer reward_level;
         public DifficultyReference(String name, int level) {
             this.name = name;
             this.level = level;
