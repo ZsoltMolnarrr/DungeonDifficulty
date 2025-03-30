@@ -1,18 +1,19 @@
 package net.dungeon_difficulty.config;
 
-import org.jetbrains.annotations.Nullable;
-
 import java.util.List;
 import java.util.Random;
 
 public class Config {
     public Meta meta = new Meta();
     public class Meta { public Meta() { }
-        public String comment = "IMPORTANT! Make sure to set `allow_customization` to `true` to allow customization of the config";
-        public boolean allow_customization = false;
         public boolean sanitize_config = true;
         public Double rounding_unit = 0.5;
-        //public boolean entity_equipment_scaling = false;
+    }
+
+    public Announcement announcement = new Announcement();
+    public static class Announcement { public Announcement() { }
+        public boolean enabled = true;
+        public int check_interval_seconds = 10;
     }
 
     public PerPlayerDifficulty per_player_difficulty;

@@ -10,7 +10,7 @@ public class Default {
 
     private static Config createDefaultConfig() {
         // Difficulty types
-        var normalDifficulty = new Config.DifficultyType("normal");
+        var normalDifficulty = new Config.DifficultyType("adventure");
         normalDifficulty.entities = List.of(
                 createEntityModifier(Regex.ANY,
                         new Config.AttributeModifier[]{

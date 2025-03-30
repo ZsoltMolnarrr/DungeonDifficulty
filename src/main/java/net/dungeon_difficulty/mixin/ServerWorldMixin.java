@@ -1,5 +1,6 @@
 package net.dungeon_difficulty.mixin;
 
+import net.dungeon_difficulty.DungeonDifficulty;
 import net.dungeon_difficulty.logic.DifficultyHandler;
 import net.dungeon_difficulty.util.LanguageUtil;
 import net.dungeon_difficulty.logic.Difficulty;
@@ -33,9 +34,12 @@ public abstract class ServerWorldMixin {
     @Inject(method = "tick", at = @At("TAIL"))
     private void pre_tick(CallbackInfo ci) {
         var world = (ServerWorld) ((Object)this);
-        boolean extra_performance_friendly_checking = true;
-        int check_interval = 20;
-        int throttle_interval = 20 * 10;
+        var config = DungeonDifficulty.config.value.announcement;
+        if (!config.enabled) {
+            return;
+        }
+
+        int check_interval = config.check_interval_seconds * 20;
         for (var player: world.getPlayers()) {
             if (player.age % check_interval == 0) {
                 var locationData = PatternMatching.LocationData.create(world, player.getBlockPos());
@@ -53,11 +57,6 @@ public abstract class ServerWorldMixin {
                     }
 
                     announce(difficultyResult, player);
-
-                    if (extra_performance_friendly_checking) {
-                        // Only 1 player to check per tick
-                        break;
-                    }
                 }
             }
         }
@@ -99,8 +98,9 @@ public abstract class ServerWorldMixin {
             }
         }
 
-
         player.networkHandler.sendPacket(new TitleS2CPacket(Text.translatable(title)));
-        player.networkHandler.sendPacket(new SubtitleS2CPacket(Text.of(difficulty.type().name + " " + difficulty.level())));
+        player.networkHandler.sendPacket(new SubtitleS2CPacket(Text.translatable(difficulty.typeTranslationKey())
+                .append(" " + difficulty.level()))
+        );
     }
 }
