@@ -13,7 +13,7 @@ public class Config {
     public Announcement announcement = new Announcement();
     public static class Announcement { public Announcement() { }
         public boolean enabled = true;
-        public int check_interval_seconds = 10;
+        public int check_interval_seconds = 5;
     }
 
     public PerPlayerDifficulty per_player_difficulty;

@@ -41,7 +41,7 @@ public abstract class ServerWorldMixin {
 
         int check_interval = config.check_interval_seconds * 20;
         for (var player: world.getPlayers()) {
-            if (player.age % check_interval == 0) {
+            if ((player.age + player.getId()) % check_interval == 0) {
                 var locationData = PatternMatching.LocationData.create(world, player.getBlockPos());
                 var difficultyResult = PatternMatching.getDifficultyResult(locationData, world);
 
