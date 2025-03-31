@@ -41,6 +41,7 @@ public abstract class ServerWorldMixin {
 
         int check_interval = config.check_interval_seconds * 20;
         for (var player: world.getPlayers()) {
+            if (player.isSpectator()) { continue; }
             if ((player.age + player.getId()) % check_interval == 0) {
                 var locationData = PatternMatching.LocationData.create(world, player.getBlockPos());
                 var difficultyResult = PatternMatching.getDifficultyResult(locationData, world);
@@ -88,13 +89,13 @@ public abstract class ServerWorldMixin {
                 title = LanguageUtil.translateId("structure", id.toString());
             } else if (match.matchingBiome() != null && match.matchingBiome().getKey().isPresent()) {
                 var id = match.matchingBiome().getKey().get().getValue();
-                title = "biome." + id.getNamespace() + "." + id.getPath();
+                title = LanguageUtil.translateId("biome", id.toString()); // "biome." + id.getNamespace() + "." + id.getPath();
             }
         } else {
             var biome = difficultyResult.locationData().biome().biomeEntry();
             if (biome.getKey().isPresent()) {
                 var id = biome.getKey().get().getValue();
-                title = "biome." + id.getNamespace() + "." + id.getPath();
+                title = LanguageUtil.translateId("biome", id.toString());
             }
         }
 
