@@ -1,6 +1,8 @@
-# 3.1.1
+# 3.2.0
 
 - Decouple loot level from difficulty level
+- Add support for entity specific scaling
+- Add support for loot table specific scaling
 
 # 3.1.0
 

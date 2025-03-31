@@ -44,7 +44,7 @@ public abstract class ServerWorldMixin {
             if (player.isSpectator()) { continue; }
             if ((player.age + player.getId()) % check_interval == 0) {
                 var locationData = PatternMatching.LocationData.create(world, player.getBlockPos());
-                var difficultyResult = PatternMatching.getDifficultyResult(locationData, world);
+                var difficultyResult = PatternMatching.getDifficultyResult(locationData, null, PatternMatching.ScalingGoal.ENTITY, world);
 
                 if (difficultyResult != null && difficultyResult.difficulty().isValid()) {
                     var difficulty = difficultyResult.difficulty();

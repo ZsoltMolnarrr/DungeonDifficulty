@@ -55,6 +55,8 @@ public class DungeonDifficulty implements ModInitializer { // :)
         }
         DifficultyTypes.resolve();
         DungeonDifficulty.config.save();
-        // System.out.println("PowerScale config refreshed: " + (new Gson()).toJson(configManager.value));
+
+//        var gson = new GsonBuilder().setPrettyPrinting().create();
+//        System.out.println("PowerScale config refreshed: " + gson.toJson(DungeonDifficulty.config.value));
     }
 }

@@ -54,7 +54,7 @@ public class ItemScaling {
                     if (position != null) {
                         blockPosition = BlockPos.ofFloored(position);
                     }
-                    scale(itemStack, lootContext.getWorld(), blockPosition, lootTableId.toString());
+                    scale(itemStack, lootContext.getWorld(), blockPosition, lootTableId.getValue());
                     return itemStack;
                 }
             };
@@ -62,7 +62,7 @@ public class ItemScaling {
         });
     }
 
-    public static void scale(ItemStack itemStack, ServerWorld world, BlockPos position, String lootTableId) {
+    public static void scale(ItemStack itemStack, ServerWorld world, BlockPos position, Identifier lootTableId) {
         if (isScaled(itemStack)) {
             return; // Avoid scaling items multiple times
         }
@@ -70,7 +70,7 @@ public class ItemScaling {
         scale(itemStack, world, lootTableId, locationData);
     }
 
-    public static void scale(ItemStack itemStack, ServerWorld world, String lootTableId, PatternMatching.LocationData locationData) {
+    public static void scale(ItemStack itemStack, ServerWorld world, Identifier lootTableId, PatternMatching.LocationData locationData) {
         var itemId = Registries.ITEM.getId(itemStack.getItem()).toString();
         var rarity = itemStack.getRarity().toString();
         var dimensionId = world.getRegistryKey().getValue().toString(); // Just for logging
@@ -112,7 +112,6 @@ public class ItemScaling {
             return (value + add) * (1F + multiplyBase);
         }
     }
-
 
     private record AddResult(double value, @Nullable Identifier id) { }
     private static AddResult addValuesOf(AttributeModifiersComponent component, EquipmentSlot slot, RegistryEntry<EntityAttribute> givenAttribute) {

@@ -57,9 +57,10 @@ public class Config {
             public String dimension_regex = Regex.ANY;
         }
         public Filters world_matches = new Filters();
-
         public DifficultyReference difficulty;
-        public Zone[] zones = new Zone[]{};
+
+        public List<Zone> zones = List.of();
+        public List<EntityMatcher> entities = List.of();
     }
 
     public static class Zone { public Zone() { }
@@ -69,6 +70,12 @@ public class Config {
         }
         public Filters zone_matches = new Filters();
 
+        public DifficultyReference difficulty;
+    }
+
+    public static class EntityMatcher { public EntityMatcher() { }
+        public String entity_type = null;
+        public String loot_table = null;
         public DifficultyReference difficulty;
     }
 

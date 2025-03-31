@@ -2,6 +2,7 @@ package net.dungeon_difficulty.logic;
 
 import net.dungeon_difficulty.DungeonDifficulty;
 import net.dungeon_difficulty.config.Config;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.Monster;
 import net.minecraft.registry.Registries;
@@ -139,7 +140,7 @@ public class PatternMatching {
 
     public record ItemData(
             ItemKind kind,
-            String lootTableId,
+            Identifier lootTableId,
             String itemId,
             String rarity) {
 
@@ -148,7 +149,7 @@ public class PatternMatching {
                 return true;
             }
             var result = PatternMatching.matches(itemId, filters.item_id_regex)
-                    && PatternMatching.matches(lootTableId, filters.loot_table_regex)
+                    && PatternMatching.matches(lootTableId.toString(), filters.loot_table_regex)
                     && PatternMatching.matches(rarity, filters.rarity_regex);
             // System.out.println("PatternMatching - item:" + itemId + " matches all" + " - " + result);
             return result;
@@ -162,9 +163,11 @@ public class PatternMatching {
     public record ItemScaleResult(List<Config.AttributeModifier> modifiers, int level) { }
     public static ItemScaleResult getModifiersForItem(LocationData locationData, ItemData itemData, ServerWorld world) {
         var attributeModifiers = new ArrayList<Config.AttributeModifier>();
-        var difficulty = getDifficulty(locationData, world);
+
+        var result = getDifficultyResult(locationData, itemData.lootTableId(), ScalingGoal.LOOT, world);
         var level = 0;
-        if (difficulty != null) {
+        if (result != null && result.difficulty() != null) {
+            var difficulty = result.difficulty();
             level = difficulty.rewardLevel();
             var rewards = difficulty.type().rewards;
             if (rewards != null) {
@@ -276,25 +279,58 @@ public class PatternMatching {
 
     @Nullable
     public static Difficulty getDifficulty(LocationData locationData, ServerWorld world) {
-        var result = getDifficultyResult(locationData, world);
+        return getDifficulty(locationData, null, world);
+    }
+
+    @Nullable
+    public static Difficulty getDifficulty(LocationData locationData, @Nullable Identifier sourceId, ServerWorld world) {
+        var result = getDifficultyResult(locationData, sourceId, ScalingGoal.ENTITY, world);
         if (result != null) {
             return result.difficulty();
         }
         return null;
     }
 
+    public enum ScalingGoal { ENTITY, LOOT }
+
     @Nullable
-    public static DifficultySearchResult getDifficultyResult(LocationData locationData, ServerWorld world) {
+    public static DifficultySearchResult getDifficultyResult(LocationData locationData, @Nullable Identifier sourceId, ScalingGoal scalingGoal, ServerWorld world) {
         for (var dimension : DungeonDifficulty.config.value.dimensions) {
             if (locationData.matches(dimension.world_matches)) {
                 var dimensionDifficulty = findDifficulty(dimension.difficulty);
                 if (dimension.zones != null) {
                     for(var zone: dimension.zones) {
                         var match = locationData.matches(zone.zone_matches, world);
-                        if(match.matches()) {
+                        if (match.matches()) {
                             var zoneDifficulty = findDifficulty(zone.difficulty);
                             if (zoneDifficulty != null && zoneDifficulty.isValid()) {
                                 return new DifficultySearchResult(zoneDifficulty, locationData, match);
+                            }
+                        }
+                    }
+                    if (sourceId != null) {
+                        for (var entityMatcher : dimension.entities) {
+                            switch (scalingGoal) {
+                                case ENTITY -> {
+                                    if (entityMatcher.entity_type != null) {
+                                        var entityTypeEntry = Registries.ENTITY_TYPE.getEntry(sourceId);
+                                        if (entityTypeEntry.isEmpty()) {
+                                            continue;
+                                        }
+                                        if (PatternMatching.universalMatchV2(entityTypeEntry.get(), RegistryKeys.ENTITY_TYPE, entityMatcher.entity_type)) {
+                                            var difficulty = findDifficulty(entityMatcher.difficulty);
+                                            return new DifficultySearchResult(difficulty, locationData, null);
+                                        }
+                                    }
+                                }
+                                case LOOT -> {
+                                    if (entityMatcher.loot_table != null) {
+                                        if (PatternMatching.regexMatches(sourceId.toString(), entityMatcher.loot_table)) {
+                                            var difficulty = findDifficulty(entityMatcher.difficulty);
+                                            return new DifficultySearchResult(difficulty, locationData, null);
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -374,7 +410,7 @@ public class PatternMatching {
         if (subject == null) {
             return false;
         }
-        if (regex == null || regex.isEmpty() || regex.equals("*")) {
+        if (regex == null || regex.isEmpty() || regex.equals("*") || subject.equals(regex)) {
             return true;
         }
         Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);

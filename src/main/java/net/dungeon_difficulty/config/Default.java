@@ -2,6 +2,7 @@ package net.dungeon_difficulty.config;
 
 import net.dungeon_difficulty.DungeonDifficulty;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.entity.EntityType;
 
 import java.util.List;
 
@@ -70,28 +71,31 @@ public class Default {
         // Surface
         var overworld = new Config.Dimension();
         overworld.world_matches.dimension_regex = "minecraft:overworld";
-        overworld.zones = new Config.Zone[] {
+        overworld.zones = List.of(
                 structureTag("level_3", dungeonDifficulty.name, 3),
                 structureTag("level_2", dungeonDifficulty.name, 2),
                 structureTag("level_1", dungeonDifficulty.name, 1),
                 biomeId("desert|frozen|snowy|ice|jungle", normalDifficulty.name, 1)
-        };
+        );
 
         var nether = new Config.Dimension();
         nether.world_matches.dimension_regex = "minecraft:the_nether";
         nether.difficulty = new Config.DifficultyReference(normalDifficulty.name, 3);
-        nether.zones = new Config.Zone[] {
-                structureTag("level_4", dungeonDifficulty.name, 4),
-        };
+        nether.zones = List.of(
+                structureTag("level_4", dungeonDifficulty.name, 4)
+        );
 
 
         var end = new Config.Dimension();
         end.world_matches.dimension_regex = "minecraft:the_end";
         end.difficulty = new Config.DifficultyReference(normalDifficulty.name, 4);
-        end.zones = new Config.Zone[] {
+        end.zones = List.of(
                 structureTag("level_6", dungeonDifficulty.name, 6),
                 structureTag("level_5", dungeonDifficulty.name, 5)
-        };
+        );
+        end.entities = List.of(
+                entityCombinedMatcher("ender_dragon", dungeonDifficulty.name, 4)
+        );
 
         var config = new Config();
         config.difficulty_types = List.of(normalDifficulty, dungeonDifficulty);
@@ -186,5 +190,27 @@ public class Default {
         zone.zone_matches.structure = "#" + DungeonDifficulty.MODID + ":" + tag;
         zone.difficulty = new Config.DifficultyReference(difficulty, level);
         return zone;
+    }
+
+    private static Config.EntityMatcher entityTypeMatcher(String type, String difficulty, int level) {
+        var entityMatcher = new Config.EntityMatcher();
+        entityMatcher.entity_type = type;
+        entityMatcher.difficulty = new Config.DifficultyReference(difficulty, level);
+        return entityMatcher;
+    }
+
+    private static Config.EntityMatcher entityLootTableMatcher(String lootTable, String difficulty, int level) {
+        var entityMatcher = new Config.EntityMatcher();
+        entityMatcher.loot_table = lootTable;
+        entityMatcher.difficulty = new Config.DifficultyReference(difficulty, level);
+        return entityMatcher;
+    }
+
+    private static Config.EntityMatcher entityCombinedMatcher(String pattern, String difficulty, int level) {
+        var entityMatcher = new Config.EntityMatcher();
+        entityMatcher.entity_type = pattern;
+        entityMatcher.loot_table = pattern;
+        entityMatcher.difficulty = new Config.DifficultyReference(difficulty, level);
+        return entityMatcher;
     }
 }
