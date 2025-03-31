@@ -222,7 +222,7 @@ public class ItemScaling {
             for (var entry: slotResults.entrySet()) {
                 var attribute = entry.getKey();
                 var result = entry.getValue();
-                var id = Identifier.ofVanilla("dd_bonus");
+                var id = Identifier.ofVanilla("dd.boost." + slot.asString());
                 newAttributeComponent.add(
                         attribute,
                         new EntityAttributeModifier(id, result.value, EntityAttributeModifier.Operation.ADD_VALUE),

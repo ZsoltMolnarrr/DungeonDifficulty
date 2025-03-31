@@ -1,3 +1,7 @@
+# 3.2.1
+
+- Fix boosted armor bonus attributes not stacking
+
 # 3.2.0
 
 - Decouple loot level from difficulty level
