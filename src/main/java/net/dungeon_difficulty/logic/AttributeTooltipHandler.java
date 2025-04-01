@@ -1,4 +1,4 @@
-package net.dungeon_difficulty.util;
+package net.dungeon_difficulty.logic;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.TreeMultimap;
@@ -19,6 +19,8 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
+import net.minecraft.registry.Registries;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.DecimalFormat;
@@ -27,10 +29,9 @@ import java.util.*;
 import java.util.function.Consumer;
 
 /**
- * Enhanced attribute tooltip system for Dungeon Difficulty, inspired by NeoForge's implementation
- * but adapted for Fabric and Yarn mappings.
+ * Merged Attribute Modifier tooltips, inspired by NeoForge.
  */
-public class AttributeTooltipHelper {
+public class AttributeTooltipHandler {
     private static final DecimalFormat FORMAT = new DecimalFormat("#.##", new DecimalFormatSymbols(Locale.ROOT));
     private static final Identifier FAKE_MERGED_ID = Identifier.of(DungeonDifficulty.MODID, "fake_merged_modifier");
 
@@ -44,6 +45,34 @@ public class AttributeTooltipHelper {
         Comparator.comparing(EntityAttributeModifier::operation)
             .thenComparing((EntityAttributeModifier a) -> -Math.abs(a.value()))
             .thenComparing(EntityAttributeModifier::id);
+
+    private static final Map<String, AttributeModifierSlot> KEY_SLOT_MAP = Util.make(new HashMap<>(), map -> {
+        map.put(Text.translatable("item.modifiers.mainhand").getString(), AttributeModifierSlot.MAINHAND);
+        map.put(Text.translatable("item.modifiers.offhand").getString(), AttributeModifierSlot.OFFHAND);
+        map.put(Text.translatable("item.modifiers.head").getString(), AttributeModifierSlot.HEAD);
+        map.put(Text.translatable("item.modifiers.chest").getString(), AttributeModifierSlot.CHEST);
+        map.put(Text.translatable("item.modifiers.legs").getString(), AttributeModifierSlot.LEGS);
+        map.put(Text.translatable("item.modifiers.feet").getString(), AttributeModifierSlot.FEET);
+        map.put(Text.translatable("item.modifiers.body").getString(), AttributeModifierSlot.BODY);
+    });
+
+    private static final Set<Identifier> BASE_ATTRIBUTE_IDS = Util.make(new HashSet<>(), set -> {
+        set.add(Registries.ATTRIBUTE.getId(EntityAttributes.GENERIC_ATTACK_DAMAGE.value()));
+        set.add(Registries.ATTRIBUTE.getId(EntityAttributes.GENERIC_ATTACK_SPEED.value()));
+        set.add(Registries.ATTRIBUTE.getId(EntityAttributes.PLAYER_ENTITY_INTERACTION_RANGE.value()));
+        set.add(Identifier.of("ranged_weapon", "damage"));
+        set.add(Identifier.of("ranged_weapon", "velocity"));
+        set.remove(null);
+    });
+
+    private static final Map<Identifier, Identifier> BASE_MODIFIER_IDS = Util.make(new HashMap<>(), map -> {
+        map.put(Registries.ATTRIBUTE.getId(EntityAttributes.GENERIC_ATTACK_DAMAGE.value()), Item.BASE_ATTACK_DAMAGE_MODIFIER_ID);
+        map.put(Registries.ATTRIBUTE.getId(EntityAttributes.GENERIC_ATTACK_SPEED.value()), Item.BASE_ATTACK_SPEED_MODIFIER_ID);
+        map.put(Registries.ATTRIBUTE.getId(EntityAttributes.PLAYER_ENTITY_INTERACTION_RANGE.value()), Identifier.ofVanilla("base_entity_reach"));
+        map.put(Identifier.of("ranged_weapon", "damage"), Identifier.of("ranged_weapon", "base_damage"));
+        map.put(Identifier.of("ranged_weapon", "velocity"), Identifier.of("ranged_weapon", "base_velocity"));
+        map.remove(null);
+    });
 
     public static boolean isDetailedView() {
         return DungeonDifficulty.clientConfig.value.enable_enhanced_attribute_tooltips && Screen.hasShiftDown();
@@ -102,32 +131,15 @@ public class AttributeTooltipHelper {
      */
     private static Multimap<RegistryEntry<EntityAttribute>, EntityAttributeModifier> sortedMap() {
         return TreeMultimap.create(
-            Comparator.comparing(e -> e.getKey().toString()), // Compare attributes by registry key
+            Comparator.comparing(e -> e.getKey().toString()),
             ATTRIBUTE_MODIFIER_COMPARATOR
         );
     }
 
-    /**
-     * Get all modifiers for a slot, sorted by attribute and modifier
-     */
     private static Multimap<RegistryEntry<EntityAttribute>, EntityAttributeModifier> getSortedModifiers(ItemStack stack, AttributeModifierSlot slot) {
         Multimap<RegistryEntry<EntityAttribute>, EntityAttributeModifier> map = sortedMap();
 
-        AttributeModifiersComponent component = stack.getOrDefault(
-                DataComponentTypes.ATTRIBUTE_MODIFIERS, 
-                AttributeModifiersComponent.DEFAULT
-        );
-        
-        // This is probably not necessary, but I don't think it can hurt
-        if (component.modifiers().isEmpty()) {
-            component = stack.getItem().getAttributeModifiers();
-            
-            if (component == null) {
-                component = AttributeModifiersComponent.DEFAULT;
-            }
-        }
-
-        component.applyModifiers(slot, (attributeHolder, modifier) -> {
+        stack.applyAttributeModifier(slot, (attributeHolder, modifier) -> {
             if (attributeHolder != null && modifier != null) {
                 map.put(attributeHolder, modifier);
             }
@@ -317,7 +329,6 @@ public class AttributeTooltipHelper {
         if (isBaseModifier(attribute, modifier)) {
             return BASE_COLOR;
         }
-
         if (isBaseAttribute(attribute) && modifier.id().equals(FAKE_MERGED_ID)) {
             return MERGED_BASE_COLOR;
         }
@@ -325,10 +336,21 @@ public class AttributeTooltipHelper {
     }
 
     private static boolean isBaseAttribute(EntityAttribute attribute) {
-        return attribute == EntityAttributes.GENERIC_ATTACK_DAMAGE.value() ||
-               attribute == EntityAttributes.GENERIC_ATTACK_SPEED.value() ||
-               attribute == EntityAttributes.PLAYER_ENTITY_INTERACTION_RANGE.value();
+        Identifier id = Registries.ATTRIBUTE.getId(attribute);
+        return id != null && BASE_ATTRIBUTE_IDS.contains(id);
     }
+
+    private static boolean isBaseModifier(EntityAttribute attribute, EntityAttributeModifier modifier) {
+        Identifier baseId = getBaseModifierId(attribute);
+        return modifier.id().equals(baseId);
+    }
+
+    @Nullable
+    private static Identifier getBaseModifierId(EntityAttribute attribute) {
+        Identifier id = Registries.ATTRIBUTE.getId(attribute);
+        return id != null ? BASE_MODIFIER_IDS.get(id) : null;
+    }
+
 
     private static MutableText listHeader() {
         return Text.literal(" \u2507 ").formatted(Formatting.GRAY);
@@ -349,29 +371,11 @@ public class AttributeTooltipHelper {
         }
         return result;
     }
-    
-    /**
-     * TODO: Improve logic, this is pretty fragile (and ugly)
-     */
+
     @Nullable
     private static AttributeModifierSlot getSlotFromText(Text text) {
         String content = text.getString();
-
-        if (content.equals(Text.translatable("item.modifiers.mainhand").getString())) {
-            return AttributeModifierSlot.MAINHAND;
-        } else if (content.equals(Text.translatable("item.modifiers.offhand").getString())) {
-            return AttributeModifierSlot.OFFHAND;
-        } else if (content.equals(Text.translatable("item.modifiers.head").getString())) {
-            return AttributeModifierSlot.HEAD;
-        } else if (content.equals(Text.translatable("item.modifiers.chest").getString())) {
-            return AttributeModifierSlot.CHEST;
-        } else if (content.equals(Text.translatable("item.modifiers.legs").getString())) {
-            return AttributeModifierSlot.LEGS;
-        } else if (content.equals(Text.translatable("item.modifiers.feet").getString())) {
-            return AttributeModifierSlot.FEET;
-        }
-        
-        return null;
+        return KEY_SLOT_MAP.get(content);
     }
 
     private static int countAttributeLines(List<Text> tooltip, int startIndex) {
@@ -383,30 +387,14 @@ public class AttributeTooltipHelper {
             if (line.isEmpty() || getSlotFromText(Text.literal(line)) != null) {
                 break;
             }
-            
+
             // This looks like an attribute line
             count++;
         }
-        
+
         return count;
     }
 
-    private static boolean isBaseModifier(EntityAttribute attribute, EntityAttributeModifier modifier) {
-        Identifier baseId = getBaseModifierId(attribute);
-        return modifier.id().equals(baseId);
-    }
-
-    @Nullable
-    private static Identifier getBaseModifierId(EntityAttribute attribute) {
-        if (attribute == EntityAttributes.GENERIC_ATTACK_DAMAGE.value()) {
-            return Item.BASE_ATTACK_DAMAGE_MODIFIER_ID;
-        } else if (attribute == EntityAttributes.GENERIC_ATTACK_SPEED.value()) {
-            return Item.BASE_ATTACK_SPEED_MODIFIER_ID;
-        } else if (attribute == EntityAttributes.PLAYER_ENTITY_INTERACTION_RANGE.value()) {
-            return Identifier.ofVanilla("base_entity_reach");
-        }
-        return null;
-    }
 
     private static boolean hasEnhanceableAttributeModifiers(ItemStack stack) {
         if (!DungeonDifficulty.clientConfig.value.enable_enhanced_attribute_tooltips) {

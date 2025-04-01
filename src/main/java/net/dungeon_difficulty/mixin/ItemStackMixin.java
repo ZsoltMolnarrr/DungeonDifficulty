@@ -5,7 +5,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.dungeon_difficulty.DungeonDifficulty;
 import net.dungeon_difficulty.logic.RarityHelper;
-import net.dungeon_difficulty.util.AttributeTooltipHelper;
+import net.dungeon_difficulty.logic.AttributeTooltipHandler;
 import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.attribute.EntityAttribute;
@@ -25,7 +25,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.List;
 import java.util.function.Consumer;
 
-@Mixin(ItemStack.class)
+@Mixin(value = ItemStack.class, priority = 1100)
 public class ItemStackMixin {
     private ItemStack itemStack() {
         return (ItemStack) (Object) this;
@@ -75,7 +75,7 @@ public class ItemStackMixin {
         }
 
         ItemStack stack = (ItemStack)(Object)this;
-        AttributeTooltipHelper.processTooltip(stack, tooltip, player);
+        AttributeTooltipHandler.processTooltip(stack, tooltip, player);
         return tooltip;
     }
 }
