@@ -1,28 +1,28 @@
 package net.dungeon_difficulty.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.dungeon_difficulty.DungeonDifficulty;
 import net.dungeon_difficulty.logic.RarityHelper;
+import net.dungeon_difficulty.util.AttributeTooltipHelper;
 import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.dungeon_difficulty.logic.ItemScaling;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Rarity;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.UUID;
+import java.util.List;
 import java.util.function.Consumer;
 
 @Mixin(ItemStack.class)
@@ -63,5 +63,19 @@ public class ItemStackMixin {
             }
         }
         original.call(instance, componentType, context, textConsumer, type);
+    }
+
+    @ModifyReturnValue(
+            method = "getTooltip",
+            at = @At("RETURN")
+    )
+    private List<Text> applyEnhancedAttributeTooltips(List<Text> tooltip, Item.TooltipContext context, @Nullable PlayerEntity player, TooltipType type) {
+        if (!DungeonDifficulty.clientConfig.value.enable_enhanced_attribute_tooltips) {
+            return tooltip;
+        }
+
+        ItemStack stack = (ItemStack)(Object)this;
+        AttributeTooltipHelper.processTooltip(stack, tooltip, player);
+        return tooltip;
     }
 }
