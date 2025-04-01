@@ -186,47 +186,37 @@ public class ItemScaling {
                 }
                 for (var attribute: affectedAttributes) {
                     var baseline = addValuesOf(attributesComponents, slot, attribute);
-                    var value = baseline.value;
-                    value = attributeBoost.getValue().apply((float) value);
+                    var baseValue = baseline.value;
+                    var boostedValue = attributeBoost.getValue().apply((float) baseValue);
+                    var boostAmount = boostedValue - baseValue;
                     if (roundingUnit != null) {
-                        value = MathHelper.round(value, roundingUnit);
+                        boostAmount = MathHelper.round(boostAmount, roundingUnit);
                     }
-
-                    results.get(slot).put(attribute, new ScaledAttributeResult(value));
+                    if (boostAmount != 0) {
+                        results.get(slot).put(attribute, new ScaledAttributeResult(boostAmount));
+                    }
                 }
             }
         }
 
-
         var newAttributeComponent = AttributeModifiersComponent.builder();
         for (var slot: slots) {
-            var slotResults = results.get(slot);
             attributesComponents.applyModifiers(slot, (attribute, modifier) -> {
-                var result = slotResults.get(attribute);
-                if (modifier.operation() == EntityAttributeModifier.Operation.ADD_VALUE
-                    && result != null) {
-                    var id = modifier.id();
-                    newAttributeComponent.add(
-                            attribute,
-                            new EntityAttributeModifier(id, result.value, EntityAttributeModifier.Operation.ADD_VALUE),
-                            AttributeModifierSlot.forEquipmentSlot(slot));
-                } else {
-                    newAttributeComponent.add(
-                            attribute,
-                            modifier,
-                            AttributeModifierSlot.forEquipmentSlot(slot));
-                }
-                slotResults.remove(attribute);
+                newAttributeComponent.add(attribute, modifier, AttributeModifierSlot.forEquipmentSlot(slot));
             });
+
+            var slotResults = results.get(slot);
             // Remainder of slot results (newly added modifiers)
             for (var entry: slotResults.entrySet()) {
                 var attribute = entry.getKey();
                 var result = entry.getValue();
-                var id = Identifier.ofVanilla("dd.boost." + slot.asString());
-                newAttributeComponent.add(
-                        attribute,
-                        new EntityAttributeModifier(id, result.value, EntityAttributeModifier.Operation.ADD_VALUE),
-                        AttributeModifierSlot.forEquipmentSlot(slot));
+                if (result.value() != 0) {
+                    var id = Identifier.of(DungeonDifficulty.MODID, "dd.boost." + slot.asString() + "." + level);
+                    newAttributeComponent.add(
+                            attribute,
+                            new EntityAttributeModifier(id, result.value(), EntityAttributeModifier.Operation.ADD_VALUE),
+                            AttributeModifierSlot.forEquipmentSlot(slot));
+                }
             }
         }
 
