@@ -61,7 +61,7 @@ public class AttributeTooltipHandler {
         set.add(Registries.ATTRIBUTE.getId(EntityAttributes.GENERIC_ATTACK_SPEED.value()));
         set.add(Registries.ATTRIBUTE.getId(EntityAttributes.PLAYER_ENTITY_INTERACTION_RANGE.value()));
         set.add(Identifier.of("ranged_weapon", "damage"));
-        set.add(Identifier.of("ranged_weapon", "velocity"));
+        set.add(Identifier.of("ranged_weapon", "pull_time"));
         set.remove(null);
     });
 
@@ -70,7 +70,7 @@ public class AttributeTooltipHandler {
         map.put(Registries.ATTRIBUTE.getId(EntityAttributes.GENERIC_ATTACK_SPEED.value()), Item.BASE_ATTACK_SPEED_MODIFIER_ID);
         map.put(Registries.ATTRIBUTE.getId(EntityAttributes.PLAYER_ENTITY_INTERACTION_RANGE.value()), Identifier.ofVanilla("base_entity_reach"));
         map.put(Identifier.of("ranged_weapon", "damage"), Identifier.of("ranged_weapon", "base_damage"));
-        map.put(Identifier.of("ranged_weapon", "velocity"), Identifier.of("ranged_weapon", "base_velocity"));
+        map.put(Identifier.of("ranged_weapon", "pull_time"), Identifier.of("ranged_weapon", "base_pull_time"));
         map.remove(null);
     });
 
