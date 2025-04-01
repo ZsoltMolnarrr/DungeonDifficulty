@@ -31,6 +31,9 @@ public abstract class ServerWorldMixin {
 
     // private Map<Integer, Difficulty.Announcement> announcements = new HashMap<>();
 
+    @Unique
+    private static final int ANNOUNCEMENT_MEMORY = 2;
+
     @Inject(method = "tick", at = @At("TAIL"))
     private void pre_tick(CallbackInfo ci) {
         var world = (ServerWorld) ((Object)this);
@@ -42,6 +45,16 @@ public abstract class ServerWorldMixin {
         int check_interval = config.check_interval_seconds * 20;
         for (var player: world.getPlayers()) {
             if (player.isSpectator()) { continue; }
+
+            var previousAnnouncements = ((DifficultyHandler)player).getLastDifficultyAnnouncements();
+            if (previousAnnouncements.size() == ANNOUNCEMENT_MEMORY) {
+                var first = previousAnnouncements.getFirst();
+                // If expired
+                if (player.age - first.age() > (config.history_duration_seconds * 20)) {
+                    previousAnnouncements.removeFirst();
+                }
+            }
+
             if ((player.age + player.getId()) % check_interval == 0) {
                 var locationData = PatternMatching.LocationData.create(world, player.getBlockPos());
                 var difficultyResult = PatternMatching.getDifficultyResult(locationData, null, PatternMatching.ScalingGoal.ENTITY, world);
@@ -50,8 +63,8 @@ public abstract class ServerWorldMixin {
                     var difficulty = difficultyResult.difficulty();
 
                     Difficulty.Announcement previous = null;
-                    if (!((DifficultyHandler)player).getLastDifficultyAnnouncements().isEmpty()) {
-                        previous = ((DifficultyHandler)player).getLastDifficultyAnnouncements().getLast();
+                    if (!previousAnnouncements.isEmpty()) {
+                        previous = previousAnnouncements.getLast();
                     }
                     if (previous != null && previous.difficulty().equals(difficulty)) {
                         continue;
@@ -77,7 +90,7 @@ public abstract class ServerWorldMixin {
             }
         }
         announcements.add(announcement);
-        if (announcements.size() > 2) {
+        if (announcements.size() > ANNOUNCEMENT_MEMORY) {
             announcements.removeFirst();
         }
 

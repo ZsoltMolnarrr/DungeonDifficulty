@@ -1,3 +1,7 @@
+# 3.2.2
+
+- Improve announcement occurrence
+
 # 3.2.1
 
 - Fix boosted armor bonus attributes not stacking
