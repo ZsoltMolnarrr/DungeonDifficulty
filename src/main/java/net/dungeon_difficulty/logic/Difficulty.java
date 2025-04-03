@@ -5,6 +5,9 @@ import net.dungeon_difficulty.config.Config;
 import java.util.Locale;
 
 public record Difficulty(Config.DifficultyType type, int level, int rewardLevel) {
+    private static final Config.DifficultyType EMPTY_TYPE = new Config.DifficultyType("empty");
+    public static final Difficulty EMPTY = new Difficulty(EMPTY_TYPE, 0, 0);
+
     public boolean isValid() {
         return type != null && level > 0;
     }
@@ -18,6 +21,6 @@ public record Difficulty(Config.DifficultyType type, int level, int rewardLevel)
     }
 
     public record Announcement(Difficulty difficulty, int age, String dimensionId) {
-        public static Announcement EMPTY = new Announcement(null, 0, null);
+        public static Announcement EMPTY = new Announcement(Difficulty.EMPTY, 0, "");
     }
 }

@@ -71,6 +71,13 @@ public abstract class ServerWorldMixin {
                     }
 
                     announce(difficultyResult, player);
+                } else {
+                    if (!previousAnnouncements.contains(Difficulty.Announcement.EMPTY)) {
+                        previousAnnouncements.add(Difficulty.Announcement.EMPTY);
+                        if (previousAnnouncements.size() > ANNOUNCEMENT_MEMORY) {
+                            previousAnnouncements.removeFirst();
+                        }
+                    }
                 }
             }
         }
