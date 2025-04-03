@@ -136,6 +136,7 @@ public class ItemScaling {
             return;
         }
         var roundingUnit = getRoundingUnit();
+        boolean useAdditiveModifiers = !DungeonDifficulty.config.value.meta.merge_item_modifiers;
 
         var attributesComponents = itemStack.get(DataComponentTypes.ATTRIBUTE_MODIFIERS);
         if (attributesComponents == null || attributesComponents.modifiers().isEmpty()) {
@@ -186,43 +187,59 @@ public class ItemScaling {
                 }
                 for (var attribute: affectedAttributes) {
                     var baseline = addValuesOf(attributesComponents, slot, attribute);
-                    var value = baseline.value;
-                    value = attributeBoost.getValue().apply((float) value);
-                    if (roundingUnit != null) {
-                        value = MathHelper.round(value, roundingUnit);
+                    var baseValue = baseline.value;
+                    
+                    if (useAdditiveModifiers) {
+                        // Additive behavior - calculate and apply only the difference
+                        var boostedValue = attributeBoost.getValue().apply((float) baseValue);
+                        var boostAmount = boostedValue - baseValue;
+                        if (roundingUnit != null) {
+                            boostAmount = MathHelper.round(boostAmount, roundingUnit);
+                        }
+                        if (boostAmount != 0) {
+                            results.get(slot).put(attribute, new ScaledAttributeResult(boostAmount));
+                        }
+                    } else {
+                        // Merge behavior - replace with scaled value
+                        var value = baseValue;
+                        value = attributeBoost.getValue().apply((float) value);
+                        if (roundingUnit != null) {
+                            value = MathHelper.round(value, roundingUnit);
+                        }
+                        results.get(slot).put(attribute, new ScaledAttributeResult(value));
                     }
-
-                    results.get(slot).put(attribute, new ScaledAttributeResult(value));
                 }
             }
         }
 
-
         var newAttributeComponent = AttributeModifiersComponent.builder();
-        for (var slot: slots) {
-            var slotResults = results.get(slot);
+        
+        for (var slot : slots) {
+            Map<RegistryEntry<EntityAttribute>, ScaledAttributeResult> slotResults = results.computeIfAbsent(slot, k -> new LinkedHashMap<>());
+            
             attributesComponents.applyModifiers(slot, (attribute, modifier) -> {
                 var result = slotResults.get(attribute);
-                if (modifier.operation() == EntityAttributeModifier.Operation.ADD_VALUE
-                    && result != null) {
-                    var id = modifier.id();
+                boolean replacing = !useAdditiveModifiers && result != null && modifier.operation() == EntityAttributeModifier.Operation.ADD_VALUE;
+                
+                if (replacing) {
                     newAttributeComponent.add(
                             attribute,
-                            new EntityAttributeModifier(id, result.value, EntityAttributeModifier.Operation.ADD_VALUE),
+                            new EntityAttributeModifier(modifier.id(), result.value, EntityAttributeModifier.Operation.ADD_VALUE),
                             AttributeModifierSlot.forEquipmentSlot(slot));
+                    slotResults.remove(attribute); 
                 } else {
+                    // Still copy the original modifier into the new component
                     newAttributeComponent.add(
                             attribute,
                             modifier,
                             AttributeModifierSlot.forEquipmentSlot(slot));
                 }
-                slotResults.remove(attribute);
             });
-            // Remainder of slot results (newly added modifiers)
-            for (var entry: slotResults.entrySet()) {
+
+            for (var entry : slotResults.entrySet()) {
                 var attribute = entry.getKey();
                 var result = entry.getValue();
-                var id = Identifier.ofVanilla("dd.boost." + slot.asString());
+                var id = Identifier.of(DungeonDifficulty.MODID, "dd.boost." + slot.asString());
                 newAttributeComponent.add(
                         attribute,
                         new EntityAttributeModifier(id, result.value, EntityAttributeModifier.Operation.ADD_VALUE),
