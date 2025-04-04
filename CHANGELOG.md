@@ -1,3 +1,13 @@
+# 3.3.0
+
+Warning: Recommended to reset config file!
+
+- Add config for item modifiers be merged (thanks to Muon)
+- Universal matchers for: `biome`, `structure`, `entity_type`
+  - `#` prefix matches for tags
+  - `~` prefix matches for regex
+  - no prefix matches for exact match
+
 # 3.2.2
 
 - Improve announcement occurrence

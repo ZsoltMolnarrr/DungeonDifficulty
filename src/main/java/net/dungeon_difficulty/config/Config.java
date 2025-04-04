@@ -1,5 +1,7 @@
 package net.dungeon_difficulty.config;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.List;
 import java.util.Random;
 
@@ -67,8 +69,8 @@ public class Config {
 
     public static class Zone { public Zone() { }
         public static class Filters { public Filters() { }
-            public String biome = Regex.ANY;
-            public String structure = null;
+            @Nullable public String biome = null;
+            @Nullable public String structure = null;
         }
         public Filters zone_matches = new Filters();
 

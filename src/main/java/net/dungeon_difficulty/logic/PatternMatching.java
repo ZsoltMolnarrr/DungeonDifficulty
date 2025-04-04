@@ -80,7 +80,7 @@ public class PatternMatching {
 
             if (filters.biome == null || filters.biome.isEmpty()) {
                 result = true;
-            } else if (universalMatchV2(biome.biomeEntry, RegistryKeys.BIOME, filters.biome)) {
+            } else if (universalMatch(biome.biomeEntry, RegistryKeys.BIOME, filters.biome)) {
                 result = true;
                 matchingBiome = biome.biomeEntry;
                 matchScope = Scope.BIOME;
@@ -94,34 +94,15 @@ public class PatternMatching {
                 result = false;
                 var registry = registries.get(RegistryKeys.STRUCTURE);
                 var structureStartsUnfiltered = world.getStructureAccessor().getStructureStarts(new ChunkPos(position), s -> true);
-                if (filters.structure.startsWith("#")) {
-                    var tagString = filters.structure.substring(1);
-                    var id = Identifier.of(tagString);
-                    var tag = TagKey.of(RegistryKeys.STRUCTURE, id);
-                    if (tag != null) {
-                        for (var structureStart : structureStartsUnfiltered) {
-                            var entry = registry.getEntry(registry.getRawId(structureStart.getStructure())).orElse(null);
-                            if (entry != null
-                                    && entry.isIn(tag)
-                                    && isInsideStructure(world, position, structureStart)) {
-                                matchingStructure = entry;
-                                matchScope = Scope.STRUCTURE;
-                                result = true;
-                                break;
-                            }
-                        }
-                    }
-                } else {
-                    for (var structureStart : structureStartsUnfiltered) {
-                        var entry = registry.getEntry(registry.getRawId(structureStart.getStructure())).orElse(null);
-                        if (entry != null
-                                && PatternMatching.matches(entry.getKey().get().getValue().toString(), filters.structure)
-                                && isInsideStructure(world, position, structureStart)) {
-                            matchingStructure = entry;
-                            matchScope = Scope.STRUCTURE;
-                            result = true;
-                            break;
-                        }
+                for (var structureStart : structureStartsUnfiltered) {
+                    var entry = registry.getEntry(registry.getRawId(structureStart.getStructure())).orElse(null);
+                    if (entry != null
+                            && PatternMatching.universalMatch(entry, RegistryKeys.STRUCTURE, filters.structure)
+                            && isInsideStructure(world, position, structureStart)) {
+                        matchingStructure = entry;
+                        matchScope = Scope.STRUCTURE;
+                        result = true;
+                        break;
                     }
                 }
             }
@@ -317,7 +298,7 @@ public class PatternMatching {
                                         if (entityTypeEntry.isEmpty()) {
                                             continue;
                                         }
-                                        if (PatternMatching.universalMatchV2(entityTypeEntry.get(), RegistryKeys.ENTITY_TYPE, entityMatcher.entity_type)) {
+                                        if (PatternMatching.universalMatch(entityTypeEntry.get(), RegistryKeys.ENTITY_TYPE, entityMatcher.entity_type)) {
                                             var difficulty = findDifficulty(entityMatcher.difficulty);
                                             return new DifficultySearchResult(difficulty, locationData, null);
                                         }
@@ -373,8 +354,6 @@ public class PatternMatching {
         return matcher.find();
     }
 
-
-
     public static final String TAG_PREFIX = "#";
     public static final String REGEX_PREFIX = "~";
 
@@ -394,7 +373,7 @@ public class PatternMatching {
         }
     }
 
-    public static <T> boolean universalMatchV2(RegistryEntry<T> entry, RegistryKey<Registry<T>> registryKey, @Nullable String pattern) {
+    public static <T> boolean universalMatchNoTag(RegistryEntry<T> entry, RegistryKey<Registry<T>> registryKey, @Nullable String pattern) {
         if (pattern == null) {
             return true;
         }

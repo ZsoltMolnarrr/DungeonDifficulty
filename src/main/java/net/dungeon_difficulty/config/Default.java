@@ -1,8 +1,9 @@
 package net.dungeon_difficulty.config;
 
 import net.dungeon_difficulty.DungeonDifficulty;
+import net.dungeon_difficulty.logic.PatternMatching;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.entity.EntityType;
+import net.minecraft.util.Identifier;
 
 import java.util.List;
 
@@ -75,7 +76,7 @@ public class Default {
                 structureTag("level_3", dungeonDifficulty.name, 3),
                 structureTag("level_2", dungeonDifficulty.name, 2),
                 structureTag("level_1", dungeonDifficulty.name, 1),
-                biomeId("desert|frozen|snowy|ice|jungle", normalDifficulty.name, 1)
+                biomeRegex("desert|frozen|snowy|ice|jungle", normalDifficulty.name, 1)
         );
 
         var nether = new Config.Dimension();
@@ -84,7 +85,9 @@ public class Default {
         nether.zones = List.of(
                 structureTag("level_4", dungeonDifficulty.name, 4)
         );
-
+        nether.entities = List.of(
+                entitySpecificMatcher(Identifier.ofVanilla("wither"), dungeonDifficulty.name, 3)
+        );
 
         var end = new Config.Dimension();
         end.world_matches.dimension_regex = "minecraft:the_end";
@@ -94,7 +97,7 @@ public class Default {
                 structureTag("level_5", dungeonDifficulty.name, 5)
         );
         end.entities = List.of(
-                entityCombinedMatcher("ender_dragon", dungeonDifficulty.name, 4)
+                entitySpecificMatcher(Identifier.ofVanilla("ender_dragon"), dungeonDifficulty.name, 4)
         );
 
         var config = new Config();
@@ -171,9 +174,9 @@ public class Default {
         return entityModifier;
     }
 
-    private static Config.Zone biomeId(String regex, String difficulty, int level) {
+    private static Config.Zone biomeRegex(String regex, String difficulty, int level) {
         var zone = new Config.Zone();
-        zone.zone_matches.biome = regex;
+        zone.zone_matches.biome = PatternMatching.REGEX_PREFIX + regex;
         zone.difficulty = new Config.DifficultyReference(difficulty, level);
         return zone;
     }
@@ -206,10 +209,10 @@ public class Default {
         return entityMatcher;
     }
 
-    private static Config.EntityMatcher entityCombinedMatcher(String pattern, String difficulty, int level) {
+    private static Config.EntityMatcher entitySpecificMatcher(Identifier entityId, String difficulty, int level) {
         var entityMatcher = new Config.EntityMatcher();
-        entityMatcher.entity_type = pattern;
-        entityMatcher.loot_table = pattern;
+        entityMatcher.entity_type = entityId.toString();
+        entityMatcher.loot_table = entityId.getNamespace() + ":" + "entities/" + entityId.getPath();
         entityMatcher.difficulty = new Config.DifficultyReference(difficulty, level);
         return entityMatcher;
     }
