@@ -17,7 +17,8 @@ public record Difficulty(Config.DifficultyType type, int level, int rewardLevel)
     }
 
     public String typeTranslationKey() {
-        return "difficulty.type." + type.name.toLowerCase(Locale.ENGLISH);
+        var suffix = type.translation_code != null ? type.translation_code : type.name;
+        return "difficulty.type." + suffix.toLowerCase(Locale.ENGLISH);
     }
 
     public record Announcement(Difficulty difficulty, int age, String dimensionId) {

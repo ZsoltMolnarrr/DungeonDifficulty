@@ -1,3 +1,7 @@
+# 3.4.0
+
+- Add proper support for visual only difficulty, that doesn't really scale entities
+
 # 3.3.0
 
 Warning: Recommended to reset config file!

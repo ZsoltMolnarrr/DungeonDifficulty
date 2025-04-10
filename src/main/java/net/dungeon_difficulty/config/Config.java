@@ -32,6 +32,7 @@ public class Config {
     public static class DifficultyType { public DifficultyType() { }
         public String name;
         public String parent;
+        @Nullable public String translation_code;
         public List<EntityModifier> entities = List.of();
         public Rewards rewards = new Rewards();
         public DifficultyType(String name) {
