@@ -53,11 +53,6 @@ public class Default {
                 })
         );
 
-        var lootOnlyDifficulty = new Config.DifficultyType("loot_only");
-        lootOnlyDifficulty.translation_code = dungeonDifficulty.name;
-        lootOnlyDifficulty.rewards.armor = dungeonDifficulty.rewards.armor;
-        lootOnlyDifficulty.rewards.weapons = dungeonDifficulty.rewards.weapons;
-
         // Per Player Difficulty
         var perPlayerDifficulty = new Config.PerPlayerDifficulty();
         var perPlayerEntityModifier = new Config.EntityModifier();
@@ -106,7 +101,7 @@ public class Default {
         );
 
         var config = new Config();
-        config.difficulty_types = List.of(normalDifficulty, dungeonDifficulty, lootOnlyDifficulty);
+        config.difficulty_types = List.of(normalDifficulty, dungeonDifficulty);
         config.dimensions = new Config.Dimension[] { overworld, nether, end };
         config.per_player_difficulty = perPlayerDifficulty;
         return config;

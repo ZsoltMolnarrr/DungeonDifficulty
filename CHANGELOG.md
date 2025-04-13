@@ -1,4 +1,8 @@
-# 3.4.0
+# 3.3.2
+
+- Improve support for visual difficulty
+
+# 3.3.1
 
 - Add proper support for visual only difficulty, that doesn't really scale entities
 

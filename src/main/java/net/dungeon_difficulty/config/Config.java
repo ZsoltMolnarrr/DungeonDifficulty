@@ -48,6 +48,7 @@ public class Config {
     public static class DifficultyReference { public DifficultyReference() { }
         public String name;
         public int level = 0;
+        public Integer entity_level;
         public Integer reward_level;
         public DifficultyReference(String name, int level) {
             this.name = name;

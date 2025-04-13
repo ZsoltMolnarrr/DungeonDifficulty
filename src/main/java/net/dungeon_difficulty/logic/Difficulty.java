@@ -4,9 +4,12 @@ import net.dungeon_difficulty.config.Config;
 
 import java.util.Locale;
 
-public record Difficulty(Config.DifficultyType type, int level, int rewardLevel) {
+public record Difficulty(Config.DifficultyType type,
+                         int level,
+                         int entityLevel,
+                         int rewardLevel) {
     private static final Config.DifficultyType EMPTY_TYPE = new Config.DifficultyType("empty");
-    public static final Difficulty EMPTY = new Difficulty(EMPTY_TYPE, 0, 0);
+    public static final Difficulty EMPTY = new Difficulty(EMPTY_TYPE, 0, 0, 0);
 
     public boolean isValid() {
         return type != null && level > 0;

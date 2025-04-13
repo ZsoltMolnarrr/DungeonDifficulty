@@ -213,10 +213,12 @@ public class PatternMatching {
         var level = 0;
         float experienceMultiplier = 0;
         if (difficulty != null) {
-            level = difficulty.level();
-            for (var modifier: getModifiersForEntity(difficulty.type().entities, entityData)) {
-                attributeModifiers.addAll(Arrays.asList(modifier.attributes));
-                experienceMultiplier += modifier.experience_multiplier;
+            level = difficulty.entityLevel();
+            if (level != 0) {
+                for (var modifier : getModifiersForEntity(difficulty.type().entities, entityData)) {
+                    attributeModifiers.addAll(Arrays.asList(modifier.attributes));
+                    experienceMultiplier += modifier.experience_multiplier;
+                }
             }
             // System.out.println("Difficulty for entity: " + entityData.entityId() + " | difficulty: " + difficulty.type().name + " level " + level);
         }
@@ -230,10 +232,12 @@ public class PatternMatching {
         var difficulty = getDifficulty(locationData, world);
         int level = 0;
         if (difficulty != null) {
-            level = difficulty.level();
-            for (var modifier: getModifiersForEntity(difficulty.type().entities, entityData)) {
-                if (modifier.spawners != null) {
-                    spawnerModifiers.add(modifier.spawners);
+            level = difficulty.entityLevel();
+            if (level != 0) {
+                for (var modifier: getModifiersForEntity(difficulty.type().entities, entityData)) {
+                    if (modifier.spawners != null) {
+                        spawnerModifiers.add(modifier.spawners);
+                    }
                 }
             }
             // System.out.println("Difficulty for entity: " + entityData.entityId() + " | difficulty: " + difficulty.type().name + " level " + level);
@@ -336,7 +340,8 @@ public class PatternMatching {
         for(var entry: DifficultyTypes.resolved) {
             if (name.equals(entry.name)) {
                 var rewardLevel = reference.reward_level != null ? reference.reward_level : reference.level;
-                return new Difficulty(entry, reference.level, rewardLevel);
+                var entityLevel = reference.entity_level != null ? reference.entity_level : reference.level;
+                return new Difficulty(entry, reference.level, entityLevel, rewardLevel);
             }
         }
         return null;
