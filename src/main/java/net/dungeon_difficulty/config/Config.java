@@ -65,6 +65,7 @@ public class Config {
         public Filters world_matches = new Filters();
         public DifficultyReference difficulty;
 
+        public List<EntityMatcher> high_priority_entities = List.of();
         public List<Zone> zones = List.of();
         public List<EntityMatcher> entities = List.of();
     }

@@ -295,6 +295,8 @@ public class PatternMatching {
             if (locationData.matches(dimension.world_matches)) {
                 var dimensionDifficulty = findDifficulty(dimension.difficulty);
                 if (dimension.zones != null) {
+                    var highPriorityDifficulty = matchEntityDifficulty(locationData, sourceId, scalingGoal, dimension.high_priority_entities);
+                    if (highPriorityDifficulty != null) { return highPriorityDifficulty; }
                     for(var zone: dimension.zones) {
                         var match = locationData.matches(zone.zone_matches, world);
                         if (match.matches()) {
@@ -304,35 +306,41 @@ public class PatternMatching {
                             }
                         }
                     }
-                    if (sourceId != null) {
-                        for (var entityMatcher : dimension.entities) {
-                            switch (scalingGoal) {
-                                case ENTITY -> {
-                                    if (entityMatcher.entity_type != null) {
-                                        var entityTypeEntry = Registries.ENTITY_TYPE.getEntry(sourceId);
-                                        if (entityTypeEntry.isEmpty()) {
-                                            continue;
-                                        }
-                                        if (PatternMatching.universalMatch(entityTypeEntry.get(), RegistryKeys.ENTITY_TYPE, entityMatcher.entity_type)) {
-                                            var difficulty = findDifficulty(entityMatcher.difficulty);
-                                            return new DifficultySearchResult(difficulty, locationData, null);
-                                        }
-                                    }
-                                }
-                                case LOOT -> {
-                                    if (entityMatcher.loot_table != null) {
-                                        if (PatternMatching.regexMatches(sourceId.toString(), entityMatcher.loot_table)) {
-                                            var difficulty = findDifficulty(entityMatcher.difficulty);
-                                            return new DifficultySearchResult(difficulty, locationData, null);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    var entityDifficulty = matchEntityDifficulty(locationData, sourceId, scalingGoal, dimension.entities);
+                    if (entityDifficulty != null) { return entityDifficulty; }
                 }
                 if (dimensionDifficulty != null && dimensionDifficulty.isValid()) {
                     return new DifficultySearchResult(dimensionDifficulty, locationData, null);
+                }
+            }
+        }
+        return null;
+    }
+
+    private static @Nullable DifficultySearchResult matchEntityDifficulty(LocationData locationData, @Nullable Identifier sourceId, ScalingGoal scalingGoal, List<Config.EntityMatcher> matchers) {
+        if (sourceId != null) {
+            for (var entityMatcher : matchers) {
+                switch (scalingGoal) {
+                    case ENTITY -> {
+                        if (entityMatcher.entity_type != null) {
+                            var entityTypeEntry = Registries.ENTITY_TYPE.getEntry(sourceId);
+                            if (entityTypeEntry.isEmpty()) {
+                                continue;
+                            }
+                            if (PatternMatching.universalMatch(entityTypeEntry.get(), RegistryKeys.ENTITY_TYPE, entityMatcher.entity_type)) {
+                                var difficulty = findDifficulty(entityMatcher.difficulty);
+                                return new DifficultySearchResult(difficulty, locationData, null);
+                            }
+                        }
+                    }
+                    case LOOT -> {
+                        if (entityMatcher.loot_table != null) {
+                            if (PatternMatching.regexMatches(sourceId.toString(), entityMatcher.loot_table)) {
+                                var difficulty = findDifficulty(entityMatcher.difficulty);
+                                return new DifficultySearchResult(difficulty, locationData, null);
+                            }
+                        }
+                    }
                 }
             }
         }

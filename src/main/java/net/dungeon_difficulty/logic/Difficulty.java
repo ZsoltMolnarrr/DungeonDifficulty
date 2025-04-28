@@ -31,6 +31,9 @@ public record Difficulty(Config.DifficultyType type,
         public static Announcement EMPTY = new Announcement(Difficulty.EMPTY, 0, "", null);
 
         public boolean equals(Announcement other) {
+            if (other == null) {
+                return false;
+            }
             return difficulty.typeEquals(other.difficulty)
                     && Objects.equals(dimensionId, other.dimensionId)
                     && Objects.equals(matchId, other.matchId);

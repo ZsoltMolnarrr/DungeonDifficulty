@@ -1,6 +1,7 @@
 # 3.3.3
 
 - Improve difficulty announcement logic
+- Add config for high priority difficulty assignments (to be checked before zones)
 
 # 3.3.2
 
