@@ -17,7 +17,7 @@ public class Config {
     public static class Announcement { public Announcement() { }
         public boolean enabled = true;
         public int check_interval_seconds = 5;
-        public int history_duration_seconds = 180;
+        public int history_size = 2;
     }
 
     public PerPlayerDifficulty per_player_difficulty;

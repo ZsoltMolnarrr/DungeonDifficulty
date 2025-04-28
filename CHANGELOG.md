@@ -1,3 +1,7 @@
+# 3.3.3
+
+- Improve difficulty announcement logic
+
 # 3.3.2
 
 - Improve support for visual difficulty

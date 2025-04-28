@@ -16,6 +16,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.Objects;
+
 @Mixin(ServerWorld.class)
 public abstract class ServerWorldMixin {
     // Logic moved to `ServerEntityManager` mixin, to fix entities spawning with structures
@@ -47,34 +49,15 @@ public abstract class ServerWorldMixin {
             if (player.isSpectator()) { continue; }
 
             var previousAnnouncements = ((DifficultyHandler)player).getLastDifficultyAnnouncements();
-            if (previousAnnouncements.size() == ANNOUNCEMENT_MEMORY) {
-                var first = previousAnnouncements.getFirst();
-                // If expired
-                if (player.age - first.age() > (config.history_duration_seconds * 20)) {
-                    previousAnnouncements.removeFirst();
-                }
-            }
-
             if ((player.age + player.getId()) % check_interval == 0) {
                 var locationData = PatternMatching.LocationData.create(world, player.getBlockPos());
                 var difficultyResult = PatternMatching.getDifficultyResult(locationData, null, PatternMatching.ScalingGoal.ENTITY, world);
-
                 if (difficultyResult != null && difficultyResult.difficulty().isValid()) {
-                    var difficulty = difficultyResult.difficulty();
-
-                    Difficulty.Announcement previous = null;
-                    if (!previousAnnouncements.isEmpty()) {
-                        previous = previousAnnouncements.getLast();
-                    }
-                    if (previous != null && previous.difficulty().equals(difficulty)) {
-                        continue;
-                    }
-
                     announce(difficultyResult, player);
                 } else {
                     if (!previousAnnouncements.contains(Difficulty.Announcement.EMPTY)) {
                         previousAnnouncements.add(Difficulty.Announcement.EMPTY);
-                        if (previousAnnouncements.size() > ANNOUNCEMENT_MEMORY) {
+                        if (previousAnnouncements.size() > config.history_size) {
                             previousAnnouncements.removeFirst();
                         }
                     }
@@ -89,15 +72,16 @@ public abstract class ServerWorldMixin {
         var locationData = difficultyResult.locationData();
 
         ((DifficultyHandler)player).getLastDifficultyAnnouncements();
-        var announcement = new Difficulty.Announcement(difficulty, player.age, locationData.dimensionId());
+        var announcement = new Difficulty.Announcement(difficulty, player.age, locationData.dimensionId(), difficultyResult.matchId());
         var announcements = ((DifficultyHandler)player).getLastDifficultyAnnouncements();
         for (var previous: announcements) {
-            if (previous.difficulty().equals(difficulty)) {
+            if (previous.equals(announcement)) {
                 return;
             }
         }
         announcements.add(announcement);
-        if (announcements.size() > ANNOUNCEMENT_MEMORY) {
+        var config = DungeonDifficulty.config.value.announcement;
+        if (announcements.size() > config.history_size) {
             announcements.removeFirst();
         }
 

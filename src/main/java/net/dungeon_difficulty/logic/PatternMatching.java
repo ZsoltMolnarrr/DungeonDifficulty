@@ -2,7 +2,6 @@ package net.dungeon_difficulty.logic;
 
 import net.dungeon_difficulty.DungeonDifficulty;
 import net.dungeon_difficulty.config.Config;
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.Monster;
 import net.minecraft.registry.Registries;
@@ -17,7 +16,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeKeys;
 import net.minecraft.world.gen.structure.Structure;
 import org.jetbrains.annotations.Nullable;
 
@@ -59,6 +57,15 @@ public class PatternMatching {
             }
             public static Match falseMatch() {
                 return new Match(false, Scope.DIMENSION, null, null);
+            }
+            @Nullable public Identifier id() {
+                if (matchingBiome != null) {
+                    return matchingBiome.getKey().get().getValue();
+                }
+                if (matchingStructure != null) {
+                    return matchingStructure.getKey().get().getValue();
+                }
+                return null;
             }
         }
 
@@ -259,7 +266,11 @@ public class PatternMatching {
                            Config.Rewards rewards) { }
 
 
-    public record DifficultySearchResult(Difficulty difficulty, LocationData locationData, LocationData.Match match) {  }
+    public record DifficultySearchResult(Difficulty difficulty, LocationData locationData, LocationData.Match match) {
+        @Nullable public Identifier matchId() {
+            return match != null ? match.id() : null;
+        }
+    }
 
 
     @Nullable

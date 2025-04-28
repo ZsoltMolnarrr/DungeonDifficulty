@@ -1,8 +1,11 @@
 package net.dungeon_difficulty.logic;
 
 import net.dungeon_difficulty.config.Config;
+import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
+import java.util.Objects;
 
 public record Difficulty(Config.DifficultyType type,
                          int level,
@@ -15,7 +18,7 @@ public record Difficulty(Config.DifficultyType type,
         return type != null && level > 0;
     }
 
-    public boolean equals(Difficulty other) {
+    public boolean typeEquals(Difficulty other) {
         return type.name.equals(other.type.name) && level == other.level;
     }
 
@@ -24,7 +27,13 @@ public record Difficulty(Config.DifficultyType type,
         return "difficulty.type." + suffix.toLowerCase(Locale.ENGLISH);
     }
 
-    public record Announcement(Difficulty difficulty, int age, String dimensionId) {
-        public static Announcement EMPTY = new Announcement(Difficulty.EMPTY, 0, "");
+    public record Announcement(Difficulty difficulty, int age, String dimensionId, @Nullable Identifier matchId) {
+        public static Announcement EMPTY = new Announcement(Difficulty.EMPTY, 0, "", null);
+
+        public boolean equals(Announcement other) {
+            return difficulty.typeEquals(other.difficulty)
+                    && Objects.equals(dimensionId, other.dimensionId)
+                    && Objects.equals(matchId, other.matchId);
+        }
     }
 }
