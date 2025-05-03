@@ -8,7 +8,6 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.component.type.AttributeModifiersComponent;
 import net.minecraft.component.type.NbtComponent;
-import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.item.*;
@@ -80,21 +79,33 @@ public class ItemScaling {
             debug("Item scaling start." + " dimension: " + dimensionId + " position: " + position + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
             var result = PatternMatching.getModifiersForItem(locationData, itemData, world);
             debug("Pattern matching found " + result.modifiers().size() + " attribute modifiers");
-            applyModifiersForItemStack(new EquipmentSlot[]{ EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND }, itemId, itemStack, result.modifiers(), result.level());
+
+            var hasHandModifiers = false;
+            var attributes = itemStack.get(DataComponentTypes.ATTRIBUTE_MODIFIERS);
+            if (attributes != null) {
+                // Find modifiers with the slot type of `HAND
+                var hand = attributes.modifiers().stream()
+                        .filter(modifier -> modifier.slot() == AttributeModifierSlot.HAND)
+                        .findFirst();
+                hasHandModifiers = hand.isPresent();
+            }
+
+            applyModifiersForItemStack(List.of(hasHandModifiers ? AttributeModifierSlot.HAND : AttributeModifierSlot.MAINHAND),
+                    itemId, itemStack, result.modifiers(), result.level());
         }
         if (itemStack.getItem() instanceof ArmorItem armor) {
             var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.ARMOR, lootTableId, itemId, rarity);
             debug("Item scaling start." + " dimension: " + dimensionId + " position: " + position + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
             var result = PatternMatching.getModifiersForItem(locationData, itemData, world);
             debug("Pattern matching found " + result.modifiers().size() + " attribute modifiers");
-            applyModifiersForItemStack(new EquipmentSlot[]{ armor.getSlotType() }, itemId, itemStack, result.modifiers(), result.level());
+            applyModifiersForItemStack(List.of( AttributeModifierSlot.forEquipmentSlot(armor.getSlotType()) ), itemId, itemStack, result.modifiers(), result.level());
         }
         if (itemStack.getItem() instanceof ShieldItem shield) {
             var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.ARMOR, lootTableId, itemId, rarity);
             debug("Item scaling start." + " dimension: " + dimensionId + " position: " + position + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
             var result = PatternMatching.getModifiersForItem(locationData, itemData, world);
             debug("Pattern matching found " + result.modifiers().size() + " attribute modifiers");
-            applyModifiersForItemStack(new EquipmentSlot[]{ EquipmentSlot.OFFHAND }, itemId, itemStack, result.modifiers(), result.level());
+            applyModifiersForItemStack(List.of(AttributeModifierSlot.HAND), itemId, itemStack, result.modifiers(), result.level());
         }
     }
 
@@ -114,7 +125,7 @@ public class ItemScaling {
     }
 
     private record AddResult(double value, @Nullable Identifier id) { }
-    private static AddResult addValuesOf(AttributeModifiersComponent component, EquipmentSlot slot, RegistryEntry<EntityAttribute> givenAttribute) {
+    private static AddResult addValuesOf(AttributeModifiersComponent component, AttributeModifierSlot slot, RegistryEntry<EntityAttribute> givenAttribute) {
         var mutableValue = new MutableDouble(0);
         final @Nullable Identifier[] modifierId = {null};
         component.applyModifiers(slot, (attribute,modifier) -> {
@@ -131,7 +142,7 @@ public class ItemScaling {
 
     private record ScaledAttributeResult(double value) { }
 
-    private static void applyModifiersForItemStack(EquipmentSlot[] slots, String itemId, ItemStack itemStack, List<Config.AttributeModifier> modifiers, int level) {
+    private static void applyModifiersForItemStack(List<AttributeModifierSlot> slots, String itemId, ItemStack itemStack, List<Config.AttributeModifier> modifiers, int level) {
         if (modifiers.isEmpty() || level == 0) {
             return;
         }
@@ -167,7 +178,7 @@ public class ItemScaling {
 
         // System.out.println("Scaling item: " + itemId + " with " + summary.size() + " modifiers");
 
-        LinkedHashMap<EquipmentSlot, LinkedHashMap<RegistryEntry<EntityAttribute>,  ScaledAttributeResult>> results = new LinkedHashMap<>();
+        LinkedHashMap<AttributeModifierSlot, LinkedHashMap<RegistryEntry<EntityAttribute>,  ScaledAttributeResult>> results = new LinkedHashMap<>();
         for(var slot: slots) {
             results.put(slot, new LinkedHashMap<>());
             for (var attributeBoost : summary.entrySet()) {
@@ -225,14 +236,14 @@ public class ItemScaling {
                     newAttributeComponent.add(
                             attribute,
                             new EntityAttributeModifier(modifier.id(), result.value, EntityAttributeModifier.Operation.ADD_VALUE),
-                            AttributeModifierSlot.forEquipmentSlot(slot));
+                            slot);
                     slotResults.remove(attribute); 
                 } else {
                     // Still copy the original modifier into the new component
                     newAttributeComponent.add(
                             attribute,
                             modifier,
-                            AttributeModifierSlot.forEquipmentSlot(slot));
+                            slot);
                 }
             });
 
@@ -243,7 +254,7 @@ public class ItemScaling {
                 newAttributeComponent.add(
                         attribute,
                         new EntityAttributeModifier(id, result.value, EntityAttributeModifier.Operation.ADD_VALUE),
-                        AttributeModifierSlot.forEquipmentSlot(slot));
+                        slot);
             }
         }
 

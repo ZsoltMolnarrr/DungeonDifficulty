@@ -1,3 +1,8 @@
+# 3.3.4
+
+- Fix scaling of looted ranged weapons (RWA 2.1+)
+- Fix scaling of looted shields 
+
 # 3.3.3
 
 - Improve difficulty announcement logic
