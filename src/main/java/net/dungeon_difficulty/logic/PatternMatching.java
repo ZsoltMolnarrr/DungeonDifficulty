@@ -295,19 +295,22 @@ public class PatternMatching {
             if (locationData.matches(dimension.world_matches)) {
                 var dimensionDifficulty = findDifficulty(dimension.difficulty);
                 if (dimension.zones != null) {
-                    var highPriorityDifficulty = matchEntityDifficulty(locationData, sourceId, scalingGoal, dimension.high_priority_entities);
-                    if (highPriorityDifficulty != null) { return highPriorityDifficulty; }
+                    DifficultySearchResult zoneResult = null;
                     for(var zone: dimension.zones) {
                         var match = locationData.matches(zone.zone_matches, world);
                         if (match.matches()) {
                             var zoneDifficulty = findDifficulty(zone.difficulty);
                             if (zoneDifficulty != null && zoneDifficulty.isValid()) {
-                                return new DifficultySearchResult(zoneDifficulty, locationData, match);
+                                zoneResult = new DifficultySearchResult(zoneDifficulty, locationData, match);
+                                break;
                             }
                         }
                     }
                     var entityDifficulty = matchEntityDifficulty(locationData, sourceId, scalingGoal, dimension.entities);
-                    if (entityDifficulty != null) { return entityDifficulty; }
+                    var result = chooseHigherDifficulty(zoneResult, entityDifficulty);
+                    if (result != null) {
+                        return result;
+                    }
                 }
                 if (dimensionDifficulty != null && dimensionDifficulty.isValid()) {
                     return new DifficultySearchResult(dimensionDifficulty, locationData, null);
@@ -315,6 +318,19 @@ public class PatternMatching {
             }
         }
         return null;
+    }
+
+    private static DifficultySearchResult chooseHigherDifficulty(@Nullable DifficultySearchResult a, @Nullable DifficultySearchResult b) {
+        if (a == null && b == null) {
+            return null;
+        }
+        int aLevel = a != null ? a.difficulty().level() : -100;
+        int bLevel = b != null ? b.difficulty().level() : -100;
+        if (aLevel >= bLevel) {
+            return a;
+        } else {
+            return b;
+        }
     }
 
     private static @Nullable DifficultySearchResult matchEntityDifficulty(LocationData locationData, @Nullable Identifier sourceId, ScalingGoal scalingGoal, List<Config.EntityMatcher> matchers) {

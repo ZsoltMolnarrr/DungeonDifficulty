@@ -1,3 +1,7 @@
+# 3.3.5
+
+- Fix boss loot sometimes not being scaled
+
 # 3.3.4
 
 - Fix scaling of looted ranged weapons (RWA 2.1+)
