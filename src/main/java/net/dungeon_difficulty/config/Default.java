@@ -16,9 +16,9 @@ public class Default {
         normalDifficulty.entities = List.of(
                 createEntityModifier(Regex.ANY,
                         new Config.AttributeModifier[]{
-                                createDamageMultiplier(0.25F, 0),
-                                createArmorBonus(1),
-                                createHealthMultiplier(0.25F, 0.1F)
+                                createDamageMultiplier(0.05F, 0),
+                                createArmorBonus(0.25),
+                                createHealthMultiplier(0.05F, 0.025F)
                         },
                         null,
                         0.2F)
