@@ -42,14 +42,14 @@ public class Default {
         );
         dungeonDifficulty.rewards.armor = List.of(
                 createItemModifier(new Config.AttributeModifier[]{
-                        createArmorMultiplier(0.1F),
-                        createHealthBonus(1)
+                        createArmorMultiplier(0.3F),
+                        createHealthBonus(3)
                 })
         );
         dungeonDifficulty.rewards.weapons = List.of(
                 createItemModifier(new Config.AttributeModifier[]{
-                        createDamageMultiplier(0.1F, 0.05F),
-                        createPowerMultiplier(0.1F, 0.05F)
+                        createDamageMultiplier(0.3F, 0.15F),
+                        createPowerMultiplier(0.3F, 0.15F)
                 })
         );
 
@@ -62,8 +62,8 @@ public class Default {
         }
 
         perPlayerEntityModifier.attributes = new Config.AttributeModifier[] {
-                createDamageMultiplier(0.2F, 0),
-                createHealthMultiplier(0.2F, 0F)
+                createDamageMultiplier(0.05F, 0),
+                createHealthMultiplier(0.05F, 0F)
         };
         perPlayerDifficulty.entities = new Config.EntityModifier[] {
                 perPlayerEntityModifier
