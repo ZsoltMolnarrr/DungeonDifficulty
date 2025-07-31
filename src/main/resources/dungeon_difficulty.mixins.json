@@ -9,7 +9,8 @@
     "MobSpawnerLogicMixin",
     "ServerEntityManagerMixin",
     "ServerPlayerMixin",
-    "ServerWorldMixin"
+    "ServerWorldMixin",
+    "SmithingScreenHandlerMixin"
   ],
   "client": [
   ],

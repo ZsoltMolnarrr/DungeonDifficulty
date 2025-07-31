@@ -1,3 +1,7 @@
+# 3.4.0
+
+- Smithing Table support: Power Level value on looted items, is now kept but reduced upon upgrading
+
 # 3.3.5
 
 - Fix boss loot sometimes not being scaled

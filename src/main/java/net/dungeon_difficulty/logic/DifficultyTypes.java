@@ -2,6 +2,7 @@ package net.dungeon_difficulty.logic;
 
 import net.dungeon_difficulty.DungeonDifficulty;
 import net.dungeon_difficulty.config.Config;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,6 +19,12 @@ public class DifficultyTypes {
             resolved.add(resolve(type, types));
         }
         DifficultyTypes.resolved = resolved;
+    }
+
+    @Nullable public static Config.DifficultyType firstWithReward() {
+        return DifficultyTypes.resolved.stream()
+                .filter(type -> !type.rewards.armor.isEmpty() && !type.rewards.weapons.isEmpty())
+                .findFirst().orElse(null);
     }
 
     private static Config.DifficultyType resolve(Config.DifficultyType type, List<Config.DifficultyType> types) {

@@ -43,6 +43,13 @@ public class Config {
         public String name;
         public List<ItemModifier> armor = List.of();
         public List<ItemModifier> weapons = List.of();
+
+        public static class SmithingUpgrade { public SmithingUpgrade() { }
+            public boolean enabled = true;
+            public int add_upon_upgrade = -1;
+            public float multiply_upon_upgrade = 1;
+        }
+        public SmithingUpgrade smithing_upgrade = new SmithingUpgrade();
     }
 
     public static class DifficultyReference { public DifficultyReference() { }

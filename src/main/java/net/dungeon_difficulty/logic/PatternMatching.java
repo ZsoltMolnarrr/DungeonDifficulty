@@ -17,11 +17,13 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.structure.Structure;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -150,12 +152,14 @@ public class PatternMatching {
 
     public record ItemScaleResult(List<Config.AttributeModifier> modifiers, int level) { }
     public static ItemScaleResult getModifiersForItem(LocationData locationData, ItemData itemData, ServerWorld world) {
-        var attributeModifiers = new ArrayList<Config.AttributeModifier>();
-
         var result = getDifficultyResult(locationData, itemData.lootTableId(), ScalingGoal.LOOT, world);
+        return getItemScaleResult(itemData, result != null ? result.difficulty() : null);
+    }
+
+    public static ItemScaleResult getItemScaleResult(ItemData itemData, @Nullable Difficulty difficulty) {
+        var attributeModifiers = new ArrayList<Config.AttributeModifier>();
         var level = 0;
-        if (result != null && result.difficulty() != null) {
-            var difficulty = result.difficulty();
+        if (difficulty != null) {
             level = difficulty.rewardLevel();
             var rewards = difficulty.type().rewards;
             if (rewards != null) {
