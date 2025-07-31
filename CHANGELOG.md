@@ -1,3 +1,7 @@
+# 3.4.1
+
+- Fix scaling of out of zone entities #35
+
 # 3.4.0
 
 - Smithing Table support: Power Level value on looted items, is now kept but reduced upon upgrading

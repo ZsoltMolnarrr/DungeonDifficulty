@@ -17,13 +17,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.structure.Structure;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -185,9 +183,9 @@ public class PatternMatching {
     }
 
 
-    public record EntityData(String entityId, boolean isHostile) {
+    public record EntityData(Identifier entityId, boolean isHostile) {
         public static EntityData create(LivingEntity entity) {
-            var entityId = Registries.ENTITY_TYPE.getId(entity.getType()).toString();
+            var entityId = Registries.ENTITY_TYPE.getId(entity.getType());
             var isHostile = entity instanceof Monster;
             return new EntityData(entityId, isHostile);
         }
@@ -209,7 +207,7 @@ public class PatternMatching {
                     }
                 }
             }
-            var result = matchesAttitude && PatternMatching.matches(entityId, filters.entity_id_regex);
+            var result = matchesAttitude && PatternMatching.matches(entityId.toString(), filters.entity_id_regex);
 
             // System.out.println("PatternMatching - dimension:" + entityId + " matches: " + filters.entity_id_regex + " - " + result);
             return result;
@@ -220,10 +218,16 @@ public class PatternMatching {
 
     public static EntityScaleResult getAttributeModifiersForEntity(LocationData locationData, EntityData entityData, ServerWorld world) {
         var attributeModifiers = new ArrayList<Config.AttributeModifier>();
-        var difficulty = getDifficulty(locationData, world);
+//        if (entityData.entityId.toString().contains("warden")) {
+//            System.out.println("Warden entity detected: " + entityData.entityId);
+//        }
+        // var difficulty = getDifficulty(locationData, world);
+        var result = getDifficultyResult(locationData, entityData.entityId(), ScalingGoal.ENTITY, world);
         var level = 0;
         float experienceMultiplier = 0;
-        if (difficulty != null) {
+
+        if (result != null && result.difficulty != null) {
+            var difficulty = result.difficulty;
             level = difficulty.entityLevel();
             if (level != 0) {
                 for (var modifier : getModifiersForEntity(difficulty.type().entities, entityData)) {
@@ -291,15 +295,12 @@ public class PatternMatching {
         return null;
     }
 
-    public enum ScalingGoal { ENTITY, LOOT }
-
     @Nullable
     public static DifficultySearchResult getDifficultyResult(LocationData locationData, @Nullable Identifier sourceId, ScalingGoal scalingGoal, ServerWorld world) {
         for (var dimension : DungeonDifficulty.config.value.dimensions) {
             if (locationData.matches(dimension.world_matches)) {
-                var dimensionDifficulty = findDifficulty(dimension.difficulty);
+                DifficultySearchResult zoneResult = null;
                 if (dimension.zones != null) {
-                    DifficultySearchResult zoneResult = null;
                     for(var zone: dimension.zones) {
                         var match = locationData.matches(zone.zone_matches, world);
                         if (match.matches()) {
@@ -310,12 +311,14 @@ public class PatternMatching {
                             }
                         }
                     }
-                    var entityDifficulty = matchEntityDifficulty(locationData, sourceId, scalingGoal, dimension.entities);
-                    var result = chooseHigherDifficulty(zoneResult, entityDifficulty);
-                    if (result != null) {
-                        return result;
-                    }
                 }
+                var entityDifficulty = matchEntityDifficulty(locationData, sourceId, scalingGoal, dimension.entities);
+                var result = chooseHigherDifficulty(zoneResult, entityDifficulty);
+                if (result != null) {
+                    return result;
+                }
+
+                var dimensionDifficulty = findDifficulty(dimension.difficulty);
                 if (dimensionDifficulty != null && dimensionDifficulty.isValid()) {
                     return new DifficultySearchResult(dimensionDifficulty, locationData, null);
                 }

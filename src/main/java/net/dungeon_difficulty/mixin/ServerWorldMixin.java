@@ -2,6 +2,7 @@ package net.dungeon_difficulty.mixin;
 
 import net.dungeon_difficulty.DungeonDifficulty;
 import net.dungeon_difficulty.logic.DifficultyHandler;
+import net.dungeon_difficulty.logic.ScalingGoal;
 import net.dungeon_difficulty.util.LanguageUtil;
 import net.dungeon_difficulty.logic.Difficulty;
 import net.dungeon_difficulty.logic.PatternMatching;
@@ -15,8 +16,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import java.util.Objects;
 
 @Mixin(ServerWorld.class)
 public abstract class ServerWorldMixin {
@@ -51,7 +50,7 @@ public abstract class ServerWorldMixin {
             var previousAnnouncements = ((DifficultyHandler)player).getLastDifficultyAnnouncements();
             if ((player.age + player.getId()) % check_interval == 0) {
                 var locationData = PatternMatching.LocationData.create(world, player.getBlockPos());
-                var difficultyResult = PatternMatching.getDifficultyResult(locationData, null, PatternMatching.ScalingGoal.ENTITY, world);
+                var difficultyResult = PatternMatching.getDifficultyResult(locationData, null, ScalingGoal.ENTITY, world);
                 if (difficultyResult != null && difficultyResult.difficulty().isValid()) {
                     announce(difficultyResult, player);
                 } else {

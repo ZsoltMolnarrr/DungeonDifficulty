@@ -44,7 +44,7 @@ public class MobSpawnerLogicMixin {
                 var entityType = Registries.ENTITY_TYPE.get(Identifier.of(entityId));
                 var testEntity = entityType.create(world);
                 var isMonster = testEntity instanceof Monster;
-                var entityData = new PatternMatching.EntityData(entityId, isMonster);
+                var entityData = new PatternMatching.EntityData(Identifier.of(entityId), isMonster);
                 var locationData = PatternMatching.LocationData.create(world, pos);
                 var scaling = PatternMatching.getModifiersForSpawner(locationData, entityData, world);
 //                if (modifiers.size() > 0) {
