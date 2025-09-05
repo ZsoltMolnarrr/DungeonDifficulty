@@ -149,32 +149,31 @@ public class PatternMatching {
     }
 
     public record ItemScaleResult(List<Config.AttributeModifier> modifiers, int level) { }
-    public static ItemScaleResult getModifiersForItem(LocationData locationData, ItemData itemData, ServerWorld world) {
+    public static ItemScaleResult getModifiersForItem(LocationData locationData, ItemData itemData, ServerWorld world, @Nullable Config.Rewards scaling) {
         var result = getDifficultyResult(locationData, itemData.lootTableId(), ScalingGoal.LOOT, world);
-        return getItemScaleResult(itemData, result != null ? result.difficulty() : null);
-    }
-
-    public static ItemScaleResult getItemScaleResult(ItemData itemData, @Nullable Difficulty difficulty) {
-        var attributeModifiers = new ArrayList<Config.AttributeModifier>();
         var level = 0;
-        if (difficulty != null) {
-            level = difficulty.rewardLevel();
-            var rewards = difficulty.type().rewards;
-            if (rewards != null) {
-                List<Config.ItemModifier> itemModifiers = null;
-                switch (itemData.kind) {
-                    case ARMOR -> {
-                        itemModifiers = rewards.armor;
-                    }
-                    case WEAPONS -> {
-                        itemModifiers = rewards.weapons;
-                    }
+        if (result != null && result.difficulty() != null) {
+            level = result.difficulty.rewardLevel();
+        }
+        return getItemScaleResult(itemData, scaling, level);
+    }
+    
+    public static ItemScaleResult getItemScaleResult(ItemData itemData, @Nullable Config.Rewards scaling, int level) {
+        var attributeModifiers = new ArrayList<Config.AttributeModifier>();
+        if (scaling != null && level > 0) {
+            List<Config.ItemModifier> itemModifiers = null;
+            switch (itemData.kind) {
+                case ARMOR -> {
+                    itemModifiers = scaling.armor;
                 }
-                if (itemModifiers != null) {
-                    for(var entry: itemModifiers) {
-                        if (itemData.matches(entry.item_matches)) {
-                            attributeModifiers.addAll(Arrays.asList(entry.attributes));
-                        }
+                case WEAPONS -> {
+                    itemModifiers = scaling.weapons;
+                }
+            }
+            if (itemModifiers != null) {
+                for(var entry: itemModifiers) {
+                    if (itemData.matches(entry.item_matches)) {
+                        attributeModifiers.addAll(Arrays.asList(entry.attributes));
                     }
                 }
             }

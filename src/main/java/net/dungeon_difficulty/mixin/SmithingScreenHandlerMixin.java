@@ -2,6 +2,7 @@ package net.dungeon_difficulty.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import net.dungeon_difficulty.DungeonDifficulty;
 import net.dungeon_difficulty.logic.Difficulty;
 import net.dungeon_difficulty.logic.DifficultyTypes;
 import net.dungeon_difficulty.logic.ItemScaling;
@@ -24,22 +25,17 @@ public class SmithingScreenHandlerMixin {
         var input = (SmithingRecipeInput) recipeInput;
         var baseItemStack = input.base();
 
-        var difficultyType = DifficultyTypes.firstWithReward();
-        if (difficultyType != null && difficultyType.rewards.smithing_upgrade.enabled
+        var config = DungeonDifficulty.config.value;
+        var lootScaling = config.loot_scaling;
+        if (lootScaling != null && lootScaling.smithing_upgrade.enabled
                 && !input.template().isEmpty()
                 && input.template().getRegistryEntry().getKey().get().getValue().toString().contains("upgrade") // Is upgrade?
                 && ItemScaling.isScaled(baseItemStack)) {
-            var upgrade = difficultyType.rewards.smithing_upgrade;
+            var upgrade = lootScaling.smithing_upgrade;
             var level = ItemScaling.getScaleFactor(baseItemStack);
             int newLevel = (int) ((level + upgrade.add_upon_upgrade) * upgrade.multiply_upon_upgrade);
             if (newLevel > 0) {
-                var difficulty = new Difficulty(
-                        difficultyType,
-                        newLevel,
-                        0,
-                        newLevel
-                );
-                ItemScaling.scale(crafted, difficulty);
+                ItemScaling.scale(crafted, newLevel);
             }
         }
         return crafted;

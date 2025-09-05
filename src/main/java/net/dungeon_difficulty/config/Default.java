@@ -11,6 +11,7 @@ public class Default {
     public static Config config = createDefaultConfig();
 
     private static Config createDefaultConfig() {
+        var config = new Config();
         // Difficulty types
         var normalDifficulty = new Config.DifficultyType("adventure");
         normalDifficulty.entities = List.of(
@@ -40,13 +41,13 @@ public class Default {
                         dungeonSpawners,
                         0)
         );
-        dungeonDifficulty.rewards.armor = List.of(
+        config.loot_scaling.armor = List.of(
                 createItemModifier(new Config.AttributeModifier[]{
                         createArmorMultiplier(0.1F),
                         createHealthBonus(1)
                 })
         );
-        dungeonDifficulty.rewards.weapons = List.of(
+        config.loot_scaling.weapons = List.of(
                 createItemModifier(new Config.AttributeModifier[]{
                         createDamageMultiplier(0.1F, 0.05F),
                         createPowerMultiplier(0.1F, 0.05F)
@@ -100,7 +101,6 @@ public class Default {
                 entitySpecificMatcher(Identifier.ofVanilla("ender_dragon"), dungeonDifficulty.name, 4)
         );
 
-        var config = new Config();
         config.difficulty_types = List.of(normalDifficulty, dungeonDifficulty);
         config.dimensions = new Config.Dimension[] { overworld, nether, end };
         config.per_player_difficulty = perPlayerDifficulty;

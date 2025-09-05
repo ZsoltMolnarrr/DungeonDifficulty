@@ -21,12 +21,6 @@ public class DifficultyTypes {
         DifficultyTypes.resolved = resolved;
     }
 
-    @Nullable public static Config.DifficultyType firstWithReward() {
-        return DifficultyTypes.resolved.stream()
-                .filter(type -> !type.rewards.armor.isEmpty() && !type.rewards.weapons.isEmpty())
-                .findFirst().orElse(null);
-    }
-
     private static Config.DifficultyType resolve(Config.DifficultyType type, List<Config.DifficultyType> types) {
         if (type.parent != null && !type.parent.isEmpty()) {
             var parent = types.stream()
@@ -45,16 +39,12 @@ public class DifficultyTypes {
         copy.name = type.name;
         copy.parent = type.parent;
         copy.entities = type.entities;
-        copy.rewards = type.rewards;
         return copy;
     }
 
     private static Config.DifficultyType merge(Config.DifficultyType t1, Config.DifficultyType t2) {
         var merged = copy(t1);
         merged.entities = Stream.concat(t1.entities.stream(), t2.entities.stream()).toList();
-        merged.rewards = new Config.Rewards();
-        merged.rewards.armor = Stream.concat(t1.rewards.armor.stream(), t2.rewards.armor.stream()).toList();
-        merged.rewards.weapons = Stream.concat(t1.rewards.weapons.stream(), t2.rewards.weapons.stream()).toList();
         return merged;
     }
 }

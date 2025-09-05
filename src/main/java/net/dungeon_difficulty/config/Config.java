@@ -34,13 +34,13 @@ public class Config {
         public String parent;
         @Nullable public String translation_code;
         public List<EntityModifier> entities = List.of();
-        public Rewards rewards = new Rewards();
         public DifficultyType(String name) {
             this.name = name;
         }
     }
+
+    public Rewards loot_scaling = new Rewards();
     public static class Rewards { public Rewards() { }
-        public String name;
         public List<ItemModifier> armor = List.of();
         public List<ItemModifier> weapons = List.of();
 

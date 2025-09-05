@@ -1,3 +1,9 @@
+# 3.5.0
+
+IMPORTANT DISCLAIMER: Config format change
+- Loot scaling is now in a global scope, instead inside of difficulty types
+- Optimize multi level inheritance
+
 # 3.4.2
 
 - Difficulty and  power level font symbols
