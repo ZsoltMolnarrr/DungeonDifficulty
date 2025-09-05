@@ -1,3 +1,7 @@
+# 3.4.2
+
+- Difficulty and  power level font symbols
+
 # 3.4.1
 
 - Fix scaling of out of zone entities #35
