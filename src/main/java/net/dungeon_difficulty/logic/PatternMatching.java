@@ -154,7 +154,7 @@ public class PatternMatching {
     public static ItemScaleResult getModifiersForItem(LocationData locationData, ItemData itemData, ServerWorld world, @Nullable Config.Rewards scaling) {
         var result = getDifficultyResult(locationData, itemData.lootTableId(), ScalingGoal.LOOT, world);
         var level = 0;
-        if (result != null && result.difficulty() != null) {
+        if (result != null && result.difficulty() != null && result.difficulty().allowsLootScaling()) { // !
             level = result.difficulty.rewardLevel();
         }
         return getItemScaleResult(itemData, scaling, level);

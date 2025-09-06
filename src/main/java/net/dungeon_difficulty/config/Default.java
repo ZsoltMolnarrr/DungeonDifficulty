@@ -26,6 +26,7 @@ public class Default {
         );
 
         var dungeonDifficulty = new Config.DifficultyType("dungeon");
+        dungeonDifficulty.allow_loot_scaling = true;
         dungeonDifficulty.parent = normalDifficulty.name;
 
         var dungeonSpawners = new Config.SpawnerModifier();
@@ -81,7 +82,7 @@ public class Default {
                 biomeRegex("desert|frozen|snowy|ice|jungle", normalDifficulty.name, 1)
         );
         overworld.zone_specifiers = List.of(
-                zoneOverride("bosses", heroicDifficulty.name)
+                zoneOverrideStructure("bosses", heroicDifficulty.name)
         );
 
         var nether = new Config.Dimension();
@@ -98,6 +99,7 @@ public class Default {
         end.world_matches.dimension = "minecraft:the_end";
         end.difficulty = new Config.DifficultyReference(normalDifficulty.name, 4);
         end.zones = List.of(
+                biomeSpecific("minecraft:the_end", heroicDifficulty.name, 5),
                 structureTag("level_6", dungeonDifficulty.name, 6),
                 structureTag("level_5", dungeonDifficulty.name, 5)
         );
@@ -187,6 +189,13 @@ public class Default {
         return zone;
     }
 
+    private static Config.Zone biomeSpecific(String biome, String difficulty, int level) {
+        var zone = new Config.Zone();
+        zone.zone_matches.biome = biome;
+        zone.difficulty = new Config.DifficultyReference(difficulty, level);
+        return zone;
+    }
+
     private static Config.Zone structureId(String id, String difficulty, int level) {
         var zone = new Config.Zone();
         zone.zone_matches.structure = id;
@@ -201,9 +210,16 @@ public class Default {
         return zone;
     }
 
-    private static Config.Zone.TypeOverride zoneOverride(String tag, String difficulty) {
+    private static Config.Zone.TypeOverride zoneOverrideStructure(String tag, String difficulty) {
         var override = new Config.Zone.TypeOverride();
         override.zone_matches.structure = "#" + DungeonDifficulty.MODID + ":" + tag;
+        override.difficulty_name = difficulty;
+        return override;
+    }
+
+    private static Config.Zone.TypeOverride zoneOverrideBiome(String biome, String difficulty) {
+        var override = new Config.Zone.TypeOverride();
+        override.zone_matches.biome = biome;
         override.difficulty_name = difficulty;
         return override;
     }

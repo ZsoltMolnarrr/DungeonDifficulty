@@ -2,10 +2,8 @@ package net.dungeon_difficulty.logic;
 
 import net.dungeon_difficulty.DungeonDifficulty;
 import net.dungeon_difficulty.config.Config;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -45,6 +43,10 @@ public class DifficultyTypes {
     private static Config.DifficultyType merge(Config.DifficultyType t1, Config.DifficultyType t2) {
         var merged = copy(t1);
         merged.entities = Stream.concat(t1.entities.stream(), t2.entities.stream()).toList();
+        merged.allow_loot_scaling = t2.allow_loot_scaling;
+        if (t1.allow_loot_scaling != null) {
+            merged.allow_loot_scaling = t1.allow_loot_scaling;
+        }
         return merged;
     }
 }

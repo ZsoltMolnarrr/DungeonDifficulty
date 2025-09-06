@@ -33,6 +33,7 @@ public class Config {
         public String name;
         public String parent;
         @Nullable public String translation_code;
+        @Nullable public Boolean allow_loot_scaling;
         public List<EntityModifier> entities = List.of();
         public DifficultyType(String name) {
             this.name = name;

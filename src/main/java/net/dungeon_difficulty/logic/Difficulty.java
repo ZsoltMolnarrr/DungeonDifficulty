@@ -43,4 +43,8 @@ public record Difficulty(Config.DifficultyType type,
                     && Objects.equals(matchId, other.matchId);
         }
     }
+
+    public boolean allowsLootScaling() {
+        return type.allow_loot_scaling != null && type.allow_loot_scaling;
+    }
 }
