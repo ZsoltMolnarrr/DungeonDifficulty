@@ -74,6 +74,7 @@ public class Config {
         public DifficultyReference difficulty;
 
         public List<Zone> zones = List.of();
+        public List<Zone.TypeOverride> zone_specifiers = List.of();
         public List<EntityMatcher> entities = List.of();
     }
 
@@ -87,6 +88,11 @@ public class Config {
         public Filters zone_matches = new Filters();
 
         public DifficultyReference difficulty;
+
+        public static class TypeOverride { public TypeOverride() { }
+            public Filters zone_matches = new Filters();
+            public String difficulty_name;
+        }
     }
 
     public static class EntityMatcher { public EntityMatcher() { }

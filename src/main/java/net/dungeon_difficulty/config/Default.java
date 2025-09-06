@@ -54,6 +54,9 @@ public class Default {
                 ))
         );
 
+        var heroicDifficulty = new Config.DifficultyType("heroic");
+        heroicDifficulty.parent = dungeonDifficulty.name;
+
         // Per Player Difficulty
         var perPlayerDifficulty = new Config.PerPlayerDifficulty();
         var perPlayerEntityModifier = new Config.EntityModifier();
@@ -77,6 +80,9 @@ public class Default {
                 structureTag("level_1", dungeonDifficulty.name, 1),
                 biomeRegex("desert|frozen|snowy|ice|jungle", normalDifficulty.name, 1)
         );
+        overworld.zone_specifiers = List.of(
+                zoneOverride("bosses", heroicDifficulty.name)
+        );
 
         var nether = new Config.Dimension();
         nether.world_matches.dimension = "minecraft:the_nether";
@@ -99,7 +105,7 @@ public class Default {
                 entitySpecificMatcher(Identifier.ofVanilla("ender_dragon"), dungeonDifficulty.name, 4)
         );
 
-        config.difficulty_types = List.of(normalDifficulty, dungeonDifficulty);
+        config.difficulty_types = List.of(normalDifficulty, dungeonDifficulty, heroicDifficulty);
         config.dimensions = new Config.Dimension[] { overworld, nether, end };
         config.per_player_difficulty = perPlayerDifficulty;
         return config;
@@ -193,6 +199,13 @@ public class Default {
         zone.zone_matches.structure = "#" + DungeonDifficulty.MODID + ":" + tag;
         zone.difficulty = new Config.DifficultyReference(difficulty, level);
         return zone;
+    }
+
+    private static Config.Zone.TypeOverride zoneOverride(String tag, String difficulty) {
+        var override = new Config.Zone.TypeOverride();
+        override.zone_matches.structure = "#" + DungeonDifficulty.MODID + ":" + tag;
+        override.difficulty_name = difficulty;
+        return override;
     }
 
     private static Config.EntityMatcher entityTypeMatcher(String type, String difficulty, int level) {

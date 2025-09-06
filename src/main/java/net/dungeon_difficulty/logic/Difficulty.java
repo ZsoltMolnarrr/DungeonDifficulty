@@ -14,6 +14,10 @@ public record Difficulty(Config.DifficultyType type,
     private static final Config.DifficultyType EMPTY_TYPE = new Config.DifficultyType("empty");
     public static final Difficulty EMPTY = new Difficulty(EMPTY_TYPE, 0, 0, 0);
 
+    public Difficulty withType(Config.DifficultyType newType) {
+        return new Difficulty(newType, level, entityLevel, rewardLevel);
+    }
+
     public boolean isValid() {
         return type != null && level > 0;
     }

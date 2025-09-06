@@ -6,13 +6,15 @@ IMPORTANT DISCLAIMER: Config format changed, new config file is name `difficulty
 - Support universal pattern matching on many fields
 - Slightly improved server performance
 - Improved config file consistency
+- Add new config option for difficult type overrides 
 
 Migration steps:
 - Rename `dimension_regex` -> `dimension`
-- Rename `item_id_regex` -> `id`
-- Rename `entity_id_regex` -> `type`
 - If `entity_matches` objects are undefined, I recommend removing them
 - If `item_matches` objects are undefined, I recommend removing them
+- Rename `item_id_regex` -> `id`
+- Rename `entity_id_regex` -> `type`
+- Migrate the `rewards` objects from your difficulty type into the `loot_scaling` root field 
 
 # 3.4.2
 

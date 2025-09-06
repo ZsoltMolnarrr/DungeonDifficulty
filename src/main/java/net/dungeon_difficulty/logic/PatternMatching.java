@@ -183,7 +183,6 @@ public class PatternMatching {
         return new ItemScaleResult(attributeModifiers, level);
     }
 
-
     public record EntityData(RegistryEntry<EntityType<?>> type, boolean isHostile) {
         public static EntityData create(LivingEntity entity) {
             var type = Registries.ENTITY_TYPE.getEntry(entity.getType());
@@ -274,16 +273,21 @@ public class PatternMatching {
         return entityModifiers;
     }
 
-    public record Location(Config.EntityModifier[] entities,
-                           Config.Rewards rewards) { }
-
-
     public record DifficultySearchResult(Difficulty difficulty, LocationData locationData, LocationData.Match match) {
         @Nullable public Identifier matchId() {
             return match != null ? match.id() : null;
         }
+        public DifficultySearchResult withType(String difficultyType) {
+            var newType = DifficultyTypes.resolved.stream()
+                    .filter(t -> t.name.equals(difficultyType))
+                    .findFirst()
+                    .orElse(null);
+            if (newType != null) {
+                return new DifficultySearchResult(difficulty.withType(newType), locationData, match);
+            }
+            return this;
+        }
     }
-
 
     @Nullable
     public static Difficulty getDifficulty(LocationData locationData, ServerWorld world) {
@@ -311,6 +315,15 @@ public class PatternMatching {
                             var zoneDifficulty = findDifficulty(zone.difficulty);
                             if (zoneDifficulty != null && zoneDifficulty.isValid()) {
                                 zoneResult = new DifficultySearchResult(zoneDifficulty, locationData, match);
+                                break;
+                            }
+                        }
+                    }
+                    if (zoneResult != null) {
+                        for (var typeOverride : dimension.zone_specifiers) {
+                            var match = locationData.matches(typeOverride.zone_matches, world);
+                            if (match.matches()) {
+                                zoneResult = zoneResult.withType(typeOverride.difficulty_name);
                                 break;
                             }
                         }
