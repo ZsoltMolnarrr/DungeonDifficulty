@@ -26,16 +26,26 @@
 
 The configuration is meant to be used by modpack developers, hence no in-game (client-side) settings are available. It is a server-side only configuration, can be found at `config/dungeon_difficulty_v2.json`.
 
-Regex fields in the configuration are interpreted as fully featured regex. If you are unfamiliar with regex, first make sure to learn about it (start for example [here](https://www.youtube.com/watch?v=sXQxhojSdZM)). It is recommended to test out your regex patterns using tool: [regex101.com](https://regex101.com)
+Config file is parsed into `Config` object. You can find it [here](./src/main/java/net/dungeon_difficulty/config/Config.java). Config file is **sanitized** upon reloading, meaning every non-parsable data is removed.
 
 Editing the config usually involves the steps below:
 1. Open the config file
-2. Set `allow_customization` to `true`, so your config doesn't get overridden with defaults at launch
-3. Define difficulty types (in `difficulty_types` array), which describe scaling of entities of looted items
-4. Assign difficulty to locations referencing a difficulty type by its name, and an arbitrary level. These can be dimension by regex, biomes by regex and structures by specific structure ID.
+2. Define difficulty types (in `difficulty_types` array), which describe scaling of entities
+3. Define scaling of looted items (in `loot_scaling` array)
+4. Assign difficulty to locations referencing a difficulty type by its name, and an arbitrary level.
+5. Relaunch the game or use the command `/dungeon_difficulty_config_reload` to apply changes. Warning: upon reloading, config file get sanitized, meaning every non-parsable data is removed.
 
-Check out the default configuration to see specific examples.
+Fields that reference some kind of in-game ID (like `entity_type`, `biome`, `dimension`, `structure` etc...) support universal pattern matching:
+- `#` prefix matches for tags (for example: `#minecraft:undead`)
+- `~` prefix matches for regex (for example: `~zombie`)
+- no prefix matches for exact match (for example: `minecraft:skeleton`)
+- `!` prefix negates the match (for example: `!minecraft:skeleton`, `!#minecraft:undead`, `!~zombie`)
+- `*` matches everything (wildcard)
 
-Config file is parsed into `Config` object. You can find it [here](./src/main/java/net/dungeon_difficulty/config/Config.java). Config file is **sanitized** upon reloading, meaning every non-parsable data is removed.
+### Tips
 
-Use the following command to refresh the config while in game: `/dungeon_difficulty_config_reload`
+- Check out the default configuration to see specific examples.
+- Regex fields in the configuration are interpreted as fully featured regex. If you are unfamiliar with regex, first make sure to learn about it (start for example [here](https://www.youtube.com/watch?v=sXQxhojSdZM)). It is recommended to test out your regex patterns using tool: [regex101.com](https://regex101.com)
+- Prefer tag matching instead of regex matching, whenever possible. Regex matching in general hurts server performance.
+
+

@@ -41,10 +41,11 @@ public class MobSpawnerLogicMixin {
 
             try {
                 var entityId = this.spawnEntry.getNbt().getString("id");
-                var entityType = Registries.ENTITY_TYPE.get(Identifier.of(entityId));
+                var entityTypeEntry = Registries.ENTITY_TYPE.getEntry(Identifier.of(entityId)).get();
+                var entityType = entityTypeEntry.value();
                 var testEntity = entityType.create(world);
                 var isMonster = testEntity instanceof Monster;
-                var entityData = new PatternMatching.EntityData(Identifier.of(entityId), isMonster);
+                var entityData = new PatternMatching.EntityData(entityTypeEntry, isMonster);
                 var locationData = PatternMatching.LocationData.create(world, pos);
                 var scaling = PatternMatching.getModifiersForSpawner(locationData, entityData, world);
 //                if (modifiers.size() > 0) {

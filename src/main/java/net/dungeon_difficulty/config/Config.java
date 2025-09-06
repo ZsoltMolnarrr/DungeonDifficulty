@@ -7,7 +7,7 @@ import java.util.Random;
 
 public class Config {
     public Meta meta = new Meta();
-    public class Meta { public Meta() { }
+    public static class Meta { public Meta() { }
         public boolean sanitize_config = true;
         public Double rounding_unit = 0.5;
         public boolean merge_item_modifiers = true;
@@ -25,7 +25,7 @@ public class Config {
         public boolean enabled = true;
         public enum Counting { EVERYWHERE, DIMENSION }
         public Counting counting = Counting.EVERYWHERE;
-        public EntityModifier[] entities = new EntityModifier[]{};
+        public List<EntityModifier> entities = List.of();
     }
 
     public List<DifficultyType> difficulty_types = List.of();
@@ -55,8 +55,8 @@ public class Config {
     public static class DifficultyReference { public DifficultyReference() { }
         public String name;
         public int level = 0;
-        public Integer entity_level;
-        public Integer reward_level;
+        @Nullable public Integer entity_level;
+        @Nullable public Integer reward_level;
         public DifficultyReference(String name, int level) {
             this.name = name;
             this.level = level;
@@ -67,7 +67,8 @@ public class Config {
 
     public static class Dimension { public Dimension() { }
         public static class Filters {
-            public String dimension_regex = Regex.ANY;
+            // Universal pattern matching against dimension ID
+            public String dimension;
         }
         public Filters world_matches = new Filters();
         public DifficultyReference difficulty;
@@ -78,7 +79,9 @@ public class Config {
 
     public static class Zone { public Zone() { }
         public static class Filters { public Filters() { }
+            // Universal pattern matching against biome ID
             @Nullable public String biome = null;
+            // Universal pattern matching against structure ID
             @Nullable public String structure = null;
         }
         public Filters zone_matches = new Filters();
@@ -99,24 +102,26 @@ public class Config {
             public enum Attitude {
                 FRIENDLY, HOSTILE, ANY
             }
-            public Attitude attitude = Attitude.ANY;
-            public String entity_id_regex = Regex.ANY;
+            @Nullable public Attitude attitude = Attitude.ANY;
+            // Universal pattern matching against entity type ID
+            @Nullable public String type = "";
         }
-        public Filters entity_matches = new Filters();
-        public AttributeModifier[] attributes = new AttributeModifier[]{};
-        public SpawnerModifier spawners = null;
+        @Nullable public Filters entity_matches = new Filters();
+        @Nullable public SpawnerModifier spawners = null;
+        public List<AttributeModifier> attributes = List.of();
         public float experience_multiplier = 0;
     }
 
     public static class ItemModifier { public ItemModifier() { }
         public static class Filters {
-            public String item_id_regex = Regex.ANY;
-            public String loot_table_regex = Regex.ANY;
-            public String rarity_regex = Regex.ANY;
+            // Universal pattern matching against item ID
+            @Nullable public String id = "";
+            @Nullable public String loot_table_regex = "";
+            @Nullable public String rarity_regex = "";
         }
-        public Filters item_matches = new Filters();
+        @Nullable public Filters item_matches = new Filters();
 
-        public AttributeModifier[] attributes = new AttributeModifier[]{};
+        public List<AttributeModifier> attributes = List.of();
     }
 
     public static class AttributeModifier { public AttributeModifier() { }

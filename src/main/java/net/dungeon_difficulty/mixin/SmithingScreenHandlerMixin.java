@@ -3,8 +3,6 @@ package net.dungeon_difficulty.mixin;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.dungeon_difficulty.DungeonDifficulty;
-import net.dungeon_difficulty.logic.Difficulty;
-import net.dungeon_difficulty.logic.DifficultyTypes;
 import net.dungeon_difficulty.logic.ItemScaling;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.SmithingRecipe;

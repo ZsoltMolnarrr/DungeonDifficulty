@@ -70,6 +70,7 @@ public class ItemScaling {
     }
 
     public static void scale(ItemStack itemStack, ServerWorld world, Identifier lootTableId, PatternMatching.LocationData locationData) {
+        var itemEntry = itemStack.getRegistryEntry();
         var itemId = Registries.ITEM.getId(itemStack.getItem()).toString();
         var rarity = itemStack.getRarity().toString();
         var dimensionId = world.getRegistryKey().getValue().toString(); // Just for logging
@@ -77,7 +78,7 @@ public class ItemScaling {
         var scaling = DungeonDifficulty.config.value.loot_scaling;
 
         if (itemStack.getItem() instanceof ToolItem || itemStack.getItem() instanceof RangedWeaponItem) {
-            var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.WEAPONS, lootTableId, itemId, rarity);
+            var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.WEAPONS, lootTableId, itemEntry, rarity);
             debug("Item scaling start." + " dimension: " + dimensionId + " position: " + position + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
             var result = PatternMatching.getModifiersForItem(locationData, itemData, world, scaling);
             debug("Pattern matching found " + result.modifiers().size() + " attribute modifiers");
@@ -96,14 +97,14 @@ public class ItemScaling {
                     itemId, itemStack, result.modifiers(), result.level());
         }
         if (itemStack.getItem() instanceof ArmorItem armor) {
-            var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.ARMOR, lootTableId, itemId, rarity);
+            var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.ARMOR, lootTableId, itemEntry, rarity);
             debug("Item scaling start." + " dimension: " + dimensionId + " position: " + position + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
             var result = PatternMatching.getModifiersForItem(locationData, itemData, world, scaling);
             debug("Pattern matching found " + result.modifiers().size() + " attribute modifiers");
             applyModifiersForItemStack(List.of( AttributeModifierSlot.forEquipmentSlot(armor.getSlotType()) ), itemId, itemStack, result.modifiers(), result.level());
         }
         if (itemStack.getItem() instanceof ShieldItem shield) {
-            var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.ARMOR, lootTableId, itemId, rarity);
+            var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.ARMOR, lootTableId, itemEntry, rarity);
             debug("Item scaling start." + " dimension: " + dimensionId + " position: " + position + ", loot table: " + lootTableId + ", item: " + itemId + ", rarity: " + rarity);
             var result = PatternMatching.getModifiersForItem(locationData, itemData, world, scaling);
             debug("Pattern matching found " + result.modifiers().size() + " attribute modifiers");
@@ -112,13 +113,14 @@ public class ItemScaling {
     }
 
     public static void scale(ItemStack itemStack, int level) {
+        var itemEntry = itemStack.getRegistryEntry();
         var itemId = Registries.ITEM.getId(itemStack.getItem()).toString();
         var rarity = itemStack.getRarity().toString();
-        var lootTableId = Identifier.of("none");
+        var lootTableId = Identifier.ofVanilla("none");
         var scaling = DungeonDifficulty.config.value.loot_scaling;
 
         if (itemStack.getItem() instanceof ToolItem || itemStack.getItem() instanceof RangedWeaponItem) {
-            var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.WEAPONS, lootTableId, itemId, rarity);
+            var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.WEAPONS, lootTableId, itemEntry, rarity);
             var result = PatternMatching.getItemScaleResult(itemData, scaling, level);
 
             var hasHandModifiers = false;
@@ -135,12 +137,12 @@ public class ItemScaling {
                     itemId, itemStack, result.modifiers(), result.level());
         }
         if (itemStack.getItem() instanceof ArmorItem armor) {
-            var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.ARMOR, lootTableId, itemId, rarity);
+            var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.ARMOR, lootTableId, itemEntry, rarity);
             var result = PatternMatching.getItemScaleResult(itemData, scaling, level);
             applyModifiersForItemStack(List.of( AttributeModifierSlot.forEquipmentSlot(armor.getSlotType()) ), itemId, itemStack, result.modifiers(), result.level());
         }
         if (itemStack.getItem() instanceof ShieldItem shield) {
-            var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.ARMOR, lootTableId, itemId, rarity);
+            var itemData = new PatternMatching.ItemData(PatternMatching.ItemKind.ARMOR, lootTableId, itemEntry, rarity);
             var result = PatternMatching.getItemScaleResult(itemData, scaling, level);
             applyModifiersForItemStack(List.of(AttributeModifierSlot.HAND), itemId, itemStack, result.modifiers(), result.level());
         }
@@ -227,7 +229,7 @@ public class ItemScaling {
                 } else {
                     var arrayList = new ArrayList<RegistryEntry<EntityAttribute>>();
                     attributesComponents.applyModifiers(slot, (attribute, modifier) -> {
-                        if (PatternMatching.matches(attribute.getKey().get().getValue().toString(), attributePattern)) {
+                        if (PatternMatching.regexMatches(attribute.getKey().get().getValue().toString(), attributePattern)) {
                             arrayList.add(attribute);
                         }
                     });

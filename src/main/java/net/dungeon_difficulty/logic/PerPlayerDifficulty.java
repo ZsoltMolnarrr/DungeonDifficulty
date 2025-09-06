@@ -11,7 +11,7 @@ public class PerPlayerDifficulty {
     public static PatternMatching.EntityScaleResult getAttributeModifiers(PatternMatching.EntityData entityData, ServerWorld world) {
         var empty = new PatternMatching.EntityScaleResult(List.of(), 0, 0);
         var perPlayer = DungeonDifficulty.config.value.per_player_difficulty;
-        if (perPlayer == null || !perPlayer.enabled || perPlayer.entities == null || perPlayer.entities.length == 0 || perPlayer.counting == null) {
+        if (perPlayer == null || !perPlayer.enabled || perPlayer.entities == null || perPlayer.entities.isEmpty() || perPlayer.counting == null) {
             return empty;
         }
 
@@ -32,7 +32,7 @@ public class PerPlayerDifficulty {
         var attributeModifiers = new ArrayList<Config.AttributeModifier>();
         for(var entityBaseModifier: perPlayer.entities) {
             if (entityData.matches(entityBaseModifier.entity_matches)) {
-                attributeModifiers.addAll(List.of(entityBaseModifier.attributes));
+                attributeModifiers.addAll(entityBaseModifier.attributes);
             }
         }
         return new PatternMatching.EntityScaleResult(attributeModifiers, applyCount, 0);

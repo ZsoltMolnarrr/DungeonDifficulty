@@ -15,12 +15,12 @@ public class Default {
         // Difficulty types
         var normalDifficulty = new Config.DifficultyType("adventure");
         normalDifficulty.entities = List.of(
-                createEntityModifier(Regex.ANY,
-                        new Config.AttributeModifier[]{
+                createEntityModifier(null,
+                        List.of(
                                 createDamageMultiplier(0.25F, 0),
                                 createArmorBonus(1),
                                 createHealthMultiplier(0.25F, 0.1F)
-                        },
+                        ),
                         null,
                         0.2F)
         );
@@ -36,43 +36,41 @@ public class Default {
         dungeonSpawners.max_nearby_entities_multiplier = 1F;
 
         dungeonDifficulty.entities = List.of(
-                createEntityModifier(Regex.ANY,
-                        new Config.AttributeModifier[]{ },
+                createEntityModifier(null,
+                        List.of(),
                         dungeonSpawners,
                         0)
         );
         config.loot_scaling.armor = List.of(
-                createItemModifier(new Config.AttributeModifier[]{
+                createItemModifier(List.of(
                         createArmorMultiplier(0.1F),
                         createHealthBonus(1)
-                })
+                ))
         );
         config.loot_scaling.weapons = List.of(
-                createItemModifier(new Config.AttributeModifier[]{
+                createItemModifier(List.of(
                         createDamageMultiplier(0.1F, 0.05F),
                         createPowerMultiplier(0.1F, 0.05F)
-                })
+                ))
         );
 
         // Per Player Difficulty
         var perPlayerDifficulty = new Config.PerPlayerDifficulty();
         var perPlayerEntityModifier = new Config.EntityModifier();
-        perPlayerEntityModifier.entity_matches.entity_id_regex = Regex.ANY;
         if (FabricLoader.getInstance().isModLoaded("the_bumblezone")) {
-            perPlayerEntityModifier.entity_matches.entity_id_regex = "^(?!the_bumblezone:cosmic_crystal_entity).*$";
+            perPlayerEntityModifier.entity_matches = new Config.EntityModifier.Filters();
+            perPlayerEntityModifier.entity_matches.type = PatternMatching.REGEX_PREFIX + "^(?!the_bumblezone:cosmic_crystal_entity).*$";
         }
 
-        perPlayerEntityModifier.attributes = new Config.AttributeModifier[] {
+        perPlayerEntityModifier.attributes = List.of(
                 createDamageMultiplier(0.2F, 0),
                 createHealthMultiplier(0.2F, 0F)
-        };
-        perPlayerDifficulty.entities = new Config.EntityModifier[] {
-                perPlayerEntityModifier
-        };
+        );
+        perPlayerDifficulty.entities = List.of(perPlayerEntityModifier);
 
         // Surface
         var overworld = new Config.Dimension();
-        overworld.world_matches.dimension_regex = "minecraft:overworld";
+        overworld.world_matches.dimension = "minecraft:overworld";
         overworld.zones = List.of(
                 structureTag("level_3", dungeonDifficulty.name, 3),
                 structureTag("level_2", dungeonDifficulty.name, 2),
@@ -81,7 +79,7 @@ public class Default {
         );
 
         var nether = new Config.Dimension();
-        nether.world_matches.dimension_regex = "minecraft:the_nether";
+        nether.world_matches.dimension = "minecraft:the_nether";
         nether.difficulty = new Config.DifficultyReference(normalDifficulty.name, 3);
         nether.zones = List.of(
                 structureTag("level_4", dungeonDifficulty.name, 4)
@@ -91,7 +89,7 @@ public class Default {
         );
 
         var end = new Config.Dimension();
-        end.world_matches.dimension_regex = "minecraft:the_end";
+        end.world_matches.dimension = "minecraft:the_end";
         end.difficulty = new Config.DifficultyReference(normalDifficulty.name, 4);
         end.zones = List.of(
                 structureTag("level_6", dungeonDifficulty.name, 6),
@@ -107,15 +105,15 @@ public class Default {
         return config;
     }
 
-    private static Config.ItemModifier createItemModifier(Config.AttributeModifier[] attributeModifiers) {
+    private static Config.ItemModifier createItemModifier(List<Config.AttributeModifier> attributeModifiers) {
         return createItemModifier(null, null, attributeModifiers);
     }
 
-    private static Config.ItemModifier createItemModifier(String itemIdRegex, String lootTableRegex, Config.AttributeModifier[] attributeModifiers) {
+    private static Config.ItemModifier createItemModifier(String itemIdRegex, String lootTableRegex, List<Config.AttributeModifier> attributeModifiers) {
         var itemModifier = new Config.ItemModifier();
         itemModifier.item_matches = new Config.ItemModifier.Filters();
         if (itemIdRegex != null) {
-            itemModifier.item_matches.item_id_regex = itemIdRegex;
+            itemModifier.item_matches.id = PatternMatching.REGEX_PREFIX + itemIdRegex;
         }
         if (lootTableRegex != null) {
             itemModifier.item_matches.loot_table_regex = lootTableRegex;
@@ -164,10 +162,12 @@ public class Default {
         return modifier;
     }
 
-    private static Config.EntityModifier createEntityModifier(String idRegex, Config.AttributeModifier[] attributeModifiers, Config.SpawnerModifier spawnerModifier, float xpMultiplier) {
+    private static Config.EntityModifier createEntityModifier(String idRegex, List<Config.AttributeModifier> attributeModifiers, Config.SpawnerModifier spawnerModifier, float xpMultiplier) {
         var entityModifier = new Config.EntityModifier();
-        entityModifier.entity_matches = new Config.EntityModifier.Filters();
-        entityModifier.entity_matches.entity_id_regex = idRegex;
+        if (idRegex != null) {
+            entityModifier.entity_matches = new Config.EntityModifier.Filters();
+            entityModifier.entity_matches.type = PatternMatching.REGEX_PREFIX + idRegex;
+        }
         entityModifier.attributes = attributeModifiers;
         entityModifier.spawners = spawnerModifier;
         entityModifier.experience_multiplier = xpMultiplier;

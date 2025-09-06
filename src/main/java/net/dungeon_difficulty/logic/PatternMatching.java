@@ -2,8 +2,10 @@ package net.dungeon_difficulty.logic;
 
 import net.dungeon_difficulty.DungeonDifficulty;
 import net.dungeon_difficulty.config.Config;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.Monster;
+import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
@@ -29,9 +31,9 @@ public class PatternMatching {
 
     public record BiomeData(RegistryEntry<Biome> biomeEntry) { }
 
-    public record LocationData(String dimensionId, BlockPos position, BiomeData biome) {
+    public record LocationData(Identifier dimensionId, BlockPos position, BiomeData biome) {
         public static LocationData create(ServerWorld world, BlockPos position) {
-            var dimensionId = world.getRegistryKey().getValue().toString();
+            var dimensionId = world.getRegistryKey().getValue();
             BiomeData biome = null;
             if (position != null) {
                 biome = new BiomeData(world.getBiome(position));
@@ -43,7 +45,7 @@ public class PatternMatching {
             if (filters == null) {
                 return true;
             }
-            var result = PatternMatching.matches(dimensionId, filters.dimension_regex);
+            var result = PatternMatching.universalMatch(dimensionId, filters.dimension);
             // System.out.println("PatternMatching - dimension:" + dimensionId + " matches: " + filters.dimension_regex + " - " + result);
             return result;
         }
@@ -129,16 +131,16 @@ public class PatternMatching {
     public record ItemData(
             ItemKind kind,
             Identifier lootTableId,
-            String itemId,
+            RegistryEntry<Item> itemEntry,
             String rarity) {
 
         public boolean matches(Config.ItemModifier.Filters filters) {
             if (filters == null) {
                 return true;
             }
-            var result = PatternMatching.matches(itemId, filters.item_id_regex)
-                    && PatternMatching.matches(lootTableId.toString(), filters.loot_table_regex)
-                    && PatternMatching.matches(rarity, filters.rarity_regex);
+            var result = PatternMatching.universalMatch(itemEntry, RegistryKeys.ITEM, filters.id)
+                    && PatternMatching.regexMatches(lootTableId.toString(), filters.loot_table_regex)
+                    && PatternMatching.regexMatches(rarity, filters.rarity_regex);
             // System.out.println("PatternMatching - item:" + itemId + " matches all" + " - " + result);
             return result;
         }
@@ -173,7 +175,7 @@ public class PatternMatching {
             if (itemModifiers != null) {
                 for(var entry: itemModifiers) {
                     if (itemData.matches(entry.item_matches)) {
-                        attributeModifiers.addAll(Arrays.asList(entry.attributes));
+                        attributeModifiers.addAll(entry.attributes);
                     }
                 }
             }
@@ -182,11 +184,14 @@ public class PatternMatching {
     }
 
 
-    public record EntityData(Identifier entityId, boolean isHostile) {
+    public record EntityData(RegistryEntry<EntityType<?>> type, boolean isHostile) {
         public static EntityData create(LivingEntity entity) {
-            var entityId = Registries.ENTITY_TYPE.getId(entity.getType());
+            var type = Registries.ENTITY_TYPE.getEntry(entity.getType());
             var isHostile = entity instanceof Monster;
-            return new EntityData(entityId, isHostile);
+            return new EntityData(type, isHostile);
+        }
+        public Identifier entityId() {
+            return type.getKey().get().getValue();
         }
         public boolean matches(Config.EntityModifier.Filters filters) {
             if (filters == null) {
@@ -206,7 +211,7 @@ public class PatternMatching {
                     }
                 }
             }
-            var result = matchesAttitude && PatternMatching.matches(entityId.toString(), filters.entity_id_regex);
+            var result = matchesAttitude && PatternMatching.universalMatch(type, RegistryKeys.ENTITY_TYPE, filters.type);
 
             // System.out.println("PatternMatching - dimension:" + entityId + " matches: " + filters.entity_id_regex + " - " + result);
             return result;
@@ -230,7 +235,7 @@ public class PatternMatching {
             level = difficulty.entityLevel();
             if (level != 0) {
                 for (var modifier : getModifiersForEntity(difficulty.type().entities, entityData)) {
-                    attributeModifiers.addAll(Arrays.asList(modifier.attributes));
+                    attributeModifiers.addAll(modifier.attributes);
                     experienceMultiplier += modifier.experience_multiplier;
                 }
             }
@@ -388,54 +393,55 @@ public class PatternMatching {
         return null;
     }
 
-    public static boolean matches(String subject, @Nullable String nullableRegex) {
-        if (subject == null) {
-            subject = "";
-        }
-        if (nullableRegex == null || nullableRegex.isEmpty()) {
-            return true;
-        }
-        Pattern pattern = Pattern.compile(nullableRegex, Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(subject);
-        return matcher.find();
-    }
-
+    public static final String ANY = "*";
     public static final String TAG_PREFIX = "#";
     public static final String REGEX_PREFIX = "~";
+    public static final String NEGATE_PREFIX = "!";
 
     public static <T> boolean universalMatch(RegistryEntry<T> entry, RegistryKey<Registry<T>> registryKey, @Nullable String pattern) {
-        if (pattern == null) {
+        if (pattern == null || pattern.isEmpty() || pattern.equals(ANY)) {
             return true;
         }
-        if (pattern.startsWith(TAG_PREFIX)) {
-            var tag = TagKey.of(registryKey, Identifier.of(pattern.substring(1)));
-            return entry.isIn(tag);
-        }
-        var id = entry.getKey().get().getValue().toString();
-        if (pattern.startsWith(REGEX_PREFIX)) {
-            return regexMatches(id, pattern.substring(1));
+        if (pattern.startsWith(NEGATE_PREFIX)) {
+            return !entryMatches(entry, registryKey, pattern.substring(1));
         } else {
-            return id.equals(pattern);
+            return entryMatches(entry, registryKey, pattern);
         }
     }
 
-    public static <T> boolean universalMatchNoTag(RegistryEntry<T> entry, RegistryKey<Registry<T>> registryKey, @Nullable String pattern) {
-        if (pattern == null) {
+    public static <T> boolean universalMatch(Identifier id, @Nullable String pattern) {
+        if (pattern == null || pattern.isEmpty() || pattern.equals(ANY)) {
             return true;
         }
+        if (pattern.startsWith(NEGATE_PREFIX)) {
+            return !idMatches(id, pattern.substring(1));
+        } else {
+            return idMatches(id, pattern);
+        }
+    }
+
+    public static <T> boolean entryMatches(RegistryEntry<T> entry, RegistryKey<Registry<T>> registryKey, String pattern) {
         if (pattern.startsWith(TAG_PREFIX)) {
             var tag = TagKey.of(registryKey, Identifier.of(pattern.substring(1)));
             return entry.isIn(tag);
         }
-        var id = entry.getKey().get().getValue().toString();
-        return regexMatches(id, pattern);
+        return idMatches(entry.getKey().get().getValue(), pattern);
+    }
+
+    public static boolean idMatches(Identifier id, String pattern) {
+        var idString = id.toString();
+        if (pattern.startsWith(REGEX_PREFIX)) {
+            return regexMatches(idString, pattern.substring(1));
+        } else {
+            return idString.equals(pattern);
+        }
     }
 
     public static boolean regexMatches(String subject, String regex) {
         if (subject == null) {
             return false;
         }
-        if (regex == null || regex.isEmpty() || regex.equals("*") || subject.equals(regex)) {
+        if (regex == null || regex.isEmpty()) {
             return true;
         }
         Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);

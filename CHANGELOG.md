@@ -1,8 +1,18 @@
 # 3.5.0
 
-IMPORTANT DISCLAIMER: Config format change
+IMPORTANT DISCLAIMER: Config format changed, new config file is name `difficulty_v2`
 - Loot scaling is now in a global scope, instead inside of difficulty types
-- Optimize multi level inheritance
+- Optimize multi level difficulty type inheritance
+- Support universal pattern matching on many fields
+- Slightly improved server performance
+- Improved config file consistency
+
+Migration steps:
+- Rename `dimension_regex` -> `dimension`
+- Rename `item_id_regex` -> `id`
+- Rename `entity_id_regex` -> `type`
+- If `entity_matches` objects are undefined, I recommend removing them
+- If `item_matches` objects are undefined, I recommend removing them
 
 # 3.4.2
 

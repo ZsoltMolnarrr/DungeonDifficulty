@@ -71,7 +71,7 @@ public abstract class ServerWorldMixin {
         var locationData = difficultyResult.locationData();
 
         ((DifficultyHandler)player).getLastDifficultyAnnouncements();
-        var announcement = new Difficulty.Announcement(difficulty, player.age, locationData.dimensionId(), difficultyResult.matchId());
+        var announcement = new Difficulty.Announcement(difficulty, player.age, locationData.dimensionId().toString(), difficultyResult.matchId());
         var announcements = ((DifficultyHandler)player).getLastDifficultyAnnouncements();
         for (var previous: announcements) {
             if (previous.equals(announcement)) {
