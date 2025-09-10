@@ -1,3 +1,7 @@
+# 3.5.2
+
+- Difficult announcement upon config reload
+
 # 3.5.1
 
 IMPORTANT DISCLAIMER: Config format changed, new config file is name `difficulty_v2`
