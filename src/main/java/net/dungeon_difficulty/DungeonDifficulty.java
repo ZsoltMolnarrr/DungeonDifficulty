@@ -3,6 +3,7 @@ package net.dungeon_difficulty;
 import net.dungeon_difficulty.config.ClientConfig;
 import net.dungeon_difficulty.config.Config;
 import net.dungeon_difficulty.config.Default;
+import net.dungeon_difficulty.logic.DifficultyHandler;
 import net.dungeon_difficulty.logic.DifficultyTypes;
 import net.dungeon_difficulty.logic.ItemScaling;
 import net.fabricmc.api.ModInitializer;
@@ -37,6 +38,13 @@ public class DungeonDifficulty implements ModInitializer { // :)
             dispatcher.register(CommandManager.literal(MODID + "_config_reload").executes(context -> {
                 System.out.println("Reloading Dungeon Difficulty config");
                 DungeonDifficulty.reloadConfig();
+                try {
+                    for (var player: context.getSource().getServer().getPlayerManager().getPlayerList()) {
+                        ((DifficultyHandler)player).getLastDifficultyAnnouncements().clear();
+                    }
+                } catch (Exception e) {
+                    // ignore
+                }
 //                var gson = new GsonBuilder().setPrettyPrinting().create();
 //                System.out.println("Resolved difficulty types: " + gson.toJson(DifficultyTypes.resolved));
 //                System.out.println("Full: " + gson.toJson(DungeonDifficulty.config.value));
