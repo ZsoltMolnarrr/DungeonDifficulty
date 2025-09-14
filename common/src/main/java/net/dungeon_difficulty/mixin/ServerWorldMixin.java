@@ -1,6 +1,7 @@
 package net.dungeon_difficulty.mixin;
 
 import net.dungeon_difficulty.DungeonDifficulty;
+import net.dungeon_difficulty.Platform;
 import net.dungeon_difficulty.logic.DifficultyHandler;
 import net.dungeon_difficulty.logic.ScalingGoal;
 import net.dungeon_difficulty.util.LanguageUtil;
@@ -8,6 +9,7 @@ import net.dungeon_difficulty.logic.Difficulty;
 import net.dungeon_difficulty.logic.PatternMatching;
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket;
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket;
+import net.minecraft.server.network.ServerCommonNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
@@ -102,8 +104,8 @@ public abstract class ServerWorldMixin {
             }
         }
 
-        player.networkHandler.sendPacket(new TitleS2CPacket(Text.translatable(title)));
-        player.networkHandler.sendPacket(new SubtitleS2CPacket(Text.translatable(difficulty.typeTranslationKey())
+        Platform.util().sendVanillaPacket(player, new TitleS2CPacket(Text.translatable(title)));
+        Platform.util().sendVanillaPacket(player, new SubtitleS2CPacket(Text.translatable(difficulty.typeTranslationKey())
                 .append(" " + difficulty.level()))
         );
     }

@@ -39,6 +39,7 @@ repositories {
     maven {
         url "https://maven.su5ed.dev/releases"
     }
+    mavenLocal()
 }
 
 dependencies {
@@ -48,6 +49,8 @@ dependencies {
     shadowBundle project(path: ':common', configuration: 'transformProductionNeoForge')
 
     modImplementation "org.sinytra.forgified-fabric-api:forgified-fabric-api:${project.forgified_fabric_api_version}"
+
+    include(modImplementation("net.tiny_config:tiny_config-neoforge:${project.tiny_config_version}"))
 }
 
 processResources {
