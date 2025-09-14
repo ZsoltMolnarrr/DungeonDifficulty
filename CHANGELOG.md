@@ -1,3 +1,7 @@
+# 3.6.0
+
+- Migrate to Architectury
+
 # 3.5.2
 
 - Difficult announcement upon config reload

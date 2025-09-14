@@ -6,13 +6,12 @@ import net.dungeon_difficulty.config.Default;
 import net.dungeon_difficulty.logic.DifficultyHandler;
 import net.dungeon_difficulty.logic.DifficultyTypes;
 import net.dungeon_difficulty.logic.ItemScaling;
-import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.CommandManager;
-import net.tinyconfig.ConfigManager;
+import net.tiny_config.ConfigManager;
 
-public class DungeonDifficulty implements ModInitializer { // :)
-    public static String MODID = "dungeon_difficulty";
+public class DungeonDifficulty {
+    public static final String MODID = "dungeon_difficulty";
 
     public static ConfigManager<Config> config = new ConfigManager<>
             ("difficulty_v2", Default.config)
@@ -28,8 +27,7 @@ public class DungeonDifficulty implements ModInitializer { // :)
             .sanitize(true)
             .build();
 
-    @Override
-    public void onInitialize() {
+    public static void init() {
         clientConfig.refresh();
         reloadConfig();
         ItemScaling.initialize();
@@ -51,8 +49,6 @@ public class DungeonDifficulty implements ModInitializer { // :)
                 return 1;
             }));
         });
-
-
     }
 
     public static void reloadConfig() {

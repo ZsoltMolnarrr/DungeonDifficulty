@@ -13,10 +13,11 @@
   "icon": "assets/dungeon_difficulty/icon.png",
   "environment": "*",
   "entrypoints": {
-    "client": [
-    ],
     "main": [
-      "net.dungeon_difficulty.DungeonDifficulty"
+      "net.dungeon_difficulty.fabric.FabricMod"
+    ],
+    "client": [
+      "net.dungeon_difficulty.fabric.client.FabricClientMod"
     ]
   },
   "mixins": [
