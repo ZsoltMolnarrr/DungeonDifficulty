@@ -1,17 +1,17 @@
 modLoader = "javafml"
 loaderVersion = "[4,)"
 #issueTrackerURL = ""
-license = "Insert License Here"
+license = "GPL-3.0"
 
 [[mods]]
 modId = "dungeon_difficulty"
 version = "${version}"
 displayName = "Dungeon Difficulty"
-authors = "Me!"
+authors = "Daedelus"
 description = '''
-This is an example description! Tell everyone what your mod is about!
+Increase the difficulty and get matching rewards.
 '''
-#logoFile = ""
+logoFile = "icon.png"
 
 [[dependencies.dungeon_difficulty]]
 modId = "neoforge"

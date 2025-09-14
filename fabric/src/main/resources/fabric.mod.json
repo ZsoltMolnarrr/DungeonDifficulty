@@ -10,7 +10,7 @@
     "homepage": "https://github.com/ZsoltMolnarrr/DungeonDifficulty"
   },
   "license": "GPL-3.0",
-  "icon": "assets/dungeon_difficulty/icon.png",
+  "icon": "icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
