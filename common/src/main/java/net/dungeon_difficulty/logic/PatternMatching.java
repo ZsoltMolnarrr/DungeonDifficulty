@@ -22,7 +22,6 @@ import net.minecraft.world.gen.structure.Structure;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -183,14 +182,15 @@ public class PatternMatching {
         return new ItemScaleResult(attributeModifiers, level);
     }
 
-    public record EntityData(RegistryEntry<EntityType<?>> type, boolean isHostile) {
+    public record EntityData(@Nullable RegistryEntry<EntityType<?>> type, boolean isHostile) {
         public static EntityData create(LivingEntity entity) {
             var type = Registries.ENTITY_TYPE.getEntry(entity.getType());
             var isHostile = entity instanceof Monster;
             return new EntityData(type, isHostile);
         }
+        private static final Identifier UNKNOWN = Identifier.of("unknown");
         public Identifier entityId() {
-            return type.getKey().get().getValue();
+            return type != null ? type.getKey().get().getValue() : UNKNOWN;
         }
         public boolean matches(Config.EntityModifier.Filters filters) {
             if (filters == null) {
@@ -210,7 +210,7 @@ public class PatternMatching {
                     }
                 }
             }
-            var result = matchesAttitude && PatternMatching.universalMatch(type, RegistryKeys.ENTITY_TYPE, filters.type);
+            var result = matchesAttitude && (PatternMatching.universalMatch(type, RegistryKeys.ENTITY_TYPE, filters.type));
 
             // System.out.println("PatternMatching - dimension:" + entityId + " matches: " + filters.entity_id_regex + " - " + result);
             return result;
@@ -411,9 +411,12 @@ public class PatternMatching {
     public static final String REGEX_PREFIX = "~";
     public static final String NEGATE_PREFIX = "!";
 
-    public static <T> boolean universalMatch(RegistryEntry<T> entry, RegistryKey<Registry<T>> registryKey, @Nullable String pattern) {
+    public static <T> boolean universalMatch(@Nullable RegistryEntry<T> entry, RegistryKey<Registry<T>> registryKey, @Nullable String pattern) {
         if (pattern == null || pattern.isEmpty() || pattern.equals(ANY)) {
             return true;
+        }
+        if (entry == null) {
+            return false;
         }
         if (pattern.startsWith(NEGATE_PREFIX)) {
             return !entryMatches(entry, registryKey, pattern.substring(1));

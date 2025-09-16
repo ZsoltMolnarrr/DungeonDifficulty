@@ -5,8 +5,10 @@ import net.dungeon_difficulty.logic.MathHelper;
 import net.dungeon_difficulty.logic.PatternMatching;
 import net.minecraft.block.spawner.MobSpawnerEntry;
 import net.minecraft.block.spawner.MobSpawnerLogic;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.Monster;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -40,12 +42,21 @@ public class MobSpawnerLogicMixin {
             }
 
             try {
-                var entityId = this.spawnEntry.getNbt().getString("id");
-                var entityTypeEntry = Registries.ENTITY_TYPE.getEntry(Identifier.of(entityId)).get();
-                var entityType = entityTypeEntry.value();
-                var testEntity = entityType.create(world);
-                var isMonster = testEntity instanceof Monster;
-                var entityData = new PatternMatching.EntityData(entityTypeEntry, isMonster);
+                var entityIdString = this.spawnEntry.getNbt().getString("id");
+
+                RegistryEntry<EntityType<?>> typeEntry = null;
+                var isMonster = false;
+                if (entityIdString != null && !entityIdString.isEmpty()) {
+                    var id = Identifier.of(entityIdString);
+                    typeEntry = Registries.ENTITY_TYPE.getEntry(id).orElse(null);
+                    if (typeEntry != null) {
+                        var entityType = typeEntry.value();
+                        var testEntity = entityType.create(world);
+                        isMonster = testEntity instanceof Monster;
+                    }
+                }
+
+                var entityData = new PatternMatching.EntityData(typeEntry, isMonster);
                 var locationData = PatternMatching.LocationData.create(world, pos);
                 var scaling = PatternMatching.getModifiersForSpawner(locationData, entityData, world);
 //                if (modifiers.size() > 0) {
@@ -54,7 +65,7 @@ public class MobSpawnerLogicMixin {
                 scaleSpawner(scaling);
                 initialized = true;
             } catch (Exception e) {
-                e.printStackTrace();
+                // e.printStackTrace();
             }
         }
     }

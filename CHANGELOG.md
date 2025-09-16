@@ -1,6 +1,7 @@
 # 3.6.0
 
 - Migrate to Architectury
+- Fix invalid mob spawners spamming errors to console
 
 # 3.5.2
 
