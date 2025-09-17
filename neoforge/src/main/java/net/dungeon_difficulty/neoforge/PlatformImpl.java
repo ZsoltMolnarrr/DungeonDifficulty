@@ -1,7 +1,6 @@
 package net.dungeon_difficulty.neoforge;
 
 import net.dungeon_difficulty.Platform;
-import net.minecraft.entity.attribute.ClampedEntityAttribute;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.neoforged.fml.ModList;

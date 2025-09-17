@@ -6,7 +6,10 @@ import net.dungeon_difficulty.config.Default;
 import net.dungeon_difficulty.logic.DifficultyHandler;
 import net.dungeon_difficulty.logic.DifficultyTypes;
 import net.dungeon_difficulty.logic.ItemScaling;
+import net.dungeon_difficulty.logic.LocalScalingLootFunction;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.server.command.CommandManager;
 import net.tiny_config.ConfigManager;
 
@@ -62,5 +65,9 @@ public class DungeonDifficulty {
 
 //        var gson = new GsonBuilder().setPrettyPrinting().create();
 //        System.out.println("PowerScale config refreshed: " + gson.toJson(DungeonDifficulty.config.value));
+    }
+
+    public static void registerLootFunctions() {
+        Registry.register(Registries.LOOT_FUNCTION_TYPE, LocalScalingLootFunction.ID, LocalScalingLootFunction.TYPE);
     }
 }

@@ -7,5 +7,6 @@ public final class FabricMod implements ModInitializer {
     @Override
     public void onInitialize() {
         DungeonDifficulty.init();
+        DungeonDifficulty.registerLootFunctions();
     }
 }
