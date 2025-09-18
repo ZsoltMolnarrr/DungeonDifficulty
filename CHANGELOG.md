@@ -2,6 +2,7 @@
 
 - Migrate to Architectury
 - Fix invalid mob spawners spamming errors to console
+- Fix double scaling of items upgraded on smithing table (only when merge modifiers is on)
 
 # 3.5.2
 

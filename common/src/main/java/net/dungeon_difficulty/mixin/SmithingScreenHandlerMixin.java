@@ -33,6 +33,7 @@ public class SmithingScreenHandlerMixin {
             var level = ItemScaling.getScaleFactor(baseItemStack);
             int newLevel = (int) ((level + upgrade.add_upon_upgrade) * upgrade.multiply_upon_upgrade);
             if (newLevel > 0) {
+                ItemScaling.removeScaling(crafted);
                 ItemScaling.scale(crafted, newLevel);
             }
         }
