@@ -1,11 +1,11 @@
 {
-  "item.power.level": "§f烙§r Nivel de Poder: %s",
+  "item.power.level": "§f\uD833\uDEE0§r Nivel de Poder: %s",
   "difficulty.type.normal": "Normal",
-  "difficulty.type.adventure": "珞 Aventura",
-  "difficulty.type.dungeon": "落 Mazmorra",
-  "difficulty.type.apocalypse": "酪 Apocalipsis",
-  "difficulty.type.boss_dungeon": "酪 Mazmorra de Jefe",
-  "difficulty.type.boss": "酪 Jefe",
-  "difficulty.type.heroic": "酪 Heroico",
-  "difficulty.type.mythic": "酪 Mítico"
+  "difficulty.type.adventure": "\uD833\uDEE1 Aventura",
+  "difficulty.type.dungeon": "\uD833\uDEE2 Mazmorra",
+  "difficulty.type.apocalypse": "\uD833\uDEE3 Apocalipsis",
+  "difficulty.type.boss_dungeon": "\uD833\uDEE3 Mazmorra de Jefe",
+  "difficulty.type.boss": "\uD833\uDEE3 Jefe",
+  "difficulty.type.heroic": "\uD833\uDEE3 Heroico",
+  "difficulty.type.mythic": "\uD833\uDEE3 Mítico"
 }

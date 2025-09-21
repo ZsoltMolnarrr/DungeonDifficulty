@@ -1,3 +1,7 @@
+# 3.6.1
+
+- Use unicode Miscellaneous Symbols Supplement characters for special symbols
+
 # 3.6.0
 
 - Migrate to Architectury

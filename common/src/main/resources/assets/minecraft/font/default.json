@@ -6,7 +6,7 @@
 			"ascent": 8,
 			"height": 9,
 			"chars": [
-				"\uF916"
+				"\uD833\uDEE0"
 			]
 		},
 		{
@@ -15,7 +15,7 @@
 			"ascent": 8,
 			"height": 9,
 			"chars": [
-				"\uF917"
+				"\uD833\uDEE1"
 			]
 		},
 		{
@@ -24,7 +24,7 @@
 			"ascent": 8,
 			"height": 9,
 			"chars": [
-				"\uF918"
+				"\uD833\uDEE2"
 			]
 		},
 		{
@@ -33,7 +33,7 @@
 			"ascent": 8,
 			"height": 9,
 			"chars": [
-				"\uF919"
+				"\uD833\uDEE3"
 			]
 		}
 	]
