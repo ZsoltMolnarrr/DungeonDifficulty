@@ -217,7 +217,9 @@ public class PatternMatching {
         }
     }
 
-    public record EntityScaleResult(List<Config.AttributeModifier> modifiers, int level, float experienceMultiplier) { }
+    public record EntityScaleResult(String name, List<Config.AttributeModifier> modifiers, int level, float experienceMultiplier) {
+        public static final EntityScaleResult EMPTY = new EntityScaleResult("none", List.of(), 0, 0);
+    }
 
     public static EntityScaleResult getAttributeModifiersForEntity(LocationData locationData, EntityData entityData, ServerWorld world) {
         var attributeModifiers = new ArrayList<Config.AttributeModifier>();
@@ -228,6 +230,7 @@ public class PatternMatching {
         var result = getDifficultyResult(locationData, entityData.entityId(), ScalingGoal.ENTITY, world);
         var level = 0;
         float experienceMultiplier = 0;
+        var name = EntityScaleResult.EMPTY.name();
 
         if (result != null && result.difficulty != null) {
             var difficulty = result.difficulty;
@@ -238,9 +241,13 @@ public class PatternMatching {
                     experienceMultiplier += modifier.experience_multiplier;
                 }
             }
+            name = difficulty.type().name;
             // System.out.println("Difficulty for entity: " + entityData.entityId() + " | difficulty: " + difficulty.type().name + " level " + level);
         }
-        return new EntityScaleResult(attributeModifiers, level, experienceMultiplier);
+
+        // Using "location" as name
+        // So we make sure location based scaling only happens once
+        return new EntityScaleResult("location", attributeModifiers, level, experienceMultiplier);
     }
 
     public record SpawnerScaleResult(List<Config.SpawnerModifier> modifiers, int level) { }

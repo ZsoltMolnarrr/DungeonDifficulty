@@ -1,7 +1,8 @@
 # 3.6.2
 
-- Fix entity scaling with attribute patterns
+- Fixed entity scaling with attribute patterns
 - Updated default config now buffs mobs specifically by `generic.attack_damage` attribute
+- Improved entity scaling stacking with other modifiers
 
 # 3.6.1
 

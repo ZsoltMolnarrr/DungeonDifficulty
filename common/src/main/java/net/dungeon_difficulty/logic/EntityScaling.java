@@ -1,10 +1,12 @@
 package net.dungeon_difficulty.logic;
 
+import net.dungeon_difficulty.DungeonDifficulty;
 import net.dungeon_difficulty.mixin.AccessorAttributeContainer;
 import net.dungeon_difficulty.mixin.AccessorDefaultAttributeContainer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttribute;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -71,24 +73,23 @@ public class EntityScaling {
                 if (attribute == null || !entity.getAttributes().hasAttribute(attribute)) {
                     continue;
                 }
+                matchingAttributes.add(attribute);
             }
 
             var modifierValue = modifier.randomizedValue(level);
 
             for (var attribute: matchingAttributes) {
-                switch (modifier.operation) {
-                    case ADDITION -> {
-                        var entityAttribute = entity.getAttributeInstance(attribute);
-                        if (entityAttribute != null) {
-                            entityAttribute.setBaseValue(entityAttribute.getBaseValue() + modifierValue);
-                        }
-                    }
-                    case MULTIPLY_BASE -> {
-                        var defaultValue = entity.getAttributeValue(attribute);
-                        if (defaultValue > 0) {
-                            entity.getAttributeInstance(attribute).setBaseValue(defaultValue * (1F + modifierValue));
-                        }
-                    }
+                var operation = switch (modifier.operation) {
+                    case ADDITION -> EntityAttributeModifier.Operation.ADD_VALUE;
+                    case MULTIPLY_BASE -> EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE;
+                };
+                var entityModifier = new EntityAttributeModifier(
+                        Identifier.of(DungeonDifficulty.MODID, scaling.name()),
+                        modifierValue,
+                        operation);
+                var instance = entity.getAttributeInstance(attribute);
+                if (instance != null) {
+                    instance.addPersistentModifier(entityModifier);
                 }
             }
         }
