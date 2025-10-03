@@ -1,3 +1,6 @@
+
+- Fix entity scaling with attribute patterns
+
 # 3.6.1
 
 - Use unicode Miscellaneous Symbols Supplement characters for special symbols
