@@ -77,6 +77,8 @@ public class EntityScaling {
             }
 
             var modifierValue = modifier.randomizedValue(level);
+            var roundingUnit = modifier.value * 0.25F;
+            modifierValue = (float) MathHelper.round(modifierValue, roundingUnit);
 
             for (var attribute: matchingAttributes) {
                 var operation = switch (modifier.operation) {
