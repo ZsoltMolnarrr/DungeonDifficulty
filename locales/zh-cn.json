@@ -1,0 +1,11 @@
+{
+  "item.power.level": "§f\uD833\uDEE0§r 战力等级：%s",
+  "difficulty.type.normal": "常规",
+  "difficulty.type.adventure": "\uD833\uDEE1 冒险",
+  "difficulty.type.dungeon": "\uD833\uDEE2 地牢",
+  "difficulty.type.apocalypse": "\uD833\uDEE3 天启",
+  "difficulty.type.boss_dungeon": "\uD833\uDEE3 Boss地牢",
+  "difficulty.type.boss": "\uD833\uDEE3 Boss",
+  "difficulty.type.heroic": "\uD833\uDEE3 英雄",
+  "difficulty.type.mythic": "\uD833\uDEE3 神话"
+}
