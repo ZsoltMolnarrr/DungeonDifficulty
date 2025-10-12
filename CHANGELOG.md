@@ -1,3 +1,7 @@
+# 3.6.3
+
+- Fixed smithing upgrades of Power Leveled items 
+
 # 3.6.2
 
 - Fixed entity scaling with attribute patterns

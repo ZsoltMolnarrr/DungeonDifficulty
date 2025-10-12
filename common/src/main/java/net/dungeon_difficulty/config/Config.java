@@ -47,7 +47,7 @@ public class Config {
 
         public static class SmithingUpgrade { public SmithingUpgrade() { }
             public boolean enabled = true;
-            public int add_upon_upgrade = -1;
+            public int add_upon_upgrade = 0;
             public float multiply_upon_upgrade = 1;
         }
         public SmithingUpgrade smithing_upgrade = new SmithingUpgrade();

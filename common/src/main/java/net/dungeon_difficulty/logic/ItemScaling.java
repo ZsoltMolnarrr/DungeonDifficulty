@@ -345,17 +345,7 @@ public class ItemScaling {
         itemStack.apply(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT, comp -> comp.apply(currentNbt -> {
             currentNbt.remove(REWARD_SCALE_FACTOR);
         }));
-        var attributesComponents = itemStack.get(DataComponentTypes.ATTRIBUTE_MODIFIERS);
-        if (attributesComponents != null) {
-            // Filter all attribute modifiers where the modifier ID namespace is `DungeonDifficulty.MODID`
-            var newAttributes = attributesComponents.modifiers().stream()
-                    .filter(entry -> !entry.modifier().id().getNamespace().equals(DungeonDifficulty.MODID))
-                    .toList();
-            var component = AttributeModifiersComponent.builder();
-            for (var entry: newAttributes) {
-                component.add(entry.attribute(), entry.modifier(), entry.slot());
-            }
-            itemStack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, component.build());
-        }
+        // Removing all attribute modifiers, as we made a full copy during scaling
+        itemStack.remove(DataComponentTypes.ATTRIBUTE_MODIFIERS);
     }
 }
