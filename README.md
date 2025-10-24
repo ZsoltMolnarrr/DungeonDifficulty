@@ -26,7 +26,7 @@
 
 The configuration is meant to be used by modpack developers, hence no in-game (client-side) settings are available. It is a server-side only configuration, can be found at `config/dungeon_difficulty_v2.json`.
 
-Config file is parsed into `Config` object. You can find it [here](./src/main/java/net/dungeon_difficulty/config/Config.java). Config file is **sanitized** upon reloading, meaning every non-parsable data is removed.
+Config file is parsed into `Config` object. You can find it [here](./common/src/main/java/net/dungeon_difficulty/config/Config.java). Config file is **sanitized** upon reloading, meaning every non-parsable data is removed.
 
 Editing the config usually involves the steps below:
 1. Open the config file
