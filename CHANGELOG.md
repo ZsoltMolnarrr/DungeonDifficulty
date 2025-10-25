@@ -1,3 +1,7 @@
+# 3.6.5
+
+- Fix spawners getting repeatedly scaled
+
 # 3.6.4
 
 - Fix some rare crashes #44

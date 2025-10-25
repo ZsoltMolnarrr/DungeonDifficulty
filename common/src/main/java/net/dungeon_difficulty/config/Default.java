@@ -35,7 +35,7 @@ public class Default {
         dungeonSpawners.min_spawn_delay_multiplier = -0.1F;
         dungeonSpawners.max_spawn_delay_multiplier = -0.1F;
         dungeonSpawners.spawn_count_multiplier = 0.5F;
-        dungeonSpawners.max_nearby_entities_multiplier = 1F;
+        dungeonSpawners.max_nearby_entities_multiplier = 0.25F;
 
         dungeonDifficulty.entities = List.of(
                 createEntityModifier(null,

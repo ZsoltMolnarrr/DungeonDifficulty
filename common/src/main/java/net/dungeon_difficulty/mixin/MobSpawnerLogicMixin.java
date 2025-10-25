@@ -7,16 +7,19 @@ import net.minecraft.block.spawner.MobSpawnerEntry;
 import net.minecraft.block.spawner.MobSpawnerLogic;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.mob.Monster;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(MobSpawnerLogic.class)
 public class MobSpawnerLogicMixin {
@@ -35,9 +38,7 @@ public class MobSpawnerLogicMixin {
     @Inject(method = "serverTick", at = @At("HEAD"))
     private void pre_serverTick(ServerWorld world, BlockPos pos, CallbackInfo ci) {
         if(!initialized) {
-            if(this.spawnEntry == null
-                    || this.spawnEntry.getNbt() == null
-                    || this.spawnEntry.getNbt().contains(modifiedKey)) {
+            if(this.spawnEntry == null) {
                 return;
             }
 
@@ -101,8 +102,8 @@ public class MobSpawnerLogicMixin {
         this.maxSpawnDelay = MathHelper.clamp(Math.round(this.maxSpawnDelay * (1F + maxSpawnDelay)), 20, 20000);
         this.requiredPlayerRange = MathHelper.clamp(Math.round(this.requiredPlayerRange * (1F + requiredPlayerRange)), 1, 200);
 
-        if (scaling.modifiers().size() > 0) {
-            this.spawnEntry.getNbt().putBoolean(modifiedKey, true);
+//        if (scaling.modifiers().size() > 0) {
+//            this.spawnEntry.getNbt().putBoolean(modifiedKey, true);
 //            System.out.println("Spawner scaled");
 //            System.out.println(" spawnRange:" + this.spawnRange
 //                    + " spawnCount:" + this.spawnCount
@@ -110,6 +111,18 @@ public class MobSpawnerLogicMixin {
 //                    + " minSpawnDelay:" + this.minSpawnDelay
 //                    + " maxSpawnDelay:" + this.maxSpawnDelay
 //                    + " requiredPlayerRange:" + this.requiredPlayerRange);
+//        }
+    }
+
+    @Inject(method = "writeNbt", at = @At("HEAD"))
+    private void pre_writeNbt(NbtCompound nbt, CallbackInfoReturnable<NbtCompound> cir) {
+        nbt.putBoolean(modifiedKey, initialized);
+    }
+
+    @Inject(method = "readNbt", at = @At("HEAD"))
+    private void pre_readNbt(World world, BlockPos pos, NbtCompound nbt, CallbackInfo ci) {
+        if(nbt.contains(modifiedKey)) {
+            initialized = nbt.getBoolean(modifiedKey);
         }
     }
 }
