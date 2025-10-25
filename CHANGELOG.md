@@ -1,3 +1,7 @@
+# 3.6.4
+
+- Fix some rare crashes #44
+
 # 3.6.3
 
 - Fixed smithing upgrades of Power Leveled items 

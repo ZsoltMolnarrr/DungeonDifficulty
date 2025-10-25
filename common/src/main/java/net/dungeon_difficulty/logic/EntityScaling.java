@@ -80,17 +80,16 @@ public class EntityScaling {
             var roundingUnit = modifier.value * 0.25F;
             modifierValue = (float) MathHelper.round(modifierValue, roundingUnit);
 
+            var id = Identifier.of(DungeonDifficulty.MODID, scaling.name());
+
             for (var attribute: matchingAttributes) {
                 var operation = switch (modifier.operation) {
                     case ADDITION -> EntityAttributeModifier.Operation.ADD_VALUE;
                     case MULTIPLY_BASE -> EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE;
                 };
-                var entityModifier = new EntityAttributeModifier(
-                        Identifier.of(DungeonDifficulty.MODID, scaling.name()),
-                        modifierValue,
-                        operation);
+                var entityModifier = new EntityAttributeModifier(id, modifierValue, operation);
                 var instance = entity.getAttributeInstance(attribute);
-                if (instance != null) {
+                if (instance != null && !instance.hasModifier(id)) {
                     instance.addPersistentModifier(entityModifier);
                 }
             }
