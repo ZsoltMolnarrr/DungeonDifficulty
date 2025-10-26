@@ -1,6 +1,7 @@
 # 3.6.6
 
 - Add `/power_level` command
+- Fix weapon rescaling issues
 
 # 3.6.5
 

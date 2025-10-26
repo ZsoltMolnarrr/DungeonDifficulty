@@ -64,6 +64,9 @@ public class DungeonDifficulty {
                             .executes(context -> {
                                 var players = EntityArgumentType.getPlayers(context, "players");
                                 var level = IntegerArgumentType.getInteger(context, "level");
+                                if (level < 0) {
+                                    level = 0;
+                                }
                                 for (var player : players) {
                                     var heldItemStack = player.getMainHandStack();
                                     ItemScaling.rescale(heldItemStack, level);

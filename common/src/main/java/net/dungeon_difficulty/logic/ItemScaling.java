@@ -198,6 +198,9 @@ public class ItemScaling {
         var attributesComponents = itemStack.get(DataComponentTypes.ATTRIBUTE_MODIFIERS);
         if (attributesComponents == null || attributesComponents.modifiers().isEmpty()) {
             attributesComponents = itemStack.getItem().getAttributeModifiers();
+            if (attributesComponents == null || attributesComponents.modifiers().isEmpty()) {
+                attributesComponents = itemStack.getItem().getComponents().get(DataComponentTypes.ATTRIBUTE_MODIFIERS);
+            }
             if (attributesComponents == null) {
                 attributesComponents = itemStack.getOrDefault(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent.DEFAULT);
             }
@@ -347,6 +350,11 @@ public class ItemScaling {
         }));
         // Removing all attribute modifiers, as we made a full copy during scaling
         itemStack.remove(DataComponentTypes.ATTRIBUTE_MODIFIERS);
+
+        var cleared = itemStack.get(DataComponentTypes.ATTRIBUTE_MODIFIERS);
+        if (cleared == null || cleared.modifiers().isEmpty() && itemStack.getItem().getComponents() != null) {
+            itemStack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, itemStack.getItem().getComponents().get(DataComponentTypes.ATTRIBUTE_MODIFIERS));
+        }
     }
 
     public static void rescale(ItemStack itemStack, int newLevel) {
