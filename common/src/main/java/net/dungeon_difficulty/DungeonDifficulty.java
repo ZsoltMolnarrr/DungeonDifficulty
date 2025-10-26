@@ -1,5 +1,6 @@
 package net.dungeon_difficulty;
 
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.dungeon_difficulty.config.ClientConfig;
 import net.dungeon_difficulty.config.Config;
 import net.dungeon_difficulty.config.Default;
@@ -8,6 +9,8 @@ import net.dungeon_difficulty.logic.DifficultyTypes;
 import net.dungeon_difficulty.logic.ItemScaling;
 import net.dungeon_difficulty.logic.LocalScalingLootFunction;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.command.argument.RegistryEntryReferenceArgumentType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.server.command.CommandManager;
@@ -51,6 +54,25 @@ public class DungeonDifficulty {
 //                System.out.println("Full: " + gson.toJson(DungeonDifficulty.config.value));
                 return 1;
             }));
+        });
+
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+            dispatcher.register(CommandManager.literal("power_level")
+                    .requires(source -> source.hasPermissionLevel(2))
+                    .then(CommandManager.argument("players", EntityArgumentType.player())
+                        .then(CommandManager.argument("level", IntegerArgumentType.integer(0))
+                            .executes(context -> {
+                                var players = EntityArgumentType.getPlayers(context, "players");
+                                var level = IntegerArgumentType.getInteger(context, "level");
+                                for (var player : players) {
+                                    var heldItemStack = player.getMainHandStack();
+                                    ItemScaling.rescale(heldItemStack, level);
+                                }
+                                return 1;
+                            })
+                        )
+                    )
+            );
         });
     }
 

@@ -29,13 +29,10 @@ public class SmithingScreenHandlerMixin {
                 && !input.template().isEmpty()
                 && input.template().getRegistryEntry().getKey().get().getValue().toString().contains("upgrade") // Is upgrade?
                 && ItemScaling.isScaled(baseItemStack)) {
-            ItemScaling.removeScaling(crafted);
             var upgrade = lootScaling.smithing_upgrade;
             var level = ItemScaling.getScaleFactor(baseItemStack);
             int newLevel = (int) ((level + upgrade.add_upon_upgrade) * upgrade.multiply_upon_upgrade);
-            if (newLevel > 0) {
-                ItemScaling.scale(crafted, newLevel);
-            }
+            ItemScaling.rescale(crafted, newLevel);
         }
         return crafted;
     }

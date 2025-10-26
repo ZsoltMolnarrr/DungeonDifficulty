@@ -1,3 +1,7 @@
+# 3.6.6
+
+- Add `/power_level` command
+
 # 3.6.5
 
 - Fix spawners getting repeatedly scaled

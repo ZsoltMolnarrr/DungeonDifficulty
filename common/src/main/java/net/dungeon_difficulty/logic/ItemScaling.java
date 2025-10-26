@@ -348,4 +348,13 @@ public class ItemScaling {
         // Removing all attribute modifiers, as we made a full copy during scaling
         itemStack.remove(DataComponentTypes.ATTRIBUTE_MODIFIERS);
     }
+
+    public static void rescale(ItemStack itemStack, int newLevel) {
+        if (isScaled(itemStack)) {
+            ItemScaling.removeScaling(itemStack);
+        }
+        if (newLevel > 0) {
+            ItemScaling.scale(itemStack, newLevel);
+        }
+    }
 }
