@@ -1,3 +1,7 @@
+# 3.6.7
+
+- Update attribute identifiers for scaled items 
+
 # 3.6.6
 
 - Add `/power_level` command
