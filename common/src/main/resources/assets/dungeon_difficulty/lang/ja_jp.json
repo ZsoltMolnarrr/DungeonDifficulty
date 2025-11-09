@@ -1,0 +1,11 @@
+{
+  "item.power.level": "§f\uD833\uDEE0§r パワーレベル: %s",
+  "difficulty.type.normal": "ノーマル",
+  "difficulty.type.adventure": "\uD833\uDEE1 アドベンチャー",
+  "difficulty.type.dungeon": "\uD833\uDEE2 ダンジョン",
+  "difficulty.type.apocalypse": "\uD833\uDEE3 アポカリプス",
+  "difficulty.type.boss_dungeon": "\uD833\uDEE3 ボスダンジョン",
+  "difficulty.type.boss": "\uD833\uDEE3 ボス",
+  "difficulty.type.heroic": "\uD833\uDEE3 ヒロイック",
+  "difficulty.type.mythic": "\uD833\uDEE3 ミシック"
+}
