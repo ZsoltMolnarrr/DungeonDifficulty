@@ -136,6 +136,7 @@ public class Config {
         public Operation operation = Operation.MULTIPLY_BASE;
         public float randomness = 0;
         public float value = 0;
+        public float offset = 0;
 
         public AttributeModifier(String attribute, float value) {
             this.attribute = attribute;
@@ -145,9 +146,10 @@ public class Config {
         private static Random rng = new Random();
         public float randomizedValue(int level) {
             var value = this.value * level;
-            return (randomness > 0)
+            var randomizedValue = (randomness > 0)
                     ?  rng.nextFloat(value - randomness, value + randomness)
                     : value;
+            return this.offset + randomizedValue;
         }
     }
 

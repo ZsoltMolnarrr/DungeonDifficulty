@@ -1,3 +1,7 @@
+# 3.6.8
+
+- Add generic attribute modifier offset for scaling
+
 # 3.6.7
 
 - Update attribute identifiers for scaled items 
