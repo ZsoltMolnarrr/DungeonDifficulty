@@ -1,0 +1,11 @@
+{
+  "item.power.level": "§f\uD833\uDEE0§r Niveau de puissance : %s",
+  "difficulty.type.normal": "Normal",
+  "difficulty.type.adventure": "\uD833\uDEE1 Aventure",
+  "difficulty.type.dungeon": "\uD833\uDEE2 Donjon",
+  "difficulty.type.apocalypse": "\uD833\uDEE3 Apocalypse",
+  "difficulty.type.boss_dungeon": "\uD833\uDEE3 Donjon de Boss",
+  "difficulty.type.boss": "\uD833\uDEE3 Boss",
+  "difficulty.type.heroic": "\uD833\uDEE3 Héroïque",
+  "difficulty.type.mythic": "\uD833\uDEE3 Mythique"
+}
