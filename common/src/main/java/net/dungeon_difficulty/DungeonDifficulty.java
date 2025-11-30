@@ -10,7 +10,6 @@ import net.dungeon_difficulty.logic.ItemScaling;
 import net.dungeon_difficulty.logic.LocalScalingLootFunction;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.command.argument.RegistryEntryReferenceArgumentType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.server.command.CommandManager;

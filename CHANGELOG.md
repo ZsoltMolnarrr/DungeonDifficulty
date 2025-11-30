@@ -1,3 +1,8 @@
+# 3.6.9
+
+- Add cap to per player difficulty (default is 10)
+- Update some translations
+
 # 3.6.8
 
 - Add generic attribute modifier offset for scaling

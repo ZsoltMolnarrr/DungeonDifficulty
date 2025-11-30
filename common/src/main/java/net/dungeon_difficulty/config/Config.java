@@ -25,6 +25,7 @@ public class Config {
         public boolean enabled = true;
         public enum Counting { EVERYWHERE, DIMENSION }
         public Counting counting = Counting.EVERYWHERE;
+        public int cap = 10;
         public List<EntityModifier> entities = List.of();
     }
 

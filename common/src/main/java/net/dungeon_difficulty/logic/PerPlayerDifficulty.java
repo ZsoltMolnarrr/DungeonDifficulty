@@ -28,7 +28,7 @@ public class PerPlayerDifficulty {
             return empty;
         }
 
-        int applyCount = playerCount - 1;
+        int applyCount = Math.min(playerCount, perPlayer.cap) - 1;
         var attributeModifiers = new ArrayList<Config.AttributeModifier>();
         for(var entityBaseModifier: perPlayer.entities) {
             if (entityData.matches(entityBaseModifier.entity_matches)) {
