@@ -28,11 +28,11 @@ public class LivingEntityMixin implements EntityDifficultyScalable {
     @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
     private void readCustomDataFromNbt_DungeonDifficulty(NbtCompound nbt, CallbackInfo ci) {
         // Migration: Check NBT type
-        if (nbt.getBoolean(modifiedKey)) {
-            scalingLevel_DungeonDifficulty = 1;
-        } else if (nbt.getInt(modifiedKey) > 0) {  // 3 = INT
+        if (nbt.getInt(modifiedKey) > 0) {  // 3 = INT
             // New format: read directly
             scalingLevel_DungeonDifficulty = nbt.getInt(modifiedKey);
+        } else if (nbt.getBoolean(modifiedKey)) {
+            scalingLevel_DungeonDifficulty = 1;
         } else {
             // Missing key: not scaled
             scalingLevel_DungeonDifficulty = NOT_SCALED;
