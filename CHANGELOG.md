@@ -1,3 +1,7 @@
+# 3.6.10
+
+- Entity scaling now saves applied scale factor to NBT
+
 # 3.6.9
 
 - Add cap to per player difficulty (default is 10)

@@ -32,7 +32,8 @@ public class EntityScaling {
             var relativeHealth = livingEntity.getHealth() / livingEntity.getMaxHealth();
 
             EntityScaling.apply(PerPlayerDifficulty.getAttributeModifiers(entityData, world), livingEntity);
-            EntityScaling.apply(PatternMatching.getAttributeModifiersForEntity(locationData, entityData, world), livingEntity);
+            var locationScaling = PatternMatching.getAttributeModifiersForEntity(locationData, entityData, world);
+            EntityScaling.apply(locationScaling, livingEntity);
 
 //            if (DungeonDifficulty.config.value.meta.entity_equipment_scaling) {
 //                for (var itemStack : livingEntity.getItemsEquipped()) {
@@ -40,7 +41,8 @@ public class EntityScaling {
 //                }
 //            }
 
-            scalableEntity.markAlreadyScaled();
+            // Store location-based level (ignore per-player scaling)
+            scalableEntity.markAlreadyScaled(locationScaling.level());
             livingEntity.setHealth(relativeHealth * livingEntity.getMaxHealth());
         }
     }

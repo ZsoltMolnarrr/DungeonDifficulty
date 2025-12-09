@@ -18,15 +18,25 @@ public class LivingEntityMixin implements EntityDifficultyScalable {
     // MARK: Rescaling safeguard
 
     private static final String modifiedKey = "dd_scaled";
+    private static final int NOT_SCALED = 0;
 
     @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
     private void writeCustomDataToNbt_DungeonDifficulty(NbtCompound nbt, CallbackInfo ci) {
-        nbt.putBoolean(modifiedKey, isAlreadyScaled_DungeonDifficulty);
+        nbt.putInt(modifiedKey, scalingLevel_DungeonDifficulty);
     }
 
     @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
     private void readCustomDataFromNbt_DungeonDifficulty(NbtCompound nbt, CallbackInfo ci) {
-        isAlreadyScaled_DungeonDifficulty = nbt.getBoolean(modifiedKey);
+        // Migration: Check NBT type
+        if (nbt.getBoolean(modifiedKey)) {
+            scalingLevel_DungeonDifficulty = 1;
+        } else if (nbt.getInt(modifiedKey) > 0) {  // 3 = INT
+            // New format: read directly
+            scalingLevel_DungeonDifficulty = nbt.getInt(modifiedKey);
+        } else {
+            // Missing key: not scaled
+            scalingLevel_DungeonDifficulty = NOT_SCALED;
+        }
     }
 
     // MARK: Experience scaling
@@ -39,15 +49,16 @@ public class LivingEntityMixin implements EntityDifficultyScalable {
 
     // MARK: EntityScalable
 
-    private boolean isAlreadyScaled_DungeonDifficulty = false;
+    private int scalingLevel_DungeonDifficulty = NOT_SCALED;
+
     @Override
-    public void markAlreadyScaled() {
-        isAlreadyScaled_DungeonDifficulty = true;
+    public int getScalingLevel() {
+        return scalingLevel_DungeonDifficulty;
     }
 
     @Override
-    public boolean isAlreadyScaled() {
-        return isAlreadyScaled_DungeonDifficulty;
+    public void markAlreadyScaled(int level) {
+        scalingLevel_DungeonDifficulty = level;  // Backward compatibility
     }
 
     private PatternMatching.LocationData locationData_DungeonDifficulty;
