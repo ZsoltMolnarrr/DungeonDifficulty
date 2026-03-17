@@ -29,7 +29,7 @@ side = "BOTH"
 
 # Forgified Fabric API
 [[dependencies.dungeon_difficulty]]
-modId = "fabric_api_base"
+modId = "forgified_fabric_api"
 type = "required"
 versionRange = "*"
 ordering = "NONE"
