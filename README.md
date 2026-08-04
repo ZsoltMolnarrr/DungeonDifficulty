@@ -22,6 +22,25 @@
 - Looted item attributes can be adjusted (for example: more damage on weapons)
 - Fully data-driven (using the configuration file)
 
+# ❓ How it works
+
+This mod assigns difficulty to a locations, in order to apply attribute modifiers to entities spawned there, and items looted there.
+
+Difficulty consists of:
+- type: which attributes get scaled (and by what ratio)
+    - for example: `Dungeon`
+- level: is the general multiplier used when applying attribute modifiers
+    - for example: `2`
+
+Difficulty can be assigned to various zone types, (resolved in the following priority):
+- structures - for example: `minecraft:fortress`
+- biomes - for example: `minecraft:desert`
+- dimensions - for example: `minecraft:the_nether`
+
+When an entity spawns difficulty is resolved based on its location (checking structures first, than biomes, than dimensions), if difficulty is resolved successfully, a certain set of attribute modifiers (with level multiplied value) get applied onto it, making it stronger. Same logic applies to loot spawned (chest/drop location is checked to apply multipliers). 
+
+All of this location-difficulty assignment is specified by one gigantic config file.
+
 # 🔧 Configuration
 
 The configuration is meant to be used by modpack developers, hence no in-game (client-side) settings are available. It is a server-side only configuration, can be found at `config/dungeon_difficulty_v2.json`.
