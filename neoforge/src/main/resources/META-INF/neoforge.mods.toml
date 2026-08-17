@@ -37,3 +37,6 @@ side = "BOTH"
 
 [[mixins]]
 config = "dungeon_difficulty.mixins.json"
+
+[[mixins]]
+config = "dungeon_difficulty.neoforge.mixins.json"

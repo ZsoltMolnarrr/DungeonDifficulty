@@ -9,6 +9,7 @@
     "ItemStackMixin",
     "LivingEntityMixin",
     "MobSpawnerLogicMixin",
+    "RarityMixin",
     "ServerEntityManagerMixin",
     "ServerPlayerMixin",
     "ServerWorldMixin",

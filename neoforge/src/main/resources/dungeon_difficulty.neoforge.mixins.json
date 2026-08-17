@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.dungeon_difficulty.neoforge.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "RarityMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

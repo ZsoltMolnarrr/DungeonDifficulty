@@ -8,6 +8,7 @@ import net.dungeon_difficulty.logic.DifficultyHandler;
 import net.dungeon_difficulty.logic.DifficultyTypes;
 import net.dungeon_difficulty.logic.ItemScaling;
 import net.dungeon_difficulty.logic.LocalScalingLootFunction;
+import net.dungeon_difficulty.logic.RarityColors;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.registry.Registries;
@@ -33,13 +34,14 @@ public class DungeonDifficulty {
             .build();
 
     public static void init() {
-        clientConfig.refresh();
+        reloadClientConfig();
         reloadConfig();
         ItemScaling.initialize();
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(CommandManager.literal(MODID + "_config_reload").executes(context -> {
                 System.out.println("Reloading Dungeon Difficulty config");
+                DungeonDifficulty.reloadClientConfig();
                 DungeonDifficulty.reloadConfig();
                 try {
                     for (var player: context.getSource().getServer().getPlayerManager().getPlayerList()) {
@@ -76,6 +78,11 @@ public class DungeonDifficulty {
                     )
             );
         });
+    }
+
+    public static void reloadClientConfig() {
+        clientConfig.refresh();
+        RarityColors.initialize();
     }
 
     public static void reloadConfig() {

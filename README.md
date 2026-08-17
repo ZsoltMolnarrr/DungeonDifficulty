@@ -43,7 +43,7 @@ All of this location-difficulty assignment is specified by one gigantic config f
 
 # 🔧 Configuration
 
-The configuration is meant to be used by modpack developers, hence no in-game (client-side) settings are available. It is a server-side only configuration, can be found at `config/dungeon_difficulty_v2.json`.
+The configuration is meant to be used by modpack developers, hence no in-game settings screen is available. Gameplay is configured server-side only, at `config/dungeon_difficulty_v2.json`. A separate, purely visual [client settings](#-client-settings) file exists as well.
 
 Config file is parsed into `Config` object. You can find it [here](./common/src/main/java/net/dungeon_difficulty/config/Config.java). Config file is **sanitized** upon reloading, meaning every non-parsable data is removed.
 
@@ -66,5 +66,33 @@ Fields that reference some kind of in-game ID (like `entity_type`, `biome`, `dim
 - Check out the default configuration to see specific examples.
 - Regex fields in the configuration are interpreted as fully featured regex. If you are unfamiliar with regex, first make sure to learn about it (start for example [here](https://www.youtube.com/watch?v=sXQxhojSdZM)). It is recommended to test out your regex patterns using tool: [regex101.com](https://regex101.com)
 - Prefer tag matching instead of regex matching, whenever possible. Regex matching in general hurts server performance.
+
+# 🖥️ Client settings
+
+A few purely visual features can be adjusted per installation, at `config/dungeon_difficulty/client_settings.json`. These are cosmetic only, they never change gameplay.
+
+| Setting | Default | Effect |
+| --- | --- | --- |
+| `enable_overriding_enchantment_rarity` | `true` | Enchanted items are displayed one rarity step higher |
+| `enable_scaled_items_rarity` | `true` | Items scaled by this mod are displayed one rarity step higher |
+| `enable_rarity_color_override` | `false` | Turns on the rarity recoloring described below |
+| `rarity_color_overrides` | `{"4": "GOLD"}` | Color to use per rarity |
+
+Additionally, scaled items always show their power level in the tooltip.
+
+### Rarity colors
+
+Other mods often introduce new `Rarity` cases, whose colors are not always to everyone's taste. `rarity_color_overrides` maps a rarity **ordinal** to a Minecraft formatting name (such as `GOLD`, `RED` or `DARK_AQUA`), so any rarity can be recolored, vanilla or modded:
+
+```json
+{
+  "enable_rarity_color_override": true,
+  "rarity_color_overrides": {
+    "3": "GOLD"
+  }
+}
+```
+
+Ordinals that are not listed keep their original color, and `enable_rarity_color_override` has to be `true` for any of them to take effect. Note that ordinals shift as rarity adding mods are installed or removed, so these entries may need revisiting after changing the mod list. Unknown color names and out of range ordinals are ignored, with a warning in the log.
 
 

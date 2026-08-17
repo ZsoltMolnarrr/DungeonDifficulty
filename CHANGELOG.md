@@ -1,3 +1,7 @@
+# 3.7.0
+
+- Added ability to assign override colors to any Rarity case. Use `config/dungeon_difficulty/client_settings.json` to enable and customize.
+
 # 3.6.10
 
 - Entity scaling now saves applied scale factor to NBT
