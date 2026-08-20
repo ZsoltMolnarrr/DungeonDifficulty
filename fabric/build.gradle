@@ -72,8 +72,7 @@ remapJar {
 // `build` — with none of the tokens present — is completely unaffected.
 def releaseTypeName = (project.findProperty('release_type') ?: 'beta').toString()
 
-// Keep the old task name so the existing workflow (`:fabric:publishMod`) keeps working.
-// The plugin's own aggregate task is `publishMods` (plural).
+// Local convenience alias -- CI invokes the per-destination publish tasks directly.
 tasks.register("publishMod") {
     dependsOn(build)
     finalizedBy(tasks.named("publishMods"))
@@ -101,6 +100,7 @@ publishMods {
     }
 
     modrinth {
+        environment = me.modmuss50.mpp.platforms.modrinth.ModrinthEnvironment.CLIENT_AND_SERVER
         projectId = providers.environmentVariable("MODRINTH_PROJECT_RAW_ID")
         accessToken = providers.environmentVariable("MODRINTH_API_KEY")
         minecraftVersions.add(project.minecraft_version)
@@ -119,4 +119,10 @@ publishMods {
         // Actions to the triggering commit — valid even in a detached-HEAD checkout.
         commitish = providers.environmentVariable("GITHUB_SHA")
     }
+}
+
+// GitHub release last: a failed mod upload aborts the build before the release exists.
+// Ordering only -- unselected tasks are ignored. Must sit after the publishMods block.
+tasks.named("publishGithub") {
+    mustRunAfter(tasks.named("publishCurseforge"), tasks.named("publishModrinth"))
 }
