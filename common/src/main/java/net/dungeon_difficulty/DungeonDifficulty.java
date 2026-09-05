@@ -1,5 +1,6 @@
 package net.dungeon_difficulty;
 
+import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.dungeon_difficulty.config.ClientConfig;
 import net.dungeon_difficulty.config.Config;
@@ -9,11 +10,11 @@ import net.dungeon_difficulty.logic.DifficultyTypes;
 import net.dungeon_difficulty.logic.ItemScaling;
 import net.dungeon_difficulty.logic.LocalScalingLootFunction;
 import net.dungeon_difficulty.logic.RarityColors;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
 import net.tiny_config.ConfigManager;
 
 public class DungeonDifficulty {
@@ -36,10 +37,11 @@ public class DungeonDifficulty {
     public static void init() {
         reloadClientConfig();
         reloadConfig();
-        ItemScaling.initialize();
+    }
 
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            dispatcher.register(CommandManager.literal(MODID + "_config_reload").executes(context -> {
+    /// Registers the mod's commands. Called by each loader from its own command registration event.
+    public static void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher) {
+        dispatcher.register(CommandManager.literal(MODID + "_config_reload").executes(context -> {
                 System.out.println("Reloading Dungeon Difficulty config");
                 DungeonDifficulty.reloadClientConfig();
                 DungeonDifficulty.reloadConfig();
@@ -55,10 +57,8 @@ public class DungeonDifficulty {
 //                System.out.println("Full: " + gson.toJson(DungeonDifficulty.config.value));
                 return 1;
             }));
-        });
 
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            dispatcher.register(CommandManager.literal("power_level")
+        dispatcher.register(CommandManager.literal("power_level")
                     .requires(source -> source.hasPermissionLevel(2))
                     .then(CommandManager.argument("players", EntityArgumentType.player())
                         .then(CommandManager.argument("level", IntegerArgumentType.integer(0))
@@ -77,7 +77,6 @@ public class DungeonDifficulty {
                         )
                     )
             );
-        });
     }
 
     public static void reloadClientConfig() {

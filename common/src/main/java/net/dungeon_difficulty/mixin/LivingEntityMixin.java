@@ -5,6 +5,7 @@ import net.dungeon_difficulty.logic.ExperienceScaling;
 import net.dungeon_difficulty.logic.PatternMatching;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.server.world.ServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,11 +19,15 @@ public class LivingEntityMixin implements EntityDifficultyScalable {
     // MARK: Rescaling safeguard
 
     private static final String modifiedKey = "dd_scaled";
+    private static final String evaluatedKey = "dd_evaluated_in";
     private static final int NOT_SCALED = 0;
 
     @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
     private void writeCustomDataToNbt_DungeonDifficulty(NbtCompound nbt, CallbackInfo ci) {
         nbt.putInt(modifiedKey, scalingLevel_DungeonDifficulty);
+        if (evaluatedDimension_DungeonDifficulty != null) {
+            nbt.putString(evaluatedKey, evaluatedDimension_DungeonDifficulty);
+        }
     }
 
     @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
@@ -36,6 +41,11 @@ public class LivingEntityMixin implements EntityDifficultyScalable {
         } else {
             // Missing key: not scaled
             scalingLevel_DungeonDifficulty = NOT_SCALED;
+        }
+        if (nbt.contains(evaluatedKey, NbtElement.STRING_TYPE)) {
+            evaluatedDimension_DungeonDifficulty = nbt.getString(evaluatedKey);
+        } else {
+            evaluatedDimension_DungeonDifficulty = null;
         }
     }
 
@@ -59,6 +69,18 @@ public class LivingEntityMixin implements EntityDifficultyScalable {
     @Override
     public void markAlreadyScaled(int level) {
         scalingLevel_DungeonDifficulty = level;  // Backward compatibility
+    }
+
+    private String evaluatedDimension_DungeonDifficulty = null;
+
+    @Override
+    public String getEvaluatedDimension() {
+        return evaluatedDimension_DungeonDifficulty;
+    }
+
+    @Override
+    public void markEvaluated(String dimensionId) {
+        evaluatedDimension_DungeonDifficulty = dimensionId;
     }
 
     private PatternMatching.LocationData locationData_DungeonDifficulty;

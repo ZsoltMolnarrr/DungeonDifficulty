@@ -3,7 +3,7 @@ package net.dungeon_difficulty.neoforge;
 import net.dungeon_difficulty.Platform;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.neoforged.fml.ModList;
+import net.neoforged.fml.loading.LoadingModList;
 
 public class PlatformImpl {
     public static Platform.Type getPlatformType() {
@@ -13,7 +13,9 @@ public class PlatformImpl {
     public static class NeoForgeUtil implements Platform.Util {
         @Override
         public boolean isModLoaded(String modid) {
-            return ModList.get().isLoaded(modid);
+            // LoadingModList (not ModList) is populated during discovery, before any mod constructor runs,
+            // so the check is safe from static initializers such as the default config.
+            return LoadingModList.get().getModFileById(modid) != null;
         }
 
         @Override

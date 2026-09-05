@@ -27,14 +27,6 @@ versionRange = "[1.21.1,)"
 ordering = "NONE"
 side = "BOTH"
 
-# Forgified Fabric API
-[[dependencies.dungeon_difficulty]]
-modId = "forgified_fabric_api"
-type = "required"
-versionRange = "*"
-ordering = "NONE"
-side = "BOTH"
-
 [[mixins]]
 config = "dungeon_difficulty.mixins.json"
 

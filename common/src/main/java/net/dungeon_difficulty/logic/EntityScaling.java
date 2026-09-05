@@ -22,7 +22,7 @@ public class EntityScaling {
         }
         if (entity instanceof LivingEntity livingEntity) {
             var scalableEntity = ((EntityDifficultyScalable)livingEntity);
-            if (scalableEntity.isAlreadyScaled()) {
+            if (scalableEntity.isAlreadyEvaluated(world.getRegistryKey().getValue())) {
                 return;
             }
             var locationData = PatternMatching.LocationData.create(world, livingEntity.getBlockPos());
@@ -43,6 +43,7 @@ public class EntityScaling {
 
             // Store location-based level (ignore per-player scaling)
             scalableEntity.markAlreadyScaled(locationScaling.level());
+            scalableEntity.markEvaluated(locationData.dimensionId().toString());
             livingEntity.setHealth(relativeHealth * livingEntity.getMaxHealth());
         }
     }

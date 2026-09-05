@@ -1,3 +1,11 @@
+# 3.8.0
+
+- NeoForge: Forgified Fabric API is no longer required. Loot scaling is applied by a global loot modifier (`dungeon_difficulty:local_scaling`)
+- Improved server performance
+  - Entities that resolve to no difficulty are no longer re-evaluated on every chunk load
+  - Loot that can never be scaled (block drops, materials) skips location resolution
+  - Regex patterns are compiled once, structure lookups happen once per location instead of once per zone
+
 # 3.7.0
 
 - Added ability to assign override colors to any Rarity case. Use `config/dungeon_difficulty/client_settings.json` to enable and customize.

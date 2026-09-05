@@ -39,9 +39,6 @@ repositories {
             includeGroup 'maven.modrinth'
         }
     }
-    maven {
-        url "https://maven.su5ed.dev/releases"
-    }
     mavenLocal()
 }
 
@@ -50,8 +47,6 @@ dependencies {
 
     common(project(path: ':common', configuration: 'namedElements')) { transitive = false }
     shadowBundle project(path: ':common', configuration: 'transformProductionNeoForge')
-
-    modImplementation "org.sinytra.forgified-fabric-api:forgified-fabric-api:${project.forgified_fabric_api_version}"
 
     include(modImplementation("maven.modrinth:tiny-config:${project.tiny_config_version}-${platform}"))
 }
@@ -102,7 +97,6 @@ publishMods {
         client = true                    // >=1 of client/server REQUIRED by CurseForge (Error 1021)
         server = true
         changelogType = "markdown"
-        requires("forgified-fabric-api")
     }
 
     modrinth {
@@ -111,7 +105,6 @@ publishMods {
         accessToken = providers.environmentVariable("MODRINTH_API_KEY")
         minecraftVersions.add(project.minecraft_version)
         minecraftVersions.add(project.minecraft_compat_version)
-        requires { slug = "forgified-fabric-api" }
     }
 
     // Each platform publishes its own GitHub release under a distinct, platform-suffixed

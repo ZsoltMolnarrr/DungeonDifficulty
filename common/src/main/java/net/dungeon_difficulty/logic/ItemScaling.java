@@ -3,7 +3,6 @@ package net.dungeon_difficulty.logic;
 import com.mojang.logging.LogUtils;
 import net.dungeon_difficulty.DungeonDifficulty;
 import net.dungeon_difficulty.config.Config;
-import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.component.type.AttributeModifiersComponent;
@@ -11,11 +10,6 @@ import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.item.*;
-import net.minecraft.loot.context.LootContext;
-import net.minecraft.loot.context.LootContextParameters;
-import net.minecraft.loot.function.LootFunction;
-import net.minecraft.loot.function.LootFunctionType;
-import net.minecraft.loot.function.LootFunctionTypes;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
@@ -37,38 +31,14 @@ public class ItemScaling {
         }
     }
 
-    public static void initialize() {
-        // Some other mods (MineColonies) attempt to reserialize the loot table
-        // this crashes anonym LootFunction implementations
-
-//        LootTableEvents.MODIFY.register((key, tableBuilder, source, registries) -> {
-//            LootFunction function = new LootFunction() {
-//                @Override
-//                public LootFunctionType getType() {
-//                    return LootFunctionTypes.SET_ATTRIBUTES;
-//                }
-//
-//                @Override
-//                public ItemStack apply(ItemStack itemStack, LootContext lootContext) {
-//                    var lootTableId = key;
-//                    var position = lootContext.get(LootContextParameters.ORIGIN);
-//                    BlockPos blockPosition = null;
-//                    if (position != null) {
-//                        blockPosition = BlockPos.ofFloored(position);
-//                    }
-//                    scale(itemStack, lootContext.getWorld(), blockPosition, lootTableId.getValue());
-//                    return itemStack;
-//                }
-//            };
-//            tableBuilder.apply(function);
-//        });
-        LootTableEvents.MODIFY.register((key, tableBuilder, source, registries) -> {
-            var function = new LocalScalingLootFunction(List.of(), key.getValue());
-            tableBuilder.apply(function);
-        });
-    }
-
+    /// Entry point for loot scaling. Each loader hooks this into its own loot pipeline:
+    /// Fabric appends {@link LocalScalingLootFunction} to every loot table (the function must be a
+    /// codec-backed type, as some mods such as MineColonies re-serialize loot tables);
+    /// NeoForge applies a global loot modifier.
     public static void scale(ItemStack itemStack, ServerWorld world, BlockPos position, Identifier lootTableId) {
+        if (!isScalableItem(itemStack)) {
+            return; // Most loot (block drops, materials) is never scaled, skip location resolution for it
+        }
         if (isScaled(itemStack)) {
             return; // Avoid scaling items multiple times
         }
@@ -117,6 +87,14 @@ public class ItemScaling {
             debug("Pattern matching found " + result.modifiers().size() + " attribute modifiers");
             applyModifiersForItemStack(List.of(AttributeModifierSlot.HAND), itemId, itemStack, result.modifiers(), result.level());
         }
+    }
+
+    private static boolean isScalableItem(ItemStack itemStack) {
+        var item = itemStack.getItem();
+        return item instanceof ToolItem
+                || item instanceof RangedWeaponItem
+                || item instanceof ArmorItem
+                || item instanceof ShieldItem;
     }
 
     public static void scale(ItemStack itemStack, int level) {

@@ -23,6 +23,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,14 +32,49 @@ public class PatternMatching {
 
     public record BiomeData(RegistryEntry<Biome> biomeEntry) { }
 
-    public record LocationData(Identifier dimensionId, BlockPos position, BiomeData biome) {
+    /**
+     * Lazily resolved list of structures containing a position.
+     * Structure starts are immutable once generated, so resolving them once per location is safe.
+     * Only registry entries are retained (not the starts themselves), so keeping this on an entity is cheap.
+     */
+    public static final class StructureCache {
+        @Nullable private List<RegistryEntry<Structure>> containing = null;
+    }
+
+    public record LocationData(Identifier dimensionId, BlockPos position, BiomeData biome, StructureCache structures) {
         public static LocationData create(ServerWorld world, BlockPos position) {
             var dimensionId = world.getRegistryKey().getValue();
             BiomeData biome = null;
             if (position != null) {
                 biome = new BiomeData(world.getBiome(position));
             }
-            return new LocationData(dimensionId, position, biome);
+            return new LocationData(dimensionId, position, biome, new StructureCache());
+        }
+
+        /**
+         * Structures whose bounding box contains {@code position}, in structure accessor order.
+         * Resolved once per location, instead of once per zone filter.
+         */
+        private List<RegistryEntry<Structure>> containingStructures(ServerWorld world) {
+            var cached = structures.containing;
+            if (cached != null) {
+                return cached;
+            }
+            var registry = world.getServer().getRegistryManager().get(RegistryKeys.STRUCTURE);
+            var list = new ArrayList<RegistryEntry<Structure>>();
+            var structureStarts = world.getStructureAccessor().getStructureStarts(new ChunkPos(position), s -> true);
+            for (var structureStart : structureStarts) {
+                if (!isInsideStructure(world, position, structureStart)) {
+                    continue;
+                }
+                var entry = registry.getEntry(registry.getRawId(structureStart.getStructure())).orElse(null);
+                if (entry != null) {
+                    list.add(entry);
+                }
+            }
+            cached = List.copyOf(list);
+            structures.containing = cached;
+            return cached;
         }
 
         public boolean matches(Config.Dimension.Filters filters) {
@@ -78,7 +115,6 @@ public class PatternMatching {
             if (world == null) {
                 return Match.falseMatch();
             }
-            var registries = world.getServer().getRegistryManager();
 
             // Biome pattern matching
 
@@ -100,13 +136,8 @@ public class PatternMatching {
 
             if (result && filters.structure != null && !filters.structure.isEmpty()) {
                 result = false;
-                var registry = registries.get(RegistryKeys.STRUCTURE);
-                var structureStartsUnfiltered = world.getStructureAccessor().getStructureStarts(new ChunkPos(position), s -> true);
-                for (var structureStart : structureStartsUnfiltered) {
-                    var entry = registry.getEntry(registry.getRawId(structureStart.getStructure())).orElse(null);
-                    if (entry != null
-                            && PatternMatching.universalMatch(entry, RegistryKeys.STRUCTURE, filters.structure)
-                            && isInsideStructure(world, position, structureStart)) {
+                for (var entry : containingStructures(world)) {
+                    if (PatternMatching.universalMatch(entry, RegistryKeys.STRUCTURE, filters.structure)) {
                         matchingStructure = entry;
                         matchScope = Scope.STRUCTURE;
                         result = true;
@@ -460,6 +491,9 @@ public class PatternMatching {
         }
     }
 
+    // Patterns only ever come from the config, so the set of distinct regexes is small and bounded
+    private static final Map<String, Pattern> compiledRegexes = new ConcurrentHashMap<>();
+
     public static boolean regexMatches(String subject, String regex) {
         if (subject == null) {
             return false;
@@ -467,7 +501,7 @@ public class PatternMatching {
         if (regex == null || regex.isEmpty()) {
             return true;
         }
-        Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+        Pattern pattern = compiledRegexes.computeIfAbsent(regex, r -> Pattern.compile(r, Pattern.CASE_INSENSITIVE));
         Matcher matcher = pattern.matcher(subject);
         return matcher.find();
     }

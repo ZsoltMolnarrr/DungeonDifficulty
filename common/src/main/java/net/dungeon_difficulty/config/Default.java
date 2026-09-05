@@ -1,8 +1,8 @@
 package net.dungeon_difficulty.config;
 
 import net.dungeon_difficulty.DungeonDifficulty;
+import net.dungeon_difficulty.Platform;
 import net.dungeon_difficulty.logic.PatternMatching;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.util.Identifier;
 
@@ -62,7 +62,7 @@ public class Default {
         // Per Player Difficulty
         var perPlayerDifficulty = new Config.PerPlayerDifficulty();
         var perPlayerEntityModifier = new Config.EntityModifier();
-        if (FabricLoader.getInstance().isModLoaded("the_bumblezone")) {
+        if (Platform.util().isModLoaded("the_bumblezone")) {
             perPlayerEntityModifier.entity_matches = new Config.EntityModifier.Filters();
             perPlayerEntityModifier.entity_matches.type = PatternMatching.REGEX_PREFIX + "^(?!the_bumblezone:cosmic_crystal_entity).*$";
         }
