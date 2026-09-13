@@ -2,6 +2,7 @@ package net.dungeon_difficulty.logic;
 
 import com.mojang.logging.LogUtils;
 import net.dungeon_difficulty.DungeonDifficulty;
+import net.dungeon_difficulty.mixin.RarityAccessor;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Rarity;
 import org.jetbrains.annotations.Nullable;
@@ -15,11 +16,14 @@ public class RarityColors {
 
     // Override color per `Rarity.ordinal()`, empty while the feature is disabled.
     private static volatile Map<Integer, Formatting> overrides = Map.of();
+    // The colors the rarities were loaded with, so a config reload can restore them.
+    private static final Map<Integer, Formatting> originals = new HashMap<>();
 
     /**
-     * Resolves the configured overrides against the `Rarity` constants present at runtime.
-     * Rarities added by other mods are extended into the enum when `Rarity` is class loaded,
-     * so this has to run after mod loading.
+     * Resolves the configured overrides against the `Rarity` constants present at runtime, and writes them
+     * into the constants' `formatting` field (1.20.1 has no getter to hook). Rarities added by other mods
+     * (Forge's extensible enum) are only known once those mods created them, so this has to run after mod
+     * loading; a config reload re-applies it.
      */
     public static void initialize() {
         var config = DungeonDifficulty.clientConfig.value;
@@ -41,6 +45,15 @@ public class RarityColors {
             }
         }
         overrides = Map.copyOf(resolved);
+
+        for (var rarity : rarities) {
+            var original = originals.computeIfAbsent(rarity.ordinal(), ordinal -> rarity.formatting);
+            var override = resolved.get(rarity.ordinal());
+            var target = override != null ? override : original;
+            if (rarity.formatting != target) {
+                ((RarityAccessor) (Object) rarity).dungeon_difficulty$setFormatting(target);
+            }
+        }
     }
 
     @Nullable

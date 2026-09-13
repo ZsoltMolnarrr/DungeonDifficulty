@@ -219,7 +219,7 @@ public class PatternMatching {
             var isHostile = entity instanceof Monster;
             return new EntityData(type, isHostile);
         }
-        private static final Identifier UNKNOWN = Identifier.of("unknown");
+        private static final Identifier UNKNOWN = new Identifier("unknown");
         public Identifier entityId() {
             return type != null ? type.getKey().get().getValue() : UNKNOWN;
         }
@@ -401,7 +401,7 @@ public class PatternMatching {
                 switch (scalingGoal) {
                     case ENTITY -> {
                         if (entityMatcher.entity_type != null) {
-                            var entityTypeEntry = Registries.ENTITY_TYPE.getEntry(sourceId);
+                            var entityTypeEntry = Registries.ENTITY_TYPE.getEntry(RegistryKey.of(RegistryKeys.ENTITY_TYPE, sourceId));
                             if (entityTypeEntry.isEmpty()) {
                                 continue;
                             }
@@ -476,7 +476,7 @@ public class PatternMatching {
 
     public static <T> boolean entryMatches(RegistryEntry<T> entry, RegistryKey<Registry<T>> registryKey, String pattern) {
         if (pattern.startsWith(TAG_PREFIX)) {
-            var tag = TagKey.of(registryKey, Identifier.of(pattern.substring(1)));
+            var tag = TagKey.of(registryKey, new Identifier(pattern.substring(1)));
             return entry.isIn(tag);
         }
         return idMatches(entry.getKey().get().getValue(), pattern);

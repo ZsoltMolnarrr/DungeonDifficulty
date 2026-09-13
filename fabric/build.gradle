@@ -54,7 +54,7 @@ processResources {
     inputs.property 'version', project.version
 
     filesMatching("fabric.mod.json") {
-        expand(project.properties)
+        expand version: inputs.properties.version
     }
 }
 
@@ -92,7 +92,6 @@ publishMods {
         projectId = providers.environmentVariable("CURSEFORGE_PROJECT_ID")   // numeric id
         accessToken = providers.environmentVariable("CURSEFORGE_API_KEY")
         minecraftVersions.add(project.minecraft_version)
-        minecraftVersions.add(project.minecraft_compat_version)
         client = true                    // >=1 of client/server REQUIRED by CurseForge (Error 1021)
         server = true
         changelogType = "markdown"
@@ -104,12 +103,11 @@ publishMods {
         projectId = providers.environmentVariable("MODRINTH_PROJECT_RAW_ID")
         accessToken = providers.environmentVariable("MODRINTH_API_KEY")
         minecraftVersions.add(project.minecraft_version)
-        minecraftVersions.add(project.minecraft_compat_version)
         requires { slug = "fabric-api" }
     }
 
     // Each platform publishes its own GitHub release under a distinct, platform-suffixed
-    // tag (e.g. `3.7.0+1.21.1-fabric`), so the two publish jobs don't collide.
+    // tag (e.g. `3.8.0+1.20.1-fabric`), so the two publish jobs don't collide.
     github {
         repository = providers.environmentVariable("GH_OWNER")
                 .zip(providers.environmentVariable("GH_REPO")) { owner, repo -> "$owner/$repo" }

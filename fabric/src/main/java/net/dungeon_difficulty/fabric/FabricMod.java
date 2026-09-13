@@ -4,9 +4,8 @@ import net.dungeon_difficulty.DungeonDifficulty;
 import net.dungeon_difficulty.logic.LocalScalingLootFunction;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
-
-import java.util.List;
+import net.fabricmc.fabric.api.loot.v2.LootTableEvents;
+import net.minecraft.loot.condition.LootCondition;
 
 public final class FabricMod implements ModInitializer {
     @Override
@@ -18,7 +17,7 @@ public final class FabricMod implements ModInitializer {
                 DungeonDifficulty.registerCommands(dispatcher));
 
         // Every loot table gets the local scaling function, which scales items by the table's id and drop location
-        LootTableEvents.MODIFY.register((key, tableBuilder, source, registries) ->
-                tableBuilder.apply(new LocalScalingLootFunction(List.of(), key.getValue())));
+        LootTableEvents.MODIFY.register((resourceManager, lootManager, id, tableBuilder, source) ->
+                tableBuilder.apply(new LocalScalingLootFunction(new LootCondition[0], id)));
     }
 }

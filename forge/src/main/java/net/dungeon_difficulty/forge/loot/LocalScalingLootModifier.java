@@ -1,6 +1,6 @@
-package net.dungeon_difficulty.neoforge.loot;
+package net.dungeon_difficulty.forge.loot;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.dungeon_difficulty.DungeonDifficulty;
@@ -11,15 +11,15 @@ import net.minecraft.loot.context.LootContext;
 import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.neoforged.neoforge.common.loot.IGlobalLootModifier;
-import net.neoforged.neoforge.common.loot.LootModifier;
+import net.minecraftforge.common.loot.IGlobalLootModifier;
+import net.minecraftforge.common.loot.LootModifier;
 
-/// NeoForge counterpart of the Fabric side's per-table `LocalScalingLootFunction`:
+/// Forge counterpart of the Fabric side's per-table `LocalScalingLootFunction`:
 /// a global loot modifier that scales every generated stack by the queried table's id and the drop location.
 /// Declared in `data/dungeon_difficulty/loot_modifiers/local_scaling.json`.
 public class LocalScalingLootModifier extends LootModifier {
-    public static final Identifier ID = Identifier.of(DungeonDifficulty.MODID, "local_scaling");
-    public static final MapCodec<LocalScalingLootModifier> CODEC = RecordCodecBuilder.mapCodec(instance ->
+    public static final Identifier ID = new Identifier(DungeonDifficulty.MODID, "local_scaling");
+    public static final Codec<LocalScalingLootModifier> CODEC = RecordCodecBuilder.create(instance ->
             codecStart(instance).apply(instance, LocalScalingLootModifier::new));
 
     public LocalScalingLootModifier(LootCondition[] conditions) {
@@ -42,7 +42,7 @@ public class LocalScalingLootModifier extends LootModifier {
     }
 
     @Override
-    public MapCodec<? extends IGlobalLootModifier> codec() {
+    public Codec<? extends IGlobalLootModifier> codec() {
         return CODEC;
     }
 }

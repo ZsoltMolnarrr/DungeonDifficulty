@@ -9,7 +9,6 @@ import net.dungeon_difficulty.logic.Difficulty;
 import net.dungeon_difficulty.logic.PatternMatching;
 import net.minecraft.network.packet.s2c.play.SubtitleS2CPacket;
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket;
-import net.minecraft.server.network.ServerCommonNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
@@ -59,7 +58,7 @@ public abstract class ServerWorldMixin {
                     if (!previousAnnouncements.contains(Difficulty.Announcement.EMPTY)) {
                         previousAnnouncements.add(Difficulty.Announcement.EMPTY);
                         if (previousAnnouncements.size() > config.history_size) {
-                            previousAnnouncements.removeFirst();
+                            previousAnnouncements.remove(0);
                         }
                     }
                 }
@@ -83,7 +82,7 @@ public abstract class ServerWorldMixin {
         announcements.add(announcement);
         var config = DungeonDifficulty.config.value.announcement;
         if (announcements.size() > config.history_size) {
-            announcements.removeFirst();
+            announcements.remove(0);
         }
 
         var title = "Dungeon";

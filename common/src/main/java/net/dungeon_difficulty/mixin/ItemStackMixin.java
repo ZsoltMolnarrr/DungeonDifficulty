@@ -1,18 +1,11 @@
 package net.dungeon_difficulty.mixin;
 
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.dungeon_difficulty.DungeonDifficulty;
-import net.dungeon_difficulty.logic.RarityHelper;
-import net.minecraft.component.ComponentType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 import net.dungeon_difficulty.logic.ItemScaling;
-import net.minecraft.item.tooltip.TooltipType;
+import net.dungeon_difficulty.logic.RarityHelper;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Rarity;
@@ -20,10 +13,11 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.List;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 @Mixin(ItemStack.class)
 public class ItemStackMixin {
@@ -31,37 +25,39 @@ public class ItemStackMixin {
         return (ItemStack) (Object) this;
     }
 
-    @Inject(method = "getRarity", at = @At("RETURN"), cancellable = true)
-    private void injected(CallbackInfoReturnable<Rarity> cir) {
-        var itemStack = itemStack();
-        Rarity rarity = itemStack.getOrDefault(DataComponentTypes.RARITY, Rarity.COMMON);
-        if (DungeonDifficulty.clientConfig.value.enable_overriding_enchantment_rarity
-                && itemStack.hasEnchantments()) {
-            rarity = RarityHelper.increasedRarity(rarity, 1);
+    // Vanilla identifies an item's own attack damage / speed modifiers by UUID *reference*
+    // (`modifier.getId() == Item.ATTACK_DAMAGE_MODIFIER_ID`), which never matches modifiers read back from
+    // NBT — so scaled weapons would show "+7 Attack Damage" instead of "8 Attack Damage". Hand back the
+    // canonical instance for equal ids.
+    @Redirect(method = "getTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/attribute/EntityAttributeModifier;getId()Ljava/util/UUID;"))
+    private UUID getTooltip_canonicalModifierId_DungeonDifficulty(EntityAttributeModifier instance) {
+        var id = instance.getId();
+        if (id.equals(ItemScaling.ItemAccessor.hardCodedAttackDamageModifier())) {
+            return ItemScaling.ItemAccessor.hardCodedAttackDamageModifier();
         }
-        if (DungeonDifficulty.clientConfig.value.enable_scaled_items_rarity
-                && ItemScaling.isScaled(itemStack)) {
-            rarity = RarityHelper.increasedRarity(rarity, 1);
+        if (id.equals(ItemScaling.ItemAccessor.hardCodedAttackSpeedModifier())) {
+            return ItemScaling.ItemAccessor.hardCodedAttackSpeedModifier();
         }
+        return id;
+    }
 
-        if (rarity != cir.getReturnValue()) {
-            cir.setReturnValue(rarity);
-            cir.cancel();
+    @Inject(method = "getRarity", at = @At("RETURN"), cancellable = true)
+    private void getRarity_RETURN_DungeonDifficulty(CallbackInfoReturnable<Rarity> cir) {
+        if (DungeonDifficulty.clientConfig.value.enable_scaled_items_rarity
+                && ItemScaling.isScaled(itemStack())) {
+            var rarity = RarityHelper.increasedRarity(cir.getReturnValue(), 1);
+            if (rarity != cir.getReturnValue()) {
+                cir.setReturnValue(rarity);
+            }
         }
     }
 
-    @WrapOperation(
-            method = "getTooltip",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;appendTooltip(Lnet/minecraft/component/ComponentType;Lnet/minecraft/item/Item$TooltipContext;Ljava/util/function/Consumer;Lnet/minecraft/item/tooltip/TooltipType;)V"))
-    private void injected(ItemStack instance, ComponentType<?> componentType, Item.TooltipContext context, Consumer<Text> textConsumer, TooltipType type, Operation<Void> original) {
-        if (componentType == DataComponentTypes.JUKEBOX_PLAYABLE) {
-            var level = ItemScaling.getScaleFactor(instance);
-            if (level > 0) {
-                textConsumer.accept(Text.translatable("item.power.level", level)
-                        .formatted(EntityAttribute.Category.POSITIVE.getFormatting(true))
-                );
-            }
+    // Power level line right after the item's own tooltip lines (before enchantments and attributes)
+    @Inject(method = "getTooltip", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/Item;appendTooltip(Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;Ljava/util/List;Lnet/minecraft/client/item/TooltipContext;)V", shift = At.Shift.AFTER))
+    private void getTooltip_powerLevel_DungeonDifficulty(CallbackInfoReturnable<List<Text>> cir, @Local(ordinal = 0) List<Text> list) {
+        var level = ItemScaling.getScaleFactor(itemStack());
+        if (level > 0) {
+            list.add(Text.translatable("item.power.level", level).formatted(Formatting.BLUE));
         }
-        original.call(instance, componentType, context, textConsumer, type);
     }
 }

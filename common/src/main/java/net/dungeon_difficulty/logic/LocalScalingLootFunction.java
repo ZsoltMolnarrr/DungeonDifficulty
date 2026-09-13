@@ -1,8 +1,9 @@
 package net.dungeon_difficulty.logic;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSerializationContext;
+import net.dungeon_difficulty.DungeonDifficulty;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.condition.LootCondition;
 import net.minecraft.loot.context.LootContext;
@@ -11,38 +12,27 @@ import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.loot.function.ConditionalLootFunction;
 import net.minecraft.loot.function.LootFunctionType;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.JsonHelper;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.List;
 import java.util.Set;
 
+/// Per-table loot function (Fabric side): scales every generated stack by the table's id and the drop location.
+/// 1.20.1 loot functions are GSON-serialized (no codecs yet); the serializer round-trips the table id so mods
+/// that re-serialize loot tables (MineColonies) keep the function intact.
 public class LocalScalingLootFunction extends ConditionalLootFunction {
     public static final String NAME = "local_scaling";
-    public static final Identifier ID = Identifier.of("dungeon_difficulty", NAME);
-    public static final MapCodec<LocalScalingLootFunction> CODEC = RecordCodecBuilder.mapCodec(
-            instance -> addConditionsField(instance)
-                    .<String, String>and(
-                            instance.group(
-                                    Codec.STRING.fieldOf("loot_table_namespace").orElse(null).forGetter(function -> function.lootTableId.getNamespace()),
-                                    Codec.STRING.fieldOf("loot_table_path").orElse(null).forGetter(function -> function.lootTableId.getPath())
-                            )
-                    )
-                    .apply(instance, LocalScalingLootFunction::new)
-    );
-    public static final LootFunctionType<LocalScalingLootFunction> TYPE = new LootFunctionType<LocalScalingLootFunction>(CODEC);
+    public static final Identifier ID = new Identifier(DungeonDifficulty.MODID, NAME);
+    public static final LootFunctionType TYPE = new LootFunctionType(new Serializer());
 
-    private LocalScalingLootFunction(List<LootCondition> conditions, String lootTableId, String unused) {
-        this(conditions, Identifier.of(lootTableId));
-    }
-
-    public Identifier lootTableId;
-    public LocalScalingLootFunction(List<LootCondition> conditions, Identifier lootTableId) {
+    public final Identifier lootTableId;
+    public LocalScalingLootFunction(LootCondition[] conditions, Identifier lootTableId) {
         super(conditions);
         this.lootTableId = lootTableId;
     }
 
     @Override
-    public LootFunctionType<LocalScalingLootFunction> getType() {
+    public LootFunctionType getType() {
         return TYPE;
     }
 
@@ -52,7 +42,7 @@ public class LocalScalingLootFunction extends ConditionalLootFunction {
     }
 
     @Override
-    public ItemStack process(ItemStack itemStack, LootContext lootContext) {
+    protected ItemStack process(ItemStack itemStack, LootContext lootContext) {
         var position = lootContext.get(LootContextParameters.ORIGIN);
         BlockPos blockPosition = null;
         if (position != null) {
@@ -60,5 +50,21 @@ public class LocalScalingLootFunction extends ConditionalLootFunction {
         }
         ItemScaling.scale(itemStack, lootContext.getWorld(), blockPosition, lootTableId);
         return itemStack;
+    }
+
+    public static class Serializer extends ConditionalLootFunction.Serializer<LocalScalingLootFunction> {
+        @Override
+        public void toJson(JsonObject json, LocalScalingLootFunction function, JsonSerializationContext context) {
+            super.toJson(json, function, context);
+            json.addProperty("loot_table_namespace", function.lootTableId.getNamespace());
+            json.addProperty("loot_table_path", function.lootTableId.getPath());
+        }
+
+        @Override
+        public LocalScalingLootFunction fromJson(JsonObject json, JsonDeserializationContext context, LootCondition[] conditions) {
+            var namespace = JsonHelper.getString(json, "loot_table_namespace", Identifier.DEFAULT_NAMESPACE);
+            var path = JsonHelper.getString(json, "loot_table_path", "none");
+            return new LocalScalingLootFunction(conditions, new Identifier(namespace, path));
+        }
     }
 }

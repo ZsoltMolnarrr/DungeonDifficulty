@@ -1,4 +1,4 @@
-package net.dungeon_difficulty.neoforge.mixin;
+package net.dungeon_difficulty.forge.mixin;
 
 import net.dungeon_difficulty.logic.RarityColors;
 import net.minecraft.text.Style;
@@ -11,8 +11,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.function.UnaryOperator;
 
 /**
- * NeoForge gives `Rarity` a style modifier, and reads that in tooltips, hover names and the held
- * item name, instead of the plain formatting the common `RarityMixin` covers. Only the color is
+ * Forge gives `Rarity` a style modifier, and reads that in tooltips, hover names and the held
+ * item name, instead of the plain `formatting` field the common `RarityAccessor` rewrites. Only the color is
  * replaced here, so any other styling a modded rarity applies is kept.
  */
 @Mixin(Rarity.class)

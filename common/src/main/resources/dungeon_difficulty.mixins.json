@@ -6,10 +6,11 @@
   "mixins": [
     "AccessorAttributeContainer",
     "AccessorDefaultAttributeContainer",
+    "ItemMixin",
     "ItemStackMixin",
     "LivingEntityMixin",
     "MobSpawnerLogicMixin",
-    "RarityMixin",
+    "RarityAccessor",
     "ServerEntityManagerMixin",
     "ServerPlayerMixin",
     "ServerWorldMixin",
