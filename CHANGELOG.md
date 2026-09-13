@@ -1,5 +1,6 @@
 # 3.8.0
 
+- Now available for Minecraft 1.20.1, on Fabric and Forge (also loads on NeoForge 1.20.1)
 - NeoForge: Forgified Fabric API is no longer required. Loot scaling is applied by a global loot modifier (`dungeon_difficulty:local_scaling`)
 - Improved server performance
   - Entities that resolve to no difficulty are no longer re-evaluated on every chunk load
