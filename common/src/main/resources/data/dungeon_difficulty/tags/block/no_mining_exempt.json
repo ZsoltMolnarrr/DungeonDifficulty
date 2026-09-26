@@ -1,0 +1,11 @@
+{
+  "values": [
+    "minecraft:spawner",
+    "minecraft:cobweb",
+    "minecraft:sculk_shrieker",
+    "minecraft:sculk_sensor",
+    "minecraft:calibrated_sculk_sensor",
+    "minecraft:torch",
+    "minecraft:wall_torch"
+  ]
+}

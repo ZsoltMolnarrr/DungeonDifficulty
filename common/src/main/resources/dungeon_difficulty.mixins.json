@@ -6,6 +6,7 @@
   "mixins": [
     "AccessorAttributeContainer",
     "AccessorDefaultAttributeContainer",
+    "BlockStateMixin",
     "ItemStackMixin",
     "LivingEntityMixin",
     "MobSpawnerLogicMixin",

@@ -4,6 +4,7 @@
 - Added No Mining status effect, slows down block breaking like Mining Fatigue, but leaves attack speed alone
 - Player effects are opt-in, zones need `"player_effects": true` to give them
 - Dungeon difficulty type comes with No Mining (level 2+), to prevent breaking blocks
+- Blocks in `#dungeon_difficulty:no_mining_exempt` (spawners, cobwebs, sculk sensors and shriekers, torches by default) break at normal speed under No Mining
 - Custom status effect registration can be disabled in `config/dungeon_difficulty/registry.json`
 
 # 3.8.0
