@@ -5,8 +5,11 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.dungeon_difficulty.config.ClientConfig;
 import net.dungeon_difficulty.config.Config;
 import net.dungeon_difficulty.config.Default;
+import net.dungeon_difficulty.config.RegistryConfig;
+import net.dungeon_difficulty.effect.DifficultyEffects;
 import net.dungeon_difficulty.logic.DifficultyHandler;
 import net.dungeon_difficulty.logic.DifficultyTypes;
+import net.dungeon_difficulty.logic.GivenEffects;
 import net.dungeon_difficulty.logic.ItemScaling;
 import net.dungeon_difficulty.logic.LocalScalingLootFunction;
 import net.dungeon_difficulty.logic.RarityColors;
@@ -19,6 +22,15 @@ import net.tiny_config.ConfigManager;
 
 public class DungeonDifficulty {
     public static final String MODID = "dungeon_difficulty";
+
+    // Read via `safeValue()`, as registration may happen before `init()`, on another thread
+    // Declared before `config`, as its defaults depend on this
+    public static ConfigManager<RegistryConfig> registryConfig = new ConfigManager<>
+            ("registry", new RegistryConfig())
+            .builder()
+            .setDirectory(MODID)
+            .sanitize(true)
+            .build();
 
     public static ConfigManager<Config> config = new ConfigManager<>
             ("difficulty_v2", Default.config)
@@ -91,10 +103,18 @@ public class DungeonDifficulty {
             DungeonDifficulty.config.sanitize = config.meta.sanitize_config;
         }
         DifficultyTypes.resolve();
+        GivenEffects.clearCache();
         DungeonDifficulty.config.save();
 
 //        var gson = new GsonBuilder().setPrettyPrinting().create();
 //        System.out.println("PowerScale config refreshed: " + gson.toJson(DungeonDifficulty.config.value));
+    }
+
+    public static void registerEffects() {
+        if (!registryConfig.safeValue().register_status_effects) {
+            return;
+        }
+        DifficultyEffects.register();
     }
 
     public static void registerLootFunctions() {

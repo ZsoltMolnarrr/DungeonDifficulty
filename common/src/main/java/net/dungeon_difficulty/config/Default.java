@@ -2,6 +2,7 @@ package net.dungeon_difficulty.config;
 
 import net.dungeon_difficulty.DungeonDifficulty;
 import net.dungeon_difficulty.Platform;
+import net.dungeon_difficulty.effect.DifficultyEffects;
 import net.dungeon_difficulty.logic.PatternMatching;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.util.Identifier;
@@ -29,6 +30,12 @@ public class Default {
         var dungeonDifficulty = new Config.DifficultyType("dungeon");
         dungeonDifficulty.allow_loot_scaling = true;
         dungeonDifficulty.parent = normalDifficulty.name;
+        // Prevents breaking blocks in dungeons, given only by zones opting in with `player_effects`
+        if (DungeonDifficulty.registryConfig.safeValue().register_status_effects) {
+            var dungeonNoMining = new Config.GivenEffect(DifficultyEffects.NO_MINING_ID.toString(), 2);
+            dungeonNoMining.min_level = 2;
+            dungeonDifficulty.player_effects = List.of(dungeonNoMining);
+        }
 
         var dungeonSpawners = new Config.SpawnerModifier();
         dungeonSpawners = new Config.SpawnerModifier();

@@ -36,13 +36,17 @@ public class DifficultyTypes {
         var copy = new Config.DifficultyType();
         copy.name = type.name;
         copy.parent = type.parent;
+        copy.translation_code = type.translation_code;
+        copy.allow_loot_scaling = type.allow_loot_scaling;
         copy.entities = type.entities;
+        copy.player_effects = type.player_effects;
         return copy;
     }
 
     private static Config.DifficultyType merge(Config.DifficultyType t1, Config.DifficultyType t2) {
         var merged = copy(t1);
         merged.entities = Stream.concat(t1.entities.stream(), t2.entities.stream()).toList();
+        merged.player_effects = Stream.concat(t1.player_effects.stream(), t2.player_effects.stream()).toList();
         merged.allow_loot_scaling = t2.allow_loot_scaling;
         if (t1.allow_loot_scaling != null) {
             merged.allow_loot_scaling = t1.allow_loot_scaling;

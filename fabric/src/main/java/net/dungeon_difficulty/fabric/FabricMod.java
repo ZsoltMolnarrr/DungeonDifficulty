@@ -12,6 +12,7 @@ public final class FabricMod implements ModInitializer {
     @Override
     public void onInitialize() {
         DungeonDifficulty.init();
+        DungeonDifficulty.registerEffects();
         DungeonDifficulty.registerLootFunctions();
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->

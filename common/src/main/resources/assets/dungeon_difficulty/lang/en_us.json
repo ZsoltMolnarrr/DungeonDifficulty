@@ -7,5 +7,6 @@
   "difficulty.type.boss_dungeon": "\uD833\uDEE3 Boss Dungeon",
   "difficulty.type.boss": "\uD833\uDEE3 Boss",
   "difficulty.type.heroic": "\uD833\uDEE3 Heroic",
-  "difficulty.type.mythic": "\uD833\uDEE3 Mythic"
+  "difficulty.type.mythic": "\uD833\uDEE3 Mythic",
+  "effect.dungeon_difficulty.no_mining": "No Mining"
 }

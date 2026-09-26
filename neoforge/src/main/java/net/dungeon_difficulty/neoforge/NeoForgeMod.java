@@ -22,6 +22,9 @@ public final class NeoForgeMod {
     }
 
     public static void register(RegisterEvent event) {
+        event.register(RegistryKeys.STATUS_EFFECT, reg -> {
+            DungeonDifficulty.registerEffects();
+        });
         event.register(RegistryKeys.LOOT_FUNCTION_TYPE, reg -> {
             DungeonDifficulty.registerLootFunctions();
         });

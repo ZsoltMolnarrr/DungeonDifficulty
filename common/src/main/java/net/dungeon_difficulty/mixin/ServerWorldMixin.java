@@ -3,6 +3,7 @@ package net.dungeon_difficulty.mixin;
 import net.dungeon_difficulty.DungeonDifficulty;
 import net.dungeon_difficulty.Platform;
 import net.dungeon_difficulty.logic.DifficultyHandler;
+import net.dungeon_difficulty.logic.GivenEffects;
 import net.dungeon_difficulty.logic.ScalingGoal;
 import net.dungeon_difficulty.util.LanguageUtil;
 import net.dungeon_difficulty.logic.Difficulty;
@@ -41,21 +42,31 @@ public abstract class ServerWorldMixin {
     private void pre_tick(CallbackInfo ci) {
         var world = (ServerWorld) ((Object)this);
         var config = DungeonDifficulty.config.value.announcement;
-        if (!config.enabled) {
+        var effectsConfig = DungeonDifficulty.config.value.player_effects;
+        var announce = config.enabled;
+        var giveEffects = effectsConfig != null && effectsConfig.enabled;
+        if (!announce && !giveEffects) {
             return;
         }
 
-        int check_interval = config.check_interval_seconds * 20;
+        int check_interval = Math.max(config.check_interval_seconds * 20, 1);
         for (var player: world.getPlayers()) {
             if (player.isSpectator()) { continue; }
 
-            var previousAnnouncements = ((DifficultyHandler)player).getLastDifficultyAnnouncements();
             if ((player.age + player.getId()) % check_interval == 0) {
                 var locationData = PatternMatching.LocationData.create(world, player.getBlockPos());
                 var difficultyResult = PatternMatching.getDifficultyResult(locationData, null, ScalingGoal.ENTITY, world);
-                if (difficultyResult != null && difficultyResult.difficulty().isValid()) {
+                var isValid = difficultyResult != null && difficultyResult.difficulty().isValid();
+                if (giveEffects && isValid) {
+                    GivenEffects.giveToPlayer(player, difficultyResult.difficulty(), check_interval);
+                }
+                if (!announce) {
+                    continue;
+                }
+                if (isValid) {
                     announce(difficultyResult, player);
                 } else {
+                    var previousAnnouncements = ((DifficultyHandler)player).getLastDifficultyAnnouncements();
                     if (!previousAnnouncements.contains(Difficulty.Announcement.EMPTY)) {
                         previousAnnouncements.add(Difficulty.Announcement.EMPTY);
                         if (previousAnnouncements.size() > config.history_size) {
