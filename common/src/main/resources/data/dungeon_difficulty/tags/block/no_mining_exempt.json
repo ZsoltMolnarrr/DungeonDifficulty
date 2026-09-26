@@ -11,6 +11,10 @@
     "minecraft:diamond_block",
     "minecraft:iron_block",
     "minecraft:lapis_block",
-    "minecraft:emerald_block"
+    "minecraft:emerald_block",
+    "minecraft:snow",
+    "minecraft:snow_block",
+    "minecraft:gravel",
+    "minecraft:clay"
   ]
 }

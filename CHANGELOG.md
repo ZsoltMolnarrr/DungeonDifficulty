@@ -1,3 +1,7 @@
+# 3.9.1
+
+- Snow, gravel and clay are now exempt from No Mining
+
 # 3.9.0
 
 - Difficulty types can now give status effects to players (`player_effects`), optionally scaling with level
