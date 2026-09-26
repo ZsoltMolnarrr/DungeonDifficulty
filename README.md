@@ -3,7 +3,7 @@
 <div align="center">
 
 <a href="">![Java 17](https://img.shields.io/badge/Java%2017-ee9258?logo=coffeescript&logoColor=ffffff&labelColor=606060&style=flat-square)</a>
-<a href="">![Environment: Server](https://img.shields.io/badge/environment-Server-1976d2?style=flat-square)</a>
+<a href="">![Environment: Client & Server](https://img.shields.io/badge/environment-Client%20%26%20Server-1976d2?style=flat-square)</a>
 <a href="">[![Mod loader: Fabric]][fabric]</a>
 <a href="">[![Discord](https://img.shields.io/discord/973561601519149057.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2&style=flat-square)](https://discord.gg/KN9b3pjFTM)</a>
 </br>
@@ -20,6 +20,7 @@
 - Each ruleset can adjust entities and looted items
 - Entities attributes and spawner settings can be adjusted (for example: more health, armor, etc...)
 - Looted item attributes can be adjusted (for example: more damage on weapons)
+- Status effects can be given to players present in zones (for example: No Mining in dungeons)
 - Fully data-driven (using the configuration file)
 
 # ❓ How it works
@@ -66,6 +67,23 @@ Fields that reference some kind of in-game ID (like `entity_type`, `biome`, `dim
 - Check out the default configuration to see specific examples.
 - Regex fields in the configuration are interpreted as fully featured regex. If you are unfamiliar with regex, first make sure to learn about it (start for example [here](https://www.youtube.com/watch?v=sXQxhojSdZM)). It is recommended to test out your regex patterns using tool: [regex101.com](https://regex101.com)
 - Prefer tag matching instead of regex matching, whenever possible. Regex matching in general hurts server performance.
+
+# 🚫 Player effects
+
+Difficulty types can give status effects to players present in their zones, using `player_effects` (list of effects with `id`, `amplifier`, and optionally `min_level`, `amplifier_per_level`, `max_amplifier`). Effects are refreshed upon every presence check, and wear off shortly after leaving the zone.
+
+This is opt-in: a zone only gives effects if its difficulty assignment has `"player_effects": true`.
+
+```json
+"zone_matches": { "structure": "#dungeon_difficulty:level_3" },
+"difficulty": { "name": "dungeon", "level": 3, "player_effects": true }
+```
+
+The mod adds the **No Mining** status effect (`dungeon_difficulty:no_mining`), which slows down block breaking like Mining Fatigue, without reducing attack speed. It prevents players from digging through dungeons. The `dungeon` difficulty type comes with it (from level 2), so it only needs to be enabled on the desired zones.
+
+Blocks in the `#dungeon_difficulty:no_mining_exempt` block tag break at normal speed despite No Mining. By default: spawners, cobwebs, sculk sensors and shriekers, torches, and treasure blocks (gold, diamond, iron, lapis, emerald). Extend it using a datapack.
+
+Custom status effects can be disabled at `config/dungeon_difficulty/registry.json` (requires restart, must match on server and clients).
 
 # 🖥️ Client settings
 
