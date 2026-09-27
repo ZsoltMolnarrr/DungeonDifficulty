@@ -7,5 +7,6 @@
   "difficulty.type.boss_dungeon": "\uD833\uDEE3 Donjon de Boss %s",
   "difficulty.type.boss": "\uD833\uDEE3 Boss %s",
   "difficulty.type.heroic": "\uD833\uDEE3 Héroïque %s",
-  "difficulty.type.mythic": "\uD833\uDEE3 Mythique %s"
+  "difficulty.type.mythic": "\uD833\uDEE3 Mythique %s",
+  "difficulty.type.settlement": "\uD833\uDEE4 Village"
 }

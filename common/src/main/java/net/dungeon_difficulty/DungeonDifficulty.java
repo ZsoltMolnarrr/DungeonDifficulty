@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import net.dungeon_difficulty.config.ClientConfig;
 import net.dungeon_difficulty.config.Config;
+import net.dungeon_difficulty.compat.waystones.WaystonesCompat;
 import net.dungeon_difficulty.config.Default;
 import net.dungeon_difficulty.config.RegistryConfig;
 import net.dungeon_difficulty.effect.DifficultyEffects;
@@ -13,6 +14,7 @@ import net.dungeon_difficulty.logic.GivenEffects;
 import net.dungeon_difficulty.logic.ItemScaling;
 import net.dungeon_difficulty.logic.LocalScalingLootFunction;
 import net.dungeon_difficulty.logic.RarityColors;
+import net.dungeon_difficulty.naming.StructureNaming;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -49,6 +51,7 @@ public class DungeonDifficulty {
     public static void init() {
         reloadClientConfig();
         reloadConfig();
+        WaystonesCompat.init();
     }
 
     /// Registers the mod's commands. Called by each loader from its own command registration event.
@@ -103,6 +106,7 @@ public class DungeonDifficulty {
             DungeonDifficulty.config.sanitize = config.meta.sanitize_config;
         }
         DifficultyTypes.resolve();
+        StructureNaming.reloadConfig();
         GivenEffects.clearCache();
         DungeonDifficulty.config.save();
 

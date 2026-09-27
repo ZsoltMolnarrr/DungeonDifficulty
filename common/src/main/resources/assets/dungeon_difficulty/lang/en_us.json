@@ -8,5 +8,6 @@
   "difficulty.type.boss": "\uD833\uDEE3 Boss %s",
   "difficulty.type.heroic": "\uD833\uDEE3 Heroic %s",
   "difficulty.type.mythic": "\uD833\uDEE3 Mythic %s",
+  "difficulty.type.settlement": "\uD833\uDEE4 Settlement",
   "effect.dungeon_difficulty.no_mining": "No Mining"
 }

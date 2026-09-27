@@ -39,7 +39,7 @@ repositories {
 }
 
 dependencies {
-    modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
+    modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_dev_version"
 
     common(project(path: ':common', configuration: 'namedElements')) { transitive = false }
     shadowBundle project(path: ':common', configuration: 'transformProductionFabric')
@@ -48,6 +48,10 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_api_version"
     // Tiny Config
     include(modImplementation("maven.modrinth:tiny-config:${project.tiny_config_version}-${platform}"))
+
+    // Optional integrations, for testing in dev (not bundled, not required)
+    modImplementation("maven.modrinth:waystones:${project.waystones_version}+${platform}-${project.minecraft_version}")
+    modImplementation("maven.modrinth:balm:${project.balm_version}+${platform}-${project.minecraft_version}")
 }
 
 processResources {

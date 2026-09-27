@@ -7,5 +7,6 @@
   "difficulty.type.boss_dungeon": "\uD833\uDEE3 Mazmorra de Jefe %s",
   "difficulty.type.boss": "\uD833\uDEE3 Jefe %s",
   "difficulty.type.heroic": "\uD833\uDEE3 Heroico %s",
-  "difficulty.type.mythic": "\uD833\uDEE3 Mítico %s"
+  "difficulty.type.mythic": "\uD833\uDEE3 Mítico %s",
+  "difficulty.type.settlement": "\uD833\uDEE4 Asentamiento"
 }

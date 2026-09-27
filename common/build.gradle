@@ -21,4 +21,8 @@ dependencies {
 
     modImplementation("maven.modrinth:tiny-config:${project.tiny_config_version}-fabric")
     //modImplementation "net.tiny_config:tiny_config-fabric:${project.tiny_config_version}"
+
+    // Optional integrations, compile only (never required at runtime, see `compat` package)
+    modCompileOnly("maven.modrinth:waystones:${project.waystones_version}+fabric-${project.minecraft_version}")
+    modCompileOnly("maven.modrinth:balm:${project.balm_version}+fabric-${project.minecraft_version}")
 }

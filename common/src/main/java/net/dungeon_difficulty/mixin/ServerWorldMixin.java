@@ -4,6 +4,8 @@ import net.dungeon_difficulty.DungeonDifficulty;
 import net.dungeon_difficulty.Platform;
 import net.dungeon_difficulty.logic.DifficultyHandler;
 import net.dungeon_difficulty.logic.GivenEffects;
+import net.dungeon_difficulty.naming.StructureKey;
+import net.dungeon_difficulty.naming.StructureNaming;
 import net.dungeon_difficulty.logic.ScalingGoal;
 import net.dungeon_difficulty.util.LanguageUtil;
 import net.dungeon_difficulty.logic.Difficulty;
@@ -84,8 +86,9 @@ public abstract class ServerWorldMixin {
         var difficulty = difficultyResult.difficulty();
         var locationData = difficultyResult.locationData();
 
-        ((DifficultyHandler)player).getLastDifficultyAnnouncements();
-        var announcement = new Difficulty.Announcement(difficulty, player.age, locationData.dimensionId().toString(), difficultyResult.matchId());
+        var match = difficultyResult.match();
+        var matchStart = match != null ? match.matchingStructureStart() : null;
+        var announcement = new Difficulty.Announcement(difficulty, player.age, locationData.dimensionId().toString(), difficultyResult.matchId(), matchStart);
         var announcements = ((DifficultyHandler)player).getLastDifficultyAnnouncements();
         for (var previous: announcements) {
             if (previous.equals(announcement)) {
@@ -99,9 +102,19 @@ public abstract class ServerWorldMixin {
         }
 
         var title = "Dungeon";
-        if (difficultyResult.match() != null) {
-            var match = difficultyResult.match();
-            if (match.matchingStructure() != null) {
+        Text namedTitle = null;
+        if (match != null) {
+            if (match.matchingStructure() != null && match.matchingStructureStart() != null
+                    && StructureNaming.isNamed(match.matchingStructure())) {
+                // Structure instance with a generated name (for example a village)
+                var id = match.matchingStructure().getKey().get().getValue();
+                var name = StructureNaming.getName(player.getServerWorld(), new StructureKey(id, match.matchingStructureStart()));
+                if (name != null) {
+                    namedTitle = Text.literal(name);
+                } else {
+                    title = LanguageUtil.translateId("structure", id.toString());
+                }
+            } else if (match.matchingStructure() != null) {
                 var id = match.matchingStructure().getKey().get().getValue();
                 title = LanguageUtil.translateId("structure", id.toString());
             } else if (match.matchingBiome() != null && match.matchingBiome().getKey().isPresent()) {
@@ -116,7 +129,7 @@ public abstract class ServerWorldMixin {
             }
         }
 
-        Platform.util().sendVanillaPacket(player, new TitleS2CPacket(Text.translatable(title)));
+        Platform.util().sendVanillaPacket(player, new TitleS2CPacket(namedTitle != null ? namedTitle : Text.translatable(title)));
         // Level is a translation argument (`%s`), omit it from the translation to hide the level
         var level = config.roman_format ? LanguageUtil.toRoman(difficulty.level()) : String.valueOf(difficulty.level());
         Platform.util().sendVanillaPacket(player, new SubtitleS2CPacket(Text.translatableWithFallback(

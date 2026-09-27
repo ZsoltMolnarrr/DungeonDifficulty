@@ -57,6 +57,9 @@ public class Default {
                 ))
         );
 
+        // No scaling, only labels villages (titled by their generated names, see `naming`)
+        var settlementDifficulty = new Config.DifficultyType("settlement");
+
         var heroicDifficulty = new Config.DifficultyType("heroic");
         heroicDifficulty.parent = dungeonDifficulty.name;
 
@@ -81,6 +84,7 @@ public class Default {
                 structureTag("level_3", dungeonDifficulty.name, 3),
                 structureTag("level_2", dungeonDifficulty.name, 2),
                 structureTag("level_1", dungeonDifficulty.name, 1),
+                vanillaStructureTag("village", settlementDifficulty.name, 1),
                 biomeRegex("desert|frozen|snowy|ice|jungle", normalDifficulty.name, 1)
         );
         overworld.zone_specifiers = List.of(
@@ -109,7 +113,7 @@ public class Default {
                 entitySpecificMatcher(Identifier.ofVanilla("ender_dragon"), dungeonDifficulty.name, 4)
         );
 
-        config.difficulty_types = List.of(normalDifficulty, dungeonDifficulty, heroicDifficulty);
+        config.difficulty_types = List.of(normalDifficulty, dungeonDifficulty, heroicDifficulty, settlementDifficulty);
         config.dimensions = new Config.Dimension[] { overworld, nether, end };
         config.per_player_difficulty = perPlayerDifficulty;
 
@@ -223,6 +227,13 @@ public class Default {
     private static Config.Zone structureTag(String tag, String difficulty, int level) {
         var zone = new Config.Zone();
         zone.zone_matches.structure = "#" + DungeonDifficulty.MODID + ":" + tag;
+        zone.difficulty = new Config.DifficultyReference(difficulty, level);
+        return zone;
+    }
+
+    private static Config.Zone vanillaStructureTag(String tag, String difficulty, int level) {
+        var zone = new Config.Zone();
+        zone.zone_matches.structure = "#minecraft:" + tag;
         zone.difficulty = new Config.DifficultyReference(difficulty, level);
         return zone;
     }

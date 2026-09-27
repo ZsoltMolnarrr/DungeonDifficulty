@@ -21,6 +21,7 @@
 - Entities attributes and spawner settings can be adjusted (for example: more health, armor, etc...)
 - Looted item attributes can be adjusted (for example: more damage on weapons)
 - Status effects can be given to players at certain locations (for example: No Mining in dungeons)
+- Villages get generated names (also used for their waystones, with Waystones installed)
 - Fully data-driven (using the configuration file)
 
 # ❓ How it works
@@ -97,6 +98,19 @@ The mod adds the **No Mining** status effect (`dungeon_difficulty:no_mining`), w
 Blocks in the `#dungeon_difficulty:no_mining_exempt` block tag break at normal speed despite No Mining. By default: spawners, cobwebs, sculk sensors and shriekers, torches, treasure blocks (gold, diamond, iron, lapis, emerald), snow, gravel and clay. Extend it using a datapack.
 
 Custom status effects can be disabled at `config/dungeon_difficulty/registry.json` (requires restart, must match on server and clients).
+
+# 🏘️ Structure names
+
+Structures of the `#dungeon_difficulty:named` structure tag (villages by default) get a generated name, stored per world. When such a structure is announced (it needs a difficulty zone, villages use the `settlement` difficulty type by default), its name is shown as title, for example:
+
+```
+Lumbridge
+Settlement
+```
+
+Name generation can be configured (or disabled) at `config/dungeon_difficulty/structure_naming.json`.
+
+With the [Waystones](https://modrinth.com/mod/waystones) mod installed, village waystones are named after their village: `Lumbridge`, then `Lumbridge 1`, `Lumbridge 2`...
 
 # 🖥️ Client settings
 

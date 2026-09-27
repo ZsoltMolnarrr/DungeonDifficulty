@@ -35,11 +35,15 @@ public class PatternMatching {
     /**
      * Lazily resolved list of structures containing a position.
      * Structure starts are immutable once generated, so resolving them once per location is safe.
-     * Only registry entries are retained (not the starts themselves), so keeping this on an entity is cheap.
+     * Only registry entries and start positions are retained (not the starts themselves), so keeping this on an entity is cheap.
      */
     public static final class StructureCache {
-        @Nullable private List<RegistryEntry<Structure>> containing = null;
+        // Benign race: concurrent resolution yields equal immutable lists
+        @Nullable private volatile List<ContainingStructure> containing = null;
     }
+
+    /// A structure instance: the structure and the chunk of its start
+    public record ContainingStructure(RegistryEntry<Structure> entry, ChunkPos startPos) { }
 
     public record LocationData(Identifier dimensionId, BlockPos position, BiomeData biome, StructureCache structures) {
         public static LocationData create(ServerWorld world, BlockPos position) {
@@ -55,13 +59,13 @@ public class PatternMatching {
          * Structures whose bounding box contains {@code position}, in structure accessor order.
          * Resolved once per location, instead of once per zone filter.
          */
-        private List<RegistryEntry<Structure>> containingStructures(ServerWorld world) {
+        private List<ContainingStructure> containingStructures(ServerWorld world) {
             var cached = structures.containing;
             if (cached != null) {
                 return cached;
             }
             var registry = world.getServer().getRegistryManager().get(RegistryKeys.STRUCTURE);
-            var list = new ArrayList<RegistryEntry<Structure>>();
+            var list = new ArrayList<ContainingStructure>();
             var structureStarts = world.getStructureAccessor().getStructureStarts(new ChunkPos(position), s -> true);
             for (var structureStart : structureStarts) {
                 if (!isInsideStructure(world, position, structureStart)) {
@@ -69,7 +73,7 @@ public class PatternMatching {
                 }
                 var entry = registry.getEntry(registry.getRawId(structureStart.getStructure())).orElse(null);
                 if (entry != null) {
-                    list.add(entry);
+                    list.add(new ContainingStructure(entry, structureStart.getPos()));
                 }
             }
             cached = List.copyOf(list);
@@ -89,12 +93,13 @@ public class PatternMatching {
         public enum Scope { DIMENSION, BIOME, STRUCTURE }
         public record Match(boolean matches, Scope scope,
                             @Nullable RegistryEntry<Biome> matchingBiome,
-                            @Nullable RegistryEntry<Structure> matchingStructure) {
+                            @Nullable RegistryEntry<Structure> matchingStructure,
+                            @Nullable ChunkPos matchingStructureStart) {
             public static Match trueMatch() {
-                return new Match(true, Scope.DIMENSION, null, null);
+                return new Match(true, Scope.DIMENSION, null, null, null);
             }
             public static Match falseMatch() {
-                return new Match(false, Scope.DIMENSION, null, null);
+                return new Match(false, Scope.DIMENSION, null, null, null);
             }
             @Nullable public Identifier id() {
                 if (matchingBiome != null) {
@@ -133,12 +138,14 @@ public class PatternMatching {
             // Structure pattern matching
 
             RegistryEntry<Structure> matchingStructure = null;
+            ChunkPos matchingStructureStart = null;
 
             if (result && filters.structure != null && !filters.structure.isEmpty()) {
                 result = false;
-                for (var entry : containingStructures(world)) {
-                    if (PatternMatching.universalMatch(entry, RegistryKeys.STRUCTURE, filters.structure)) {
-                        matchingStructure = entry;
+                for (var containing : containingStructures(world)) {
+                    if (PatternMatching.universalMatch(containing.entry(), RegistryKeys.STRUCTURE, filters.structure)) {
+                        matchingStructure = containing.entry();
+                        matchingStructureStart = containing.startPos();
                         matchScope = Scope.STRUCTURE;
                         result = true;
                         break;
@@ -147,7 +154,7 @@ public class PatternMatching {
             }
 
             // System.out.println("PatternMatching - biome:" + biome + " matches: " + filters.biome_regex + " - " + result);
-            return new Match(result, matchScope, matchingBiome, matchingStructure);
+            return new Match(result, matchScope, matchingBiome, matchingStructure, matchingStructureStart);
         }
     }
 

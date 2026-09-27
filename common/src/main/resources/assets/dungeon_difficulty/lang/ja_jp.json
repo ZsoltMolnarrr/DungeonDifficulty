@@ -7,5 +7,6 @@
   "difficulty.type.boss_dungeon": "\uD833\uDEE3 ボスダンジョン %s",
   "difficulty.type.boss": "\uD833\uDEE3 ボス %s",
   "difficulty.type.heroic": "\uD833\uDEE3 ヒロイック %s",
-  "difficulty.type.mythic": "\uD833\uDEE3 ミシック %s"
+  "difficulty.type.mythic": "\uD833\uDEE3 ミシック %s",
+  "difficulty.type.settlement": "\uD833\uDEE4 集落"
 }

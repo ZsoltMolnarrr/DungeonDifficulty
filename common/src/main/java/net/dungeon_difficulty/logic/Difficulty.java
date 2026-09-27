@@ -2,6 +2,7 @@ package net.dungeon_difficulty.logic;
 
 import net.dungeon_difficulty.config.Config;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.ChunkPos;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
@@ -31,8 +32,9 @@ public record Difficulty(Config.DifficultyType type,
         return "difficulty.type." + suffix.toLowerCase(Locale.ENGLISH);
     }
 
-    public record Announcement(Difficulty difficulty, int age, String dimensionId, @Nullable Identifier matchId) {
-        public static Announcement EMPTY = new Announcement(Difficulty.EMPTY, 0, "", null);
+    /// `matchStart` tells apart instances of the same structure (for example two villages)
+    public record Announcement(Difficulty difficulty, int age, String dimensionId, @Nullable Identifier matchId, @Nullable ChunkPos matchStart) {
+        public static Announcement EMPTY = new Announcement(Difficulty.EMPTY, 0, "", null, null);
 
         public boolean equals(Announcement other) {
             if (other == null) {
@@ -40,7 +42,8 @@ public record Difficulty(Config.DifficultyType type,
             }
             return difficulty.typeEquals(other.difficulty)
                     && Objects.equals(dimensionId, other.dimensionId)
-                    && Objects.equals(matchId, other.matchId);
+                    && Objects.equals(matchId, other.matchId)
+                    && Objects.equals(matchStart, other.matchStart);
         }
     }
 
