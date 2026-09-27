@@ -20,14 +20,17 @@ public class NameGenerator {
     /// 4. numbered name (only for tiny, misconfigured pools)
     public static String generate(NamingConfig.NamePool pool, RandomGenerator random, Predicate<String> isUsed) {
         var prefixes = clean(pool.prefixes);
-        var suffixes = clean(pool.suffixes);
+        var wordSuffixes = clean(pool.word_suffixes);
+        var suffixes = new ArrayList<>(wordSuffixes);
+        suffixes.addAll(clean(pool.fragment_suffixes));
         if (prefixes.isEmpty() || suffixes.isEmpty()) {
             return numbered(DEFAULT_NAME, isUsed);
         }
 
         String name = null;
         for (int i = 0; i < RANDOM_ATTEMPTS; i++) {
-            name = join(pick(prefixes, random), List.of(), pick(suffixes, random));
+            var prefix = pick(prefixes, random);
+            name = join(prefix, List.of(), pick(suffixesFor(prefix, wordSuffixes, suffixes), random));
             if (!isUsed.test(name)) {
                 return name;
             }
@@ -37,7 +40,7 @@ public class NameGenerator {
         var unused = new ArrayList<String>();
         var seen = new LinkedHashSet<String>();
         for (var prefix : prefixes) {
-            for (var suffix : suffixes) {
+            for (var suffix : suffixesFor(prefix, wordSuffixes, suffixes)) {
                 var candidate = join(prefix, List.of(), suffix);
                 if (seen.add(candidate) && !isUsed.test(candidate)) {
                     unused.add(candidate);
@@ -60,6 +63,11 @@ public class NameGenerator {
         }
 
         return numbered(name, isUsed);
+    }
+
+    /// Only words may follow a prefix ending with a space: "Emerald Moor", never "Big Us"
+    private static List<String> suffixesFor(String prefix, List<String> wordSuffixes, List<String> allSuffixes) {
+        return endsWithSpace(prefix) && !wordSuffixes.isEmpty() ? wordSuffixes : allSuffixes;
     }
 
     private static String joinWithMiddles(String prefix, List<String> middles, int count, String suffix, RandomGenerator random) {
