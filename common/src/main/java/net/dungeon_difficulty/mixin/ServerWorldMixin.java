@@ -57,8 +57,9 @@ public abstract class ServerWorldMixin {
                 var locationData = PatternMatching.LocationData.create(world, player.getBlockPos());
                 var difficultyResult = PatternMatching.getDifficultyResult(locationData, null, ScalingGoal.ENTITY, world);
                 var isValid = difficultyResult != null && difficultyResult.difficulty().isValid();
-                if (giveEffects && isValid) {
-                    GivenEffects.giveToPlayer(player, difficultyResult.difficulty(), check_interval);
+                if (giveEffects) {
+                    GivenEffects.giveToPlayer(player, world, locationData,
+                            difficultyResult != null ? difficultyResult.difficulty() : null, check_interval);
                 }
                 if (!announce) {
                     continue;

@@ -8,7 +8,9 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,20 +69,46 @@ public class GivenEffects {
         }
     }
 
-    /// Called upon periodic presence checks, with the difficulty found at the player's location
-    public static void giveToPlayer(ServerPlayerEntity player, Difficulty difficulty, int checkIntervalTicks) {
+    /// Called upon periodic presence checks, with the difficulty found at the player's location (if any)
+    public static void giveToPlayer(ServerPlayerEntity player, ServerWorld world, PatternMatching.LocationData locationData,
+                                    @Nullable Difficulty difficulty, int checkIntervalTicks) {
         var config = DungeonDifficulty.config.value.player_effects;
-        if (config == null || !config.enabled
-                || !difficulty.isValid() || !difficulty.givesPlayerEffects()
-                || difficulty.type().player_effects == null || difficulty.type().player_effects.isEmpty()) {
+        if (config == null || !config.enabled || config.rules == null || config.rules.isEmpty()) {
             return;
         }
         if (config.skip_creative && player.isCreative()) {
             return;
         }
-        var effects = resolve(difficulty.type().player_effects, difficulty.level());
+        var validDifficulty = difficulty != null && difficulty.isValid() ? difficulty : null;
+        var definitions = new ArrayList<Config.GivenEffect>();
+        for (var rule : config.rules) {
+            if (rule != null && rule.effects != null && !rule.effects.isEmpty()
+                    && matches(rule, world, locationData, validDifficulty)) {
+                definitions.addAll(rule.effects);
+            }
+        }
+        if (definitions.isEmpty()) {
+            return;
+        }
+        var level = validDifficulty != null ? validDifficulty.level() : 0;
         var duration = checkIntervalTicks + config.duration_margin_seconds * 20;
-        give(player, effects, duration);
+        give(player, resolve(definitions, level), duration);
+    }
+
+    private static boolean matches(Config.PlayerEffectRule rule, ServerWorld world, PatternMatching.LocationData locationData,
+                                   @Nullable Difficulty difficulty) {
+        var difficultyFilters = rule.difficulty_matches;
+        if (difficultyFilters != null) {
+            if (difficulty == null || difficulty.level() < difficultyFilters.min_level) {
+                return false;
+            }
+            if (difficultyFilters.type != null && !difficultyFilters.type.isEmpty()
+                    && !DifficultyTypes.inherits(difficulty.type(), difficultyFilters.type)) {
+                return false;
+            }
+        }
+        return locationData.matches(rule.world_matches)
+                && locationData.matches(rule.zone_matches, world).matches();
     }
 
     private static Optional<RegistryEntry<StatusEffect>> lookup(String id) {

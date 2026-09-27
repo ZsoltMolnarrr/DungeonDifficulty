@@ -1,6 +1,7 @@
 # 3.9.1
 
-- Snow, gravel and clay are now exempt from No Mining
+- Player effects are now configured as rules (`player_effects.rules`), No Mining uses the `#dungeon_difficulty:no_mining` structure tag
+- Snow, gravel and clay are exempt from No Mining
 
 # 3.9.0
 

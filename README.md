@@ -20,7 +20,7 @@
 - Each ruleset can adjust entities and looted items
 - Entities attributes and spawner settings can be adjusted (for example: more health, armor, etc...)
 - Looted item attributes can be adjusted (for example: more damage on weapons)
-- Status effects can be given to players present in zones (for example: No Mining in dungeons)
+- Status effects can be given to players at certain locations (for example: No Mining in dungeons)
 - Fully data-driven (using the configuration file)
 
 # ❓ How it works
@@ -70,16 +70,27 @@ Fields that reference some kind of in-game ID (like `entity_type`, `biome`, `dim
 
 # 🚫 Player effects
 
-Difficulty types can give status effects to players present in their zones, using `player_effects` (list of effects with `id`, `amplifier`, and optionally `min_level`, `amplifier_per_level`, `max_amplifier`). Effects are refreshed upon every presence check, and wear off shortly after leaving the zone.
+Status effects can be given to players present at certain locations, using rules in `player_effects.rules`. Every matching rule applies (the highest amplifier wins per effect). Effects are refreshed upon every presence check, and wear off shortly after leaving.
 
-This is opt-in: a zone only gives effects if its difficulty assignment has `"player_effects": true`.
+A rule can filter by dimension (`world_matches`), biome and structure (`zone_matches`), and the local difficulty (`difficulty_matches`, with `type` also matching inheriting types, and `min_level`). Each effect has an `id`, `amplifier`, and optionally `min_level`, `amplifier_per_level` and `max_amplifier`, scaling with the local difficulty level.
 
 ```json
-"zone_matches": { "structure": "#dungeon_difficulty:level_3" },
-"difficulty": { "name": "dungeon", "level": 3, "player_effects": true }
+"player_effects": {
+  "rules": [
+    {
+      "zone_matches": { "structure": "#dungeon_difficulty:no_mining" },
+      "effects": [ { "id": "dungeon_difficulty:no_mining", "amplifier": 2 } ]
+    }
+  ]
+}
 ```
 
-The mod adds the **No Mining** status effect (`dungeon_difficulty:no_mining`), which slows down block breaking like Mining Fatigue, without reducing attack speed. It prevents players from digging through dungeons. The `dungeon` difficulty type comes with it (from level 2), so it only needs to be enabled on the desired zones.
+The mod adds the **No Mining** status effect (`dungeon_difficulty:no_mining`), which slows down block breaking like Mining Fatigue, without reducing attack speed, preventing players from digging through dungeons. The default config gives it in structures of the `#dungeon_difficulty:no_mining` structure tag, which is empty by default. Enable it by adding structures (or other structure tags) to this tag using a datapack:
+
+```json
+// data/dungeon_difficulty/tags/worldgen/structure/no_mining.json
+{ "values": [ "#dungeon_difficulty:level_3", "minecraft:stronghold" ] }
+```
 
 Blocks in the `#dungeon_difficulty:no_mining_exempt` block tag break at normal speed despite No Mining. By default: spawners, cobwebs, sculk sensors and shriekers, torches, treasure blocks (gold, diamond, iron, lapis, emerald), snow, gravel and clay. Extend it using a datapack.
 

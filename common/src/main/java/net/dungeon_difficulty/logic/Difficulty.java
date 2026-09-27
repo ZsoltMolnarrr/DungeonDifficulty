@@ -10,13 +10,12 @@ import java.util.Objects;
 public record Difficulty(Config.DifficultyType type,
                          int level,
                          int entityLevel,
-                         int rewardLevel,
-                         boolean givesPlayerEffects) {
+                         int rewardLevel) {
     private static final Config.DifficultyType EMPTY_TYPE = new Config.DifficultyType("empty");
-    public static final Difficulty EMPTY = new Difficulty(EMPTY_TYPE, 0, 0, 0, false);
+    public static final Difficulty EMPTY = new Difficulty(EMPTY_TYPE, 0, 0, 0);
 
     public Difficulty withType(Config.DifficultyType newType) {
-        return new Difficulty(newType, level, entityLevel, rewardLevel, givesPlayerEffects);
+        return new Difficulty(newType, level, entityLevel, rewardLevel);
     }
 
     public boolean isValid() {

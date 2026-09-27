@@ -30,12 +30,6 @@ public class Default {
         var dungeonDifficulty = new Config.DifficultyType("dungeon");
         dungeonDifficulty.allow_loot_scaling = true;
         dungeonDifficulty.parent = normalDifficulty.name;
-        // Prevents breaking blocks in dungeons, given only by zones opting in with `player_effects`
-        if (DungeonDifficulty.registryConfig.safeValue().register_status_effects) {
-            var dungeonNoMining = new Config.GivenEffect(DifficultyEffects.NO_MINING_ID.toString(), 2);
-            dungeonNoMining.min_level = 2;
-            dungeonDifficulty.player_effects = List.of(dungeonNoMining);
-        }
 
         var dungeonSpawners = new Config.SpawnerModifier();
         dungeonSpawners = new Config.SpawnerModifier();
@@ -118,6 +112,15 @@ public class Default {
         config.difficulty_types = List.of(normalDifficulty, dungeonDifficulty, heroicDifficulty);
         config.dimensions = new Config.Dimension[] { overworld, nether, end };
         config.per_player_difficulty = perPlayerDifficulty;
+
+        // Prevents breaking blocks in structures of `#dungeon_difficulty:no_mining` (empty by default)
+        if (DungeonDifficulty.registryConfig.safeValue().register_status_effects) {
+            var noMining = new Config.PlayerEffectRule();
+            noMining.zone_matches = new Config.Zone.Filters();
+            noMining.zone_matches.structure = "#" + DungeonDifficulty.MODID + ":no_mining";
+            noMining.effects = List.of(new Config.GivenEffect(DifficultyEffects.NO_MINING_ID.toString(), 2));
+            config.player_effects.rules = List.of(noMining);
+        }
         return config;
     }
 

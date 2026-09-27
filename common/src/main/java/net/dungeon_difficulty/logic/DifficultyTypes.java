@@ -19,6 +19,22 @@ public class DifficultyTypes {
         DifficultyTypes.resolved = resolved;
     }
 
+    /// Whether the type is the named one, or inherits from it
+    public static boolean inherits(Config.DifficultyType type, String name) {
+        var current = type;
+        for (int depth = 0; current != null && depth < 16; depth++) {
+            if (name.equals(current.name)) {
+                return true;
+            }
+            var parentName = current.parent;
+            if (parentName == null || parentName.isEmpty()) {
+                return false;
+            }
+            current = resolved.stream().filter(t -> parentName.equals(t.name)).findFirst().orElse(null);
+        }
+        return false;
+    }
+
     private static Config.DifficultyType resolve(Config.DifficultyType type, List<Config.DifficultyType> types) {
         if (type.parent != null && !type.parent.isEmpty()) {
             var parent = types.stream()
@@ -39,14 +55,12 @@ public class DifficultyTypes {
         copy.translation_code = type.translation_code;
         copy.allow_loot_scaling = type.allow_loot_scaling;
         copy.entities = type.entities;
-        copy.player_effects = type.player_effects;
         return copy;
     }
 
     private static Config.DifficultyType merge(Config.DifficultyType t1, Config.DifficultyType t2) {
         var merged = copy(t1);
         merged.entities = Stream.concat(t1.entities.stream(), t2.entities.stream()).toList();
-        merged.player_effects = Stream.concat(t1.player_effects.stream(), t2.player_effects.stream()).toList();
         merged.allow_loot_scaling = t2.allow_loot_scaling;
         if (t1.allow_loot_scaling != null) {
             merged.allow_loot_scaling = t1.allow_loot_scaling;

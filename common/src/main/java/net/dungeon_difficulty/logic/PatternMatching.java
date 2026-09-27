@@ -438,7 +438,7 @@ public class PatternMatching {
             if (name.equals(entry.name)) {
                 var rewardLevel = reference.reward_level != null ? reference.reward_level : reference.level;
                 var entityLevel = reference.entity_level != null ? reference.entity_level : reference.level;
-                return new Difficulty(entry, reference.level, entityLevel, rewardLevel, reference.player_effects);
+                return new Difficulty(entry, reference.level, entityLevel, rewardLevel);
             }
         }
         return null;

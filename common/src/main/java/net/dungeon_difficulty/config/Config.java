@@ -27,6 +27,21 @@ public class Config {
         // lasting for the check interval plus this margin, so they don't flicker
         public int duration_margin_seconds = 3;
         public boolean skip_creative = true;
+        // Every matching rule applies, the highest amplifier wins per effect
+        public List<PlayerEffectRule> rules = List.of();
+    }
+
+    public static class PlayerEffectRule { public PlayerEffectRule() { }
+        @Nullable public Dimension.Filters world_matches;
+        @Nullable public Zone.Filters zone_matches;
+        @Nullable public DifficultyFilters difficulty_matches;
+        public List<GivenEffect> effects = List.of();
+    }
+
+    public static class DifficultyFilters { public DifficultyFilters() { }
+        // Difficulty type name, also matches types inheriting from it
+        @Nullable public String type;
+        public int min_level = 0;
     }
 
     public PerPlayerDifficulty per_player_difficulty;
@@ -45,8 +60,6 @@ public class Config {
         @Nullable public String translation_code;
         @Nullable public Boolean allow_loot_scaling;
         public List<EntityModifier> entities = List.of();
-        // Status effects granted to players present in zones of this difficulty
-        public List<GivenEffect> player_effects = List.of();
         public DifficultyType(String name) {
             this.name = name;
         }
@@ -70,8 +83,6 @@ public class Config {
         public int level = 0;
         @Nullable public Integer entity_level;
         @Nullable public Integer reward_level;
-        // Set to `true` to give the difficulty type's `player_effects` to players present
-        public boolean player_effects = false;
         public DifficultyReference(String name, int level) {
             this.name = name;
             this.level = level;
@@ -172,7 +183,7 @@ public class Config {
         public String id;
         // Base amplifier (0 = level I)
         public int amplifier = 0;
-        // Only given when difficulty level is at least this
+        // Only given when the local difficulty level is at least this
         public int min_level = 0;
         // Bonus amplifier = floor(amplifier_per_level * (level - min_level))
         public float amplifier_per_level = 0;
