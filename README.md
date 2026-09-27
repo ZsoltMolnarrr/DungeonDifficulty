@@ -33,6 +33,8 @@ Difficulty consists of:
 - level: is the general multiplier used when applying attribute modifiers
     - for example: `2`
 
+Upon entering a zone, its name and difficulty is announced. The difficulty is displayed using the translation `difficulty.type.<name>` (or `difficulty.type.<translation_code>`), where `%s` is replaced by the level, leaving it out hides the level. Set `announcement.roman_format` to `true` to display levels as roman numerals. For example: `"difficulty.type.dungeon": "Dungeon %s"`, `"difficulty.type.settlement": "Settlement"`.
+
 Difficulty can be assigned to various zone types, (resolved in the following priority):
 - structures - for example: `minecraft:fortress`
 - biomes - for example: `minecraft:desert`

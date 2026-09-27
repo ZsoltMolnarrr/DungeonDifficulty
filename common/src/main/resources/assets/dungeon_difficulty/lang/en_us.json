@@ -1,12 +1,12 @@
 {
   "item.power.level": "§f\uD833\uDEE0§r Power Level: %s",
-  "difficulty.type.normal": "Normal",
-  "difficulty.type.adventure": "\uD833\uDEE1 Adventure",
-  "difficulty.type.dungeon": "\uD833\uDEE2 Dungeon",
-  "difficulty.type.apocalypse": "\uD833\uDEE3 Apocalypse",
-  "difficulty.type.boss_dungeon": "\uD833\uDEE3 Boss Dungeon",
-  "difficulty.type.boss": "\uD833\uDEE3 Boss",
-  "difficulty.type.heroic": "\uD833\uDEE3 Heroic",
-  "difficulty.type.mythic": "\uD833\uDEE3 Mythic",
+  "difficulty.type.normal": "Normal %s",
+  "difficulty.type.adventure": "\uD833\uDEE1 Adventure %s",
+  "difficulty.type.dungeon": "\uD833\uDEE2 Dungeon %s",
+  "difficulty.type.apocalypse": "\uD833\uDEE3 Apocalypse %s",
+  "difficulty.type.boss_dungeon": "\uD833\uDEE3 Boss Dungeon %s",
+  "difficulty.type.boss": "\uD833\uDEE3 Boss %s",
+  "difficulty.type.heroic": "\uD833\uDEE3 Heroic %s",
+  "difficulty.type.mythic": "\uD833\uDEE3 Mythic %s",
   "effect.dungeon_difficulty.no_mining": "No Mining"
 }

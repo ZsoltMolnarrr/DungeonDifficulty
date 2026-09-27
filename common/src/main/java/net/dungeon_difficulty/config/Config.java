@@ -18,6 +18,8 @@ public class Config {
         public boolean enabled = true;
         public int check_interval_seconds = 5;
         public int history_size = 2;
+        // Displays the level as roman numeral (for example: `IV` instead of `4`)
+        public boolean roman_format = false;
     }
 
     public PlayerEffects player_effects = new PlayerEffects();

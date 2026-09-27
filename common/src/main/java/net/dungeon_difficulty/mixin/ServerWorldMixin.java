@@ -117,8 +117,10 @@ public abstract class ServerWorldMixin {
         }
 
         Platform.util().sendVanillaPacket(player, new TitleS2CPacket(Text.translatable(title)));
-        Platform.util().sendVanillaPacket(player, new SubtitleS2CPacket(Text.translatable(difficulty.typeTranslationKey())
-                .append(" " + difficulty.level()))
-        );
+        // Level is a translation argument (`%s`), omit it from the translation to hide the level
+        var level = config.roman_format ? LanguageUtil.toRoman(difficulty.level()) : String.valueOf(difficulty.level());
+        Platform.util().sendVanillaPacket(player, new SubtitleS2CPacket(Text.translatableWithFallback(
+                difficulty.typeTranslationKey(), difficulty.type().name + " %s", level)
+        ));
     }
 }

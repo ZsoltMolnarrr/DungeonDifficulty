@@ -2,6 +2,8 @@
 
 - Player effects are now configured as rules (`player_effects.rules`), No Mining uses the `#dungeon_difficulty:no_mining` structure tag
 - Snow, gravel and clay are exempt from No Mining
+- Difficulty type translations control the announced level with `%s`, omit it to hide the level (custom type translations need `%s` to keep showing the level)
+- Optional roman numeral level display (`announcement.roman_format`)
 
 # 3.9.0
 
