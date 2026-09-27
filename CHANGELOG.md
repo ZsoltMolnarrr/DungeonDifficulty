@@ -6,6 +6,7 @@
 - Optional roman numeral level display (`announcement.roman_format`)
 - Villages get generated names, announced as title (for example: "Lumbridge / Settlement")
 - Village waystones (Waystones mod) are named after their village
+- `/structure_name` command to view, rename or reset structure names
 
 # 3.9.0
 

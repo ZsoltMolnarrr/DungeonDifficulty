@@ -20,7 +20,7 @@ public class StructureNameStorage extends PersistentState {
     private static final Type<StructureNameStorage> TYPE = new Type<>(StructureNameStorage::new, StructureNameStorage::fromNbt, null);
 
     public static class Entry {
-        public final String name;
+        public String name;
         public int waystones = 0;
         public Entry(String name) {
             this.name = name;
@@ -48,6 +48,31 @@ public class StructureNameStorage extends PersistentState {
         usedNames.add(name);
         markDirty();
         return entry;
+    }
+
+    /// Renames (or names) the structure, restarting its waystone numbering
+    public Entry rename(StructureKey key, String name) {
+        var entry = entries.get(key.asString());
+        if (entry == null) {
+            return put(key, name);
+        }
+        usedNames.remove(entry.name);
+        entry.name = name;
+        entry.waystones = 0;
+        usedNames.add(name);
+        markDirty();
+        return entry;
+    }
+
+    /// Forgets the name, a new one is generated upon next request
+    public boolean remove(StructureKey key) {
+        var entry = entries.remove(key.asString());
+        if (entry == null) {
+            return false;
+        }
+        usedNames.remove(entry.name);
+        markDirty();
+        return true;
     }
 
     @Override

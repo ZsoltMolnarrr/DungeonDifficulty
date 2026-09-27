@@ -15,6 +15,7 @@ import net.dungeon_difficulty.logic.ItemScaling;
 import net.dungeon_difficulty.logic.LocalScalingLootFunction;
 import net.dungeon_difficulty.logic.RarityColors;
 import net.dungeon_difficulty.naming.StructureNaming;
+import net.dungeon_difficulty.naming.StructureNamingCommands;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -56,6 +57,7 @@ public class DungeonDifficulty {
 
     /// Registers the mod's commands. Called by each loader from its own command registration event.
     public static void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher) {
+        StructureNamingCommands.register(dispatcher);
         dispatcher.register(CommandManager.literal(MODID + "_config_reload").executes(context -> {
                 System.out.println("Reloading Dungeon Difficulty config");
                 DungeonDifficulty.reloadClientConfig();

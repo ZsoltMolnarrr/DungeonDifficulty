@@ -23,6 +23,9 @@ dependencies {
     //modImplementation "net.tiny_config:tiny_config-fabric:${project.tiny_config_version}"
 
     // Optional integrations, compile only (never required at runtime, see `compat` package)
+    // Fabric API is only here so Loom remaps the above mods correctly (they implement Fabric API interfaces,
+    // and the remapped jars are shared with the fabric module). Do NOT use Fabric API in common.
+    modCompileOnly "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_api_version"
     modCompileOnly("maven.modrinth:waystones:${project.waystones_version}+fabric-${project.minecraft_version}")
     modCompileOnly("maven.modrinth:balm:${project.balm_version}+fabric-${project.minecraft_version}")
 }

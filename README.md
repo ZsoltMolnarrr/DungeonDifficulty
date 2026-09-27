@@ -101,14 +101,16 @@ Custom status effects can be disabled at `config/dungeon_difficulty/registry.jso
 
 # 🏘️ Structure names
 
-Structures matched by a name pool (villages by default) get a generated name, stored per world. When such a structure is announced (it needs a difficulty zone, villages use the `settlement` difficulty type by default), its name is shown as title, for example:
+Structures matched by a name pool (villages by default) get a generated name, such as `Blackridge` or `Middle Gate`. Names are unique, generated upon first visit, and stored with the world (`<world>/data/dungeon_difficulty_structure_names.dat`, per dimension). When such a structure is announced (it needs a difficulty zone, villages use the `settlement` difficulty type by default), its name is shown as title:
 
 ```
 Lumbridge
 Settlement
 ```
 
-Name generation can be configured (or disabled) at `config/dungeon_difficulty/structure_naming.json`. Each entry of `pools` targets structures (`structure`, supports ids, `#tags` and `~regex`) and holds its own name parts. The first matching pool is used, for example to give desert villages their own names:
+### Configuration
+
+Structure naming is configured at `config/dungeon_difficulty/structure_naming.json` (`enabled` turns the whole feature off). Each entry of `pools` targets structures with `structure` (supports ids, `#tags`, `~regex` and `!` negation) and holds its own name parts. The first matching pool is used, for example to give desert villages their own names:
 
 ```json
 "pools": [
@@ -117,7 +119,24 @@ Name generation can be configured (or disabled) at `config/dungeon_difficulty/st
 ]
 ```
 
-With the [Waystones](https://modrinth.com/mod/waystones) mod installed, village waystones are named after their village: `Lumbridge`, then `Lumbridge 1`, `Lumbridge 2`...
+Parts left out of a pool use the default name parts. Names are built as follows:
+- `prefixes` + a suffix: `Black` + `ridge` = `Blackridge`
+- a prefix ending with a space starts a separate word, followed only by `word_suffixes`: `Middle ` + `gate` = `Middle Gate`
+- `fragment_suffixes` are only joined to prefixes: `Tund` + `ara` = `Tundara`
+- once all such names are used, `middles` are placed in between (3 or 4 segments, `four_segment_chance`, at most `max_length` characters): `Black` + `en` + `ridge` = `Blackenridge`
+
+### Command
+
+Operators can manage the name of the structure they are standing in:
+- `/structure_name get`
+- `/structure_name set <name>` (unique, at most 32 characters)
+- `/structure_name reset` (a new name is generated upon next visit)
+
+Where named structures overlap, the one whose center (starting chunk) is closest is used.
+
+### Waystones
+
+With the [Waystones](https://modrinth.com/mod/waystones) mod installed, waystones generated in villages are named after their village when first activated: `Lumbridge`, then `Lumbridge 1`, `Lumbridge 2`... (can be disabled with `waystones.enabled`). Waystones keep their names, renaming a village only affects waystones activated afterwards (numbering starts over).
 
 # 🖥️ Client settings
 

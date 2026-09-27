@@ -141,6 +141,39 @@ public class StructureNaming {
         return name;
     }
 
+    public static final int MAX_NAME_LENGTH = 32;
+
+    public enum RenameResult { SUCCESS, INVALID_NAME, NAME_TAKEN, UNAVAILABLE }
+
+    /// Renames the structure instance. Names must be unique, non empty and at most `MAX_NAME_LENGTH` long.
+    public static RenameResult rename(ServerWorld world, StructureKey key, String name) {
+        name = name == null ? "" : name.trim();
+        if (name.isEmpty() || name.length() > MAX_NAME_LENGTH) {
+            return RenameResult.INVALID_NAME;
+        }
+        if (!isOnServerThread(world)) {
+            return RenameResult.UNAVAILABLE;
+        }
+        var storage = StructureNameStorage.get(world);
+        var entry = storage.get(key);
+        if (entry != null && entry.name.equals(name)) {
+            return RenameResult.SUCCESS;
+        }
+        if (storage.isUsed(name)) {
+            return RenameResult.NAME_TAKEN;
+        }
+        storage.rename(key, name);
+        return RenameResult.SUCCESS;
+    }
+
+    /// Forgets the name of the structure instance, a new one is generated upon next request
+    public static boolean reset(ServerWorld world, StructureKey key) {
+        if (!isOnServerThread(world)) {
+            return false;
+        }
+        return StructureNameStorage.get(world).remove(key);
+    }
+
     private static StructureNameStorage.Entry getOrCreate(ServerWorld world, StructureKey key) {
         var storage = StructureNameStorage.get(world);
         var entry = storage.get(key);
