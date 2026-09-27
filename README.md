@@ -101,14 +101,21 @@ Custom status effects can be disabled at `config/dungeon_difficulty/registry.jso
 
 # 🏘️ Structure names
 
-Structures of the `#dungeon_difficulty:named` structure tag (villages by default) get a generated name, stored per world. When such a structure is announced (it needs a difficulty zone, villages use the `settlement` difficulty type by default), its name is shown as title, for example:
+Structures matched by a name pool (villages by default) get a generated name, stored per world. When such a structure is announced (it needs a difficulty zone, villages use the `settlement` difficulty type by default), its name is shown as title, for example:
 
 ```
 Lumbridge
 Settlement
 ```
 
-Name generation can be configured (or disabled) at `config/dungeon_difficulty/structure_naming.json`.
+Name generation can be configured (or disabled) at `config/dungeon_difficulty/structure_naming.json`. Each entry of `pools` targets structures (`structure`, supports ids, `#tags` and `~regex`) and holds its own name parts. The first matching pool is used, for example to give desert villages their own names:
+
+```json
+"pools": [
+  { "structure": "minecraft:village_desert", "prefixes": [...], "word_suffixes": [...], ... },
+  { "structure": "#minecraft:village", "prefixes": [...], "word_suffixes": [...], ... }
+]
+```
 
 With the [Waystones](https://modrinth.com/mod/waystones) mod installed, village waystones are named after their village: `Lumbridge`, then `Lumbridge 1`, `Lumbridge 2`...
 

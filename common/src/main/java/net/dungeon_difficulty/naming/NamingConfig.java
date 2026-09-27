@@ -3,15 +3,25 @@ package net.dungeon_difficulty.naming;
 import java.util.List;
 
 /// Stored at `config/dungeon_difficulty/structure_naming.json`.
-/// Structures of the `#dungeon_difficulty:named` structure tag get generated names.
+/// Structures matched by a pool get generated names from it.
 public class NamingConfig { public NamingConfig() { }
     public boolean enabled = true;
 
-    public NamePool names = new NamePool();
+    /// The first pool matching a structure is used. Structures matching no pool are not named.
+    public List<NamePool> pools = List.of(villagePool());
+
+    private static NamePool villagePool() {
+        var pool = new NamePool();
+        pool.structure = "#minecraft:village";
+        return pool;
+    }
+
     /// Names are a random prefix + suffix. A prefix ending with a space starts a new word (the suffix is capitalized),
     /// for example: "Black" + "ridge" = "Blackridge", "Middle " + "gate" = "Middle Gate".
     /// After such prefixes only `word_suffixes` are used, so fragments never stand alone ("Big Us").
     public static class NamePool { public NamePool() { }
+        /// Structures using this pool, universal pattern matching (id, `#tag`, `~regex`, `!` negation)
+        public String structure;
         public List<String> prefixes = List.of(
                 "Black", "Pine", "Wood", "Hill", "White", "Blood", "Dragon", "Grey", "Port", "Middle ", "Tund", "Vulc",
                 "Sanso", "Atlant", "Bay", "Wilda", "Fountain", "Vert", "Winter", "Night", "Sand", "Lake", "Olymp",

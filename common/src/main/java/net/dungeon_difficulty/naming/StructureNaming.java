@@ -2,11 +2,10 @@ package net.dungeon_difficulty.naming;
 
 import com.mojang.logging.LogUtils;
 import net.dungeon_difficulty.DungeonDifficulty;
+import net.dungeon_difficulty.logic.PatternMatching;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.gen.structure.Structure;
@@ -24,9 +23,6 @@ import java.util.concurrent.ThreadLocalRandom;
 /// are refused, returning `null`. No locks are taken, and `find` never waits for chunks.
 public class StructureNaming {
     static final Logger LOGGER = LogUtils.getLogger();
-
-    public static final TagKey<Structure> NAMED = TagKey.of(RegistryKeys.STRUCTURE,
-            Identifier.of(DungeonDifficulty.MODID, "named"));
 
     public static final ConfigManager<NamingConfig> config = new ConfigManager<>
             ("structure_naming", new NamingConfig())
@@ -58,7 +54,23 @@ public class StructureNaming {
     }
 
     public static boolean isNamed(RegistryEntry<Structure> structure) {
-        return isEnabled() && structure.isIn(NAMED);
+        return isEnabled() && poolFor(structure) != null;
+    }
+
+    /// First pool matching the structure
+    @Nullable private static NamingConfig.NamePool poolFor(RegistryEntry<Structure> structure) {
+        var pools = config.safeValue().pools;
+        if (pools == null) {
+            return null;
+        }
+        for (var pool : pools) {
+            // A pool without structure pattern matches nothing (rather than everything)
+            if (pool != null && pool.structure != null && !pool.structure.isBlank()
+                    && PatternMatching.universalMatch(structure, RegistryKeys.STRUCTURE, pool.structure)) {
+                return pool;
+            }
+        }
+        return null;
     }
 
     /// Named structure instance containing the position (closest start wins, when overlapping).
@@ -79,7 +91,7 @@ public class StructureNaming {
         double closestDistance = Double.MAX_VALUE;
         for (var reference : chunk.getStructureReferences().entrySet()) {
             var structure = reference.getKey();
-            if (!registry.getEntry(structure).isIn(NAMED)) {
+            if (poolFor(registry.getEntry(structure)) == null) {
                 continue;
             }
             var id = registry.getId(structure);
@@ -133,7 +145,9 @@ public class StructureNaming {
         var storage = StructureNameStorage.get(world);
         var entry = storage.get(key);
         if (entry == null) {
-            var name = NameGenerator.generate(config.safeValue().names, ThreadLocalRandom.current(), storage::isUsed);
+            var structure = world.getRegistryManager().get(RegistryKeys.STRUCTURE).getEntry(key.structureId()).orElse(null);
+            var pool = structure != null ? poolFor(structure) : null;
+            var name = NameGenerator.generate(pool != null ? pool : new NamingConfig.NamePool(), ThreadLocalRandom.current(), storage::isUsed);
             entry = storage.put(key, name);
         }
         return entry;
