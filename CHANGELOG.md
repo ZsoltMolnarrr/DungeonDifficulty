@@ -1,3 +1,7 @@
+# 3.9.2
+
+- Powder snow is exempt from No Mining
+
 # 3.9.1
 
 - Player effects are now configured as rules (`player_effects.rules`), No Mining uses the `#dungeon_difficulty:no_mining` structure tag

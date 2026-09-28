@@ -95,7 +95,7 @@ The mod adds the **No Mining** status effect (`dungeon_difficulty:no_mining`), w
 { "values": [ "#dungeon_difficulty:level_3", "minecraft:stronghold" ] }
 ```
 
-Blocks in the `#dungeon_difficulty:no_mining_exempt` block tag break at normal speed despite No Mining. By default: spawners, cobwebs, sculk sensors and shriekers, torches, treasure blocks (gold, diamond, iron, lapis, emerald), snow, gravel and clay. Extend it using a datapack.
+Blocks in the `#dungeon_difficulty:no_mining_exempt` block tag break at normal speed despite No Mining. By default: spawners, cobwebs, sculk sensors and shriekers, torches, treasure blocks (gold, diamond, iron, lapis, emerald), snow, powder snow, gravel and clay. Extend it using a datapack.
 
 Custom status effects can be disabled at `config/dungeon_difficulty/registry.json` (requires restart, must match on server and clients).
 
