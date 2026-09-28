@@ -134,6 +134,12 @@ Operators can manage the name of the structure they are standing in:
 
 Where named structures overlap, the one whose center (starting chunk) is closest is used.
 
+### API
+
+Other mods can query structure names (server side, on the server thread) via `net.dungeon_difficulty.naming.api.StructureNames`:
+- `find(world, pos)`: the named structure at a position (assigns a name if it has none yet)
+- `getAssignedName(world, structureId, startPos)`: an already assigned name, if any
+
 ### Waystones
 
 With the [Waystones](https://modrinth.com/mod/waystones) mod installed, waystones generated in villages are named after their village when first activated: `Lumbridge`, then `Lumbridge 1`, `Lumbridge 2`... (can be disabled with `waystones.enabled`). Waystones keep their names, renaming a village only affects waystones activated afterwards (numbering starts over).

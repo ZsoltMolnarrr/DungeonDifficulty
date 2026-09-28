@@ -1,6 +1,7 @@
 # 3.9.2
 
 - Powder snow is exempt from No Mining
+- Structure name API for other mods (`net.dungeon_difficulty.naming.api.StructureNames`)
 
 # 3.9.1
 

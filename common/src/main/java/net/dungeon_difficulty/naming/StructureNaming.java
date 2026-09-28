@@ -128,6 +128,15 @@ public class StructureNaming {
         return getOrCreate(world, key).name;
     }
 
+    /// Name of the structure instance if already assigned (never generates one)
+    @Nullable public static String getAssignedName(ServerWorld world, StructureKey key) {
+        if (!isOnServerThread(world)) {
+            return null;
+        }
+        var entry = StructureNameStorage.get(world).get(key);
+        return entry != null ? entry.name : null;
+    }
+
     /// Names for waystones of the structure: "Name", then "Name 1", "Name 2", ...
     @Nullable public static String nextWaystoneName(ServerWorld world, StructureKey key) {
         if (!isOnServerThread(world)) {
