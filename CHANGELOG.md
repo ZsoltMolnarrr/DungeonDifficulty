@@ -1,3 +1,7 @@
+# 3.9.3
+
+- Config reload command requires operator permission
+
 # 3.9.2
 
 - Powder snow is exempt from No Mining

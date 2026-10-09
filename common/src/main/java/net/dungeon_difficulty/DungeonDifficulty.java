@@ -58,7 +58,9 @@ public class DungeonDifficulty {
     /// Registers the mod's commands. Called by each loader from its own command registration event.
     public static void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher) {
         StructureNamingCommands.register(dispatcher);
-        dispatcher.register(CommandManager.literal(MODID + "_config_reload").executes(context -> {
+        dispatcher.register(CommandManager.literal(MODID + "_config_reload")
+                .requires(source -> source.hasPermissionLevel(2))
+                .executes(context -> {
                 System.out.println("Reloading Dungeon Difficulty config");
                 DungeonDifficulty.reloadClientConfig();
                 DungeonDifficulty.reloadConfig();
