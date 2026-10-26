@@ -1,0 +1,13 @@
+{
+  "item.power.level": "§f\uD833\uDEE0§r Уровень мощи: %s",
+  "difficulty.type.normal": "Нормальный %s",
+  "difficulty.type.adventure": "\uD833\uDEE1 Приключение %s",
+  "difficulty.type.dungeon": "\uD833\uDEE2 Подземелье %s",
+  "difficulty.type.apocalypse": "\uD833\uDEE3 Апокалипсис %s",
+  "difficulty.type.boss_dungeon": "\uD833\uDEE3 Подземелье босса %s",
+  "difficulty.type.boss": "\uD833\uDEE3 Босс %s",
+  "difficulty.type.heroic": "\uD833\uDEE3 Героический %s",
+  "difficulty.type.mythic": "\uD833\uDEE3 Мифический %s",
+  "difficulty.type.settlement": "\uD833\uDEE4 Поселение",
+  "effect.dungeon_difficulty.no_mining": "Без добывания"
+}
